@@ -133,7 +133,7 @@ const UserView = () => {
                         </button>
                         <button
                             onClick={openEditModal}
-                            className="flex items-center gap-2 px-4 py-2 gradient-bg text-white rounded-xl text-sm font-semibold shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all"
                         >
                             <MdEdit size={16} />
                             Edit Profile
@@ -144,7 +144,7 @@ const UserView = () => {
                     <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-8 mb-5">
                         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                             {/* Avatar */}
-                            <div className="w-20 h-20 gradient-bg rounded-2xl flex items-center justify-center text-2xl font-bold text-white shadow-lg shadow-emerald-500/20 shrink-0">
+                            <div className="w-20 h-20 bg-emerald-600 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shrink-0">
                                 {user?.first_name?.[0]}{user?.last_name?.[0]}
                             </div>
 
@@ -229,7 +229,6 @@ const UserView = () => {
                                 <h3 className="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider" style={{fontFamily: "'Outfit', sans-serif"}}>Security</h3>
                             </div>
                             <div className="space-y-5">
-                                <InfoRow label="Account ID" value={user?.id?.slice(0, 16) + '...'} mono />
                                 <InfoRow label="Access Role" value={user?.role} capitalize />
                                 <InfoRow label="Status" value={user?.active ? 'Verified & Active' : 'Restricted'} status={user?.active ? 'active' : 'locked'} />
                             </div>
@@ -348,7 +347,7 @@ const UserView = () => {
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3 gradient-bg text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50"
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-all disabled:opacity-50"
                                     >
                                         {isSaving ? (
                                             <>

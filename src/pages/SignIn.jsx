@@ -55,7 +55,7 @@ const SignIn = () => {
                 <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-slate-900/50 p-8 sm:p-10 border border-gray-100 dark:border-slate-800">
                     {/* Header */}
                     <motion.div variants={itemVariants} className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-14 h-14 gradient-bg rounded-2xl mb-5 shadow-lg shadow-emerald-500/20">
+                        <div className="inline-flex items-center justify-center w-14 h-14 bg-emerald-600 rounded-2xl mb-5">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
                             </svg>
@@ -89,7 +89,6 @@ const SignIn = () => {
                         <motion.div variants={itemVariants}>
                             <div className="flex justify-between items-center mb-2">
                                 <label className="text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider">Password</label>
-                                <a href="#" className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors">Forgot?</a>
                             </div>
                             <div className={`relative rounded-xl bg-gray-50 dark:bg-slate-800/60 border transition-all duration-200 ${focused === 'password' ? 'border-emerald-500 ring-4 ring-emerald-500/10' : 'border-gray-200 dark:border-slate-700'}`}>
                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -120,7 +119,7 @@ const SignIn = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`w-full flex items-center justify-center py-3.5 px-4 gradient-bg rounded-xl text-sm font-bold text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                className={`w-full flex items-center justify-center py-3.5 px-4 bg-emerald-600 rounded-xl text-sm font-bold text-white hover:bg-emerald-700 transition-all duration-200 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
                                 {loading ? (
                                     <div className="flex items-center gap-2">
@@ -140,7 +139,7 @@ const SignIn = () => {
                     <motion.p variants={itemVariants} className="mt-8 text-center text-sm text-gray-500 dark:text-slate-400">
                         Don't have an account?{' '}
                         <Link to="/signup" className="font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors">
-                            Create one
+                            Sign Up
                         </Link>
                     </motion.p>
                 </motion.div>

@@ -4,14 +4,14 @@ import api from '../services/api';
 import {
     MdSearch, MdVisibility, MdChevronLeft, MdChevronRight,
     MdAdminPanelSettings, MdToggleOn, MdToggleOff, MdCheck,
-    MdWarning, MdClose, MdPeople
+    MdWarning, MdClose, MdPeople, MdFilterList, MdGroup, MdSupervisorAccount, MdWork, MdPerson, MdCheckCircle
 } from 'react-icons/md';
 import { Link } from 'react-router';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
 
-const UsersPage = ({ tab = 'users' }) => {
+const UsersPage = () => {
     const { user: authUser } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,6 +19,7 @@ const UsersPage = ({ tab = 'users' }) => {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+    const [filterRole, setFilterRole] = useState('all');
 
     // Role assignment
     const [roleEditing, setRoleEditing] = useState(null);
@@ -35,15 +36,26 @@ const UsersPage = ({ tab = 'users' }) => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    // Fetch users
+    // Fetch users - improved with better error handling
     useEffect(() => {
         const fetchUsers = async () => {
-            if (!authUser) return;
+            if (!authUser) {
+                setLoading(false);
+                return;
+            }
             try {
+                setLoading(true);
                 const res = await api.get('/user/all-users');
-                if (res.data.status === 'success') setUsers(res.data.data);
+                if (res.data?.status === 'success' && Array.isArray(res.data.data)) {
+                    setUsers(res.data.data);
+                } else {
+                    toast.error('Invalid data format received');
+                    setUsers([]);
+                }
             } catch (error) {
-                toast.error('Failed to load users');
+                console.error('Failed to load users:', error);
+                toast.error(error.response?.data?.message || 'Failed to load users');
+                setUsers([]);
             } finally {
                 setLoading(false);
             }
@@ -51,11 +63,17 @@ const UsersPage = ({ tab = 'users' }) => {
         fetchUsers();
     }, [authUser]);
 
-    const filteredUsers = useMemo(() => users.filter(u =>
-        `${u.first_name} ${u.last_name}`.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        u.email?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        u.username?.toLowerCase().includes(debouncedSearch.toLowerCase())
-    ), [users, debouncedSearch]);
+    const filteredUsers = useMemo(() => {
+        let filtered = users.filter(u =>
+            `${u.first_name} ${u.last_name}`.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+            u.email?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+            u.username?.toLowerCase().includes(debouncedSearch.toLowerCase())
+        );
+        if (filterRole !== 'all') {
+            filtered = filtered.filter(u => u.role === filterRole);
+        }
+        return filtered;
+    }, [users, debouncedSearch, filterRole]);
 
     const totalPages = Math.ceil(filteredUsers.length / pageSize);
     const paginatedUsers = useMemo(() => {
@@ -108,27 +126,52 @@ const UsersPage = ({ tab = 'users' }) => {
         return pages;
     };
 
-    const tabTitles = { users: 'All Users', roles: 'Assign Roles', status: 'Account Status' };
-    const tabDescriptions = { users: 'View and manage all registered members', roles: 'Assign access roles to team members', status: 'Manage account activation and restrictions' };
+    const stats = useMemo(() => ({
+        total: users.length,
+        admin: users.filter(u => u.role === 'admin').length,
+        staff: users.filter(u => u.role === 'staff').length,
+        customer: users.filter(u => u.role === 'user').length,
+        active: users.filter(u => u.active).length,
+        locked: users.filter(u => !u.active).length,
+    }), [users]);
 
-    // Column counts
-    const colCount = tab === 'users' ? 5 : 3;
+    const statCards = [
+        { label: 'Total', value: stats.total, iconBg: 'bg-gray-100 dark:bg-gray-900/20 text-gray-600', icon: <MdGroup />, accent: 'stat-accent-gray' },
+        { label: 'Admin', value: stats.admin, iconBg: 'bg-violet-100 dark:bg-violet-900/20 text-violet-600', icon: <MdSupervisorAccount />, accent: 'stat-accent-violet' },
+        { label: 'Staff', value: stats.staff, iconBg: 'bg-sky-100 dark:bg-sky-900/20 text-sky-600', icon: <MdWork />, accent: 'stat-accent-sky' },
+        { label: 'Customer', value: stats.customer, iconBg: 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600', icon: <MdPerson />, accent: 'stat-accent-emerald' },
+        { label: 'Active', value: stats.active, iconBg: 'bg-emerald-50 dark:bg-emerald-900/15 text-emerald-600', icon: <MdCheckCircle />, accent: 'stat-accent-emerald' },
+    ];
 
     return (
-        <DashboardLayout activeNav={tab === 'users' ? 'users' : tab === 'roles' ? 'roles' : 'status'}>
+        <DashboardLayout activeNav="users">
             <div className="p-6 lg:p-10 page-enter">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>{tabTitles[tab]}</h1>
-                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">{tabDescriptions[tab]}</p>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>All Users</h1>
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">View and manage all registered members</p>
                     </div>
                     {!loading && (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-xs font-semibold text-gray-600 dark:text-slate-300">
                             <MdPeople className="text-emerald-500" />
-                            {filteredUsers.length} members
+                            {filteredUsers.length} of {users.length} members
                         </span>
                     )}
+                </div>
+
+                {/* Stat Cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    {statCards.map((s, i) => (
+                        <motion.div key={s.label}
+                            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.07, duration: 0.35, ease: 'easeOut' }}
+                            className={`stat-accent ${s.accent} bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800/70`}>
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg mb-3 ${s.iconBg}`}>{s.icon}</div>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>{s.value}</h3>
+                            <p className="text-[11px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">{s.label}</p>
+                        </motion.div>
+                    ))}
                 </div>
 
                 {/* Controls */}
@@ -144,6 +187,16 @@ const UsersPage = ({ tab = 'users' }) => {
                                 {filteredUsers.length} results
                             </span>
                         )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <MdFilterList className="text-gray-400" />
+                        <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}
+                            className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
+                            <option value="all">All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="staff">Staff</option>
+                            <option value="user">Customer</option>
+                        </select>
                     </div>
                     <div className="flex items-center gap-2">
                         <label className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Per page</label>
@@ -164,20 +217,10 @@ const UsersPage = ({ tab = 'users' }) => {
                             <thead>
                                 <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
                                     <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Member</th>
-                                    {tab === 'users' && <>
-                                        <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Role</th>
-                                        <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                                        <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Assign Role</th>
-                                        <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
-                                    </>}
-                                    {tab === 'roles' && <>
-                                        <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Current Role</th>
-                                        <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Assign Role</th>
-                                    </>}
-                                    {tab === 'status' && <>
-                                        <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Current Status</th>
-                                        <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Action</th>
-                                    </>}
+                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Role</th>
+                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Manage</th>
+                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
@@ -187,12 +230,13 @@ const UsersPage = ({ tab = 'users' }) => {
                                             <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="skeleton w-9 h-9 rounded-xl" /><div><div className="skeleton h-3.5 w-32 mb-2" /><div className="skeleton h-2.5 w-44" /></div></div></td>
                                             <td className="px-6 py-4"><div className="skeleton h-5 w-16 rounded-md" /></td>
                                             <td className="px-6 py-4"><div className="skeleton h-5 w-14 rounded-md" /></td>
-                                            {tab === 'users' && <><td className="px-6 py-4"><div className="skeleton h-5 w-24 rounded-md" /></td><td className="px-6 py-4"><div className="skeleton h-5 w-16 rounded-md ml-auto" /></td></>}
+                                            <td className="px-6 py-4"><div className="skeleton h-5 w-24 rounded-md" /></td>
+                                            <td className="px-6 py-4"><div className="skeleton h-5 w-16 rounded-md ml-auto" /></td>
                                         </tr>
                                     ))
                                 ) : paginatedUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan={colCount} className="px-6 py-16 text-center">
+                                        <td colSpan={5} className="px-6 py-16 text-center">
                                             <div className="flex flex-col items-center">
                                                 <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
                                                     <MdSearch className="text-2xl text-gray-300 dark:text-slate-600" />
@@ -220,89 +264,49 @@ const UsersPage = ({ tab = 'users' }) => {
                                                 </div>
                                             </div>
                                         </td>
-
-                                        {/* ALL USERS TAB */}
-                                        {tab === 'users' && <>
-                                            <td className="px-6 py-3.5"><RoleBadge role={u.role} /></td>
-                                            <td className="px-6 py-3.5"><StatusBadge active={u.active} /></td>
-                                            {/* Inline role assign */}
-                                            <td className="px-6 py-3.5">
-                                                {roleEditing === u.id ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}
-                                                            className="px-3 py-1.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
-                                                            <option value="">Select role</option>
-                                                            <option value="user">Customer</option>
-                                                            <option value="staff">Staff</option>
-                                                            <option value="admin">Admin</option>
-                                                        </select>
-                                                        <button onClick={() => handleRoleAssign(u.id)} disabled={!selectedRole || roleLoading}
-                                                            className="p-1.5 gradient-bg text-white rounded-lg hover:shadow-md transition-all disabled:opacity-40">
-                                                            {roleLoading ? <SpinIcon /> : <MdCheck size={14} />}
-                                                        </button>
-                                                        <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-xs text-gray-400 hover:text-gray-600 font-medium">Cancel</button>
-                                                    </div>
-                                                ) : (
-                                                    <button onClick={() => { setRoleEditing(u.id); setSelectedRole(u.role); }}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded-lg transition-all opacity-0 group-hover:opacity-100">
-                                                        <MdAdminPanelSettings size={14} /> Change Role
+                                        <td className="px-6 py-3.5"><RoleBadge role={u.role} /></td>
+                                        <td className="px-6 py-3.5"><StatusBadge active={u.active} /></td>
+                                        {/* Role Management */}
+                                        <td className="px-6 py-3.5">
+                                            {roleEditing === u.id ? (
+                                                <div className="flex items-center gap-2">
+                                                    <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}
+                                                        className="px-3 py-1.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
+                                                        <option value="">Select role</option>
+                                                        <option value="user">Customer</option>
+                                                        <option value="staff">Staff</option>
+                                                        <option value="admin">Admin</option>
+                                                    </select>
+                                                    <button onClick={() => handleRoleAssign(u.id)} disabled={!selectedRole || roleLoading}
+                                                        className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-40">
+                                                        {roleLoading ? <SpinIcon /> : <MdCheck size={14} />}
                                                     </button>
-                                                )}
-                                            </td>
-                                            {/* Actions */}
-                                            <td className="px-6 py-3.5 text-right">
-                                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Link to={`/admin/users/${u.id}`} className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded-lg transition-all" title="View">
-                                                        <MdVisibility size={16} />
-                                                    </Link>
-                                                    <button onClick={() => setConfirmUser(u)}
-                                                        className={`p-2 rounded-lg transition-all ${u.active ? 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10' : 'text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'}`}
-                                                        title={u.active ? 'Deactivate' : 'Activate'}>
-                                                        {u.active ? <MdToggleOn size={18} /> : <MdToggleOff size={18} />}
-                                                    </button>
+                                                    <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-xs text-gray-500 hover:text-gray-700 font-medium">Cancel</button>
                                                 </div>
-                                            </td>
-                                        </>}
-
-                                        {/* ASSIGN ROLE TAB */}
-                                        {tab === 'roles' && <>
-                                            <td className="px-6 py-3.5"><RoleBadge role={u.role} /></td>
-                                            <td className="px-6 py-3.5">
-                                                {roleEditing === u.id ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}
-                                                            className="px-3 py-1.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
-                                                            <option value="">Select role</option>
-                                                            <option value="user">Customer</option>
-                                                            <option value="staff">Staff</option>
-                                                            <option value="admin">Admin</option>
-                                                        </select>
-                                                        <button onClick={() => handleRoleAssign(u.id)} disabled={!selectedRole || roleLoading}
-                                                            className="p-1.5 gradient-bg text-white rounded-lg hover:shadow-md transition-all disabled:opacity-40">
-                                                            {roleLoading ? <SpinIcon /> : <MdCheck size={14} />}
-                                                        </button>
-                                                        <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-xs text-gray-400 hover:text-gray-600 font-medium">Cancel</button>
-                                                    </div>
-                                                ) : (
-                                                    <button onClick={() => { setRoleEditing(u.id); setSelectedRole(u.role); }}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded-lg transition-all">
-                                                        <MdAdminPanelSettings size={14} /> Change Role
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </>}
-
-                                        {/* ACCOUNT STATUS TAB */}
-                                        {tab === 'status' && <>
-                                            <td className="px-6 py-3.5"><StatusBadge active={u.active} /></td>
-                                            <td className="px-6 py-3.5">
-                                                <button onClick={() => setConfirmUser(u)}
-                                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${u.active ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10' : 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'}`}>
-                                                    {u.active ? <MdToggleOff size={16} /> : <MdToggleOn size={16} />}
-                                                    {u.active ? 'Deactivate' : 'Activate'}
+                                            ) : (
+                                                <button onClick={() => { setRoleEditing(u.id); setSelectedRole(u.role); }}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded-lg transition-all border border-gray-200 dark:border-slate-700">
+                                                    <MdAdminPanelSettings size={14} /> Change Role
                                                 </button>
-                                            </td>
-                                        </>}
+                                            )}
+                                        </td>
+                                        {/* Actions */}
+                                        <td className="px-6 py-3.5 text-right">
+                                            <div className="flex justify-end gap-1">
+                                                <Link to={`/admin/users/${u.id}`} className="p-2 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded-lg transition-all border border-gray-200 dark:border-slate-700" title="View">
+                                                    <MdVisibility size={16} />
+                                                </Link>
+                                                <button onClick={() => setConfirmUser(u)}
+                                                    className={`p-2 rounded-lg transition-all border ${
+                                                        u.active
+                                                        ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
+                                                        : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
+                                                    }`}
+                                                    title={u.active ? 'Deactivate' : 'Activate'}>
+                                                    {u.active ? <MdToggleOn size={18} /> : <MdToggleOff size={18} />}
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -322,7 +326,7 @@ const UsersPage = ({ tab = 'users' }) => {
                                 </button>
                                 {getPageNumbers().map(page => (
                                     <button key={page} onClick={() => setCurrentPage(page)}
-                                        className={`min-w-[32px] h-8 rounded-lg text-xs font-bold transition-all ${currentPage === page ? 'gradient-bg text-white shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`}>
+                                        className={`min-w-[32px] h-8 rounded-lg text-xs font-bold transition-all ${currentPage === page ? 'bg-emerald-600 text-white' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`}>
                                         {page}
                                     </button>
                                 ))}
@@ -379,7 +383,7 @@ const UsersPage = ({ tab = 'users' }) => {
                                     Cancel
                                 </button>
                                 <button onClick={handleStatusToggleConfirm} disabled={statusLoading}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 ${confirmUser.active ? 'bg-red-500 hover:bg-red-600' : 'gradient-bg hover:shadow-lg hover:shadow-emerald-500/20'}`}>
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 ${confirmUser.active ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
                                     {statusLoading ? <SpinIcon /> : null}
                                     {statusLoading ? 'Processing...' : confirmUser.active ? 'Yes, Deactivate' : 'Yes, Activate'}
                                 </button>
@@ -415,5 +419,6 @@ const SpinIcon = () => (
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
 );
+
 
 export default UsersPage;

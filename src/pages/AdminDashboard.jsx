@@ -247,7 +247,7 @@ const AdminDashboard = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-3.5 text-right">
-                                            <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex justify-end gap-1 group-hover:opacity-100 transition-opacity">
                                                 <Link
                                                     to={`/admin/users/${u.id}`}
                                                     className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded-lg transition-all"
@@ -318,7 +318,7 @@ const AdminDashboard = () => {
                                 <div>
                                     <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">Account Status</label>
                                     <div className="flex rounded-xl bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 p-1">
-                                        <button type="button" onClick={() => setEditData({...editData, active: true})} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${editData.active ? 'gradient-bg text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Active</button>
+                                        <button type="button" onClick={() => setEditData({...editData, active: true})} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${editData.active ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-gray-600'}`}>Active</button>
                                         <button type="button" onClick={() => setEditData({...editData, active: false})} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${!editData.active ? 'bg-red-500 text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Restricted</button>
                                     </div>
                                 </div>
@@ -327,7 +327,7 @@ const AdminDashboard = () => {
                                     <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-3 text-gray-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-wider hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all">
                                         Cancel
                                     </button>
-                                    <button type="submit" disabled={isUpdating} className="flex-1 py-3 gradient-bg text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50">
+                                    <button type="submit" disabled={isUpdating} className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-all disabled:opacity-50">
                                         {isUpdating ? 'Saving...' : 'Save Changes'}
                                     </button>
                                 </div>
@@ -372,7 +372,7 @@ const ModalSelect = ({ label, value, onChange, options }) => (
 const LoadingScreen = () => (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 gradient-bg rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 animate-pulse">
+            <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center animate-pulse">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
                 </svg>

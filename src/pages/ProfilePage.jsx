@@ -126,7 +126,7 @@ const ProfilePage = () => {
                         </div>
                         <button
                             onClick={openEditModal}
-                            className="flex items-center gap-2 px-4 py-2 gradient-bg text-white rounded-xl text-sm font-semibold shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all"
                         >
                             <MdEdit size={16} /> Edit Profile
                         </button>
@@ -135,11 +135,11 @@ const ProfilePage = () => {
                     {/* Profile Hero Card */}
                     <motion.div variants={itemVariants} className="relative bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-8 mb-6 overflow-hidden">
                         {/* Decorative gradient strip */}
-                        <div className="absolute top-0 left-0 right-0 h-1 gradient-bg rounded-t-2xl" />
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-600 rounded-t-2xl" />
                         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                             {/* Avatar */}
                             <div className="relative shrink-0">
-                                <div className="w-24 h-24 gradient-bg rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-lg shadow-emerald-500/20">
+                                <div className="w-24 h-24 bg-emerald-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white">
                                     {user?.first_name?.[0]}{user?.last_name?.[0]}
                                 </div>
                                 {user?.active && (
@@ -200,7 +200,6 @@ const ProfilePage = () => {
                         <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-7">
                             <SectionHeader icon={<MdSecurity />} iconBg="bg-amber-100 dark:bg-amber-900/20 text-amber-600" title="Security & Access" />
                             <div className="space-y-5 mb-6">
-                                <InfoRow label="Account ID" value={user?.id?.slice(0, 16) + '...'} mono />
                                 <InfoRow label="Access Role" value={user?.role} capitalize />
                                 <InfoRow label="Status" value={user?.active ? 'Verified & Active' : 'Restricted'} status={user?.active ? 'active' : 'locked'} />
                             </div>
@@ -263,7 +262,7 @@ const ProfilePage = () => {
                             </div>
                             <div className="pt-3 flex gap-3">
                                 <button type="button" onClick={() => setIsEditing(false)} className="flex-1 py-3 text-gray-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-wider hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all">Cancel</button>
-                                <button type="submit" disabled={isSaving} className="flex-1 flex items-center justify-center gap-2 py-3 gradient-bg text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50">
+                                <button type="submit" disabled={isSaving} className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-all disabled:opacity-50">
                                     {isSaving ? <SpinIcon /> : <MdSave size={14} />}
                                     {isSaving ? 'Saving...' : 'Save Changes'}
                                 </button>
@@ -304,8 +303,8 @@ const ProfilePage = () => {
                                 <p className="text-xs text-red-500 font-medium flex items-center gap-1"><MdWarning size={12} /> Passwords do not match</p>
                             )}
                             <div className="pt-3 flex gap-3">
-                                <button type="button" onClick={() => setIsChangingPassword(false)} className="flex-1 py-3 text-gray-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-wider hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all">Cancel</button>
-                                <button type="submit" disabled={isPasswordSaving} className="flex-1 flex items-center justify-center gap-2 py-3 gradient-bg text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50">
+                                <button type="button" onClick={() => setIsChangingPassword(false)} className="flex-1 py-3 text-gray-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all">Cancel</button>
+                                <button type="submit" disabled={isPasswordSaving} className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-all disabled:opacity-50">
                                     {isPasswordSaving ? <SpinIcon /> : <MdLock size={14} />}
                                     {isPasswordSaving ? 'Saving...' : 'Update Password'}
                                 </button>
@@ -323,7 +322,7 @@ const ProfilePage = () => {
                             <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/20 text-red-500 text-2xl mx-auto mb-4">
                                 <MdWarning />
                             </div>
-                            <h2 className="text-center font-bold text-gray-900 dark:text-white text-base mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                            <h2 className="text-center font-bold text-gray-900 dark:text-white text-base mb-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
                                 Deactivate Your Account?
                             </h2>
                             <p className="text-center text-sm text-gray-500 dark:text-slate-400 mb-6">
@@ -333,14 +332,14 @@ const ProfilePage = () => {
                                 <button
                                     onClick={() => setIsDeactivating(false)}
                                     disabled={isDeactivateLoading}
-                                    className="flex-1 py-3 font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all disabled:opacity-50"
+                                    className="flex-1 py-3 font-semibold text-xs uppercase tracking-wider text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleDeactivateAccount}
                                     disabled={isDeactivateLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50"
+                                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50"
                                 >
                                     {isDeactivateLoading ? <SpinIcon /> : <MdBlock size={14} />}
                                     {isDeactivateLoading ? 'Processing...' : 'Yes, Deactivate'}

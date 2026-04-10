@@ -82,7 +82,7 @@ const SignUp = () => {
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                        className="inline-flex items-center justify-center w-20 h-20 gradient-bg rounded-full mb-6 shadow-lg shadow-emerald-500/30"
+                        className="inline-flex items-center justify-center w-20 h-20 bg-emerald-600 rounded-full mb-6"
                     >
                         <MdCheckCircle className="text-4xl text-white" />
                     </motion.div>
@@ -93,7 +93,7 @@ const SignUp = () => {
                             initial={{ width: '0%' }}
                             animate={{ width: '100%' }}
                             transition={{ duration: 2, ease: 'linear' }}
-                            className="h-full gradient-bg rounded-full"
+                            className="h-full bg-emerald-600 rounded-full"
                         />
                     </div>
                 </motion.div>
@@ -143,7 +143,7 @@ const SignUp = () => {
                 <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-slate-900/50 p-8 sm:p-10 border border-gray-100 dark:border-slate-800">
                     {/* Header */}
                     <motion.div variants={itemVariants} className="text-center mb-7">
-                        <div className="inline-flex items-center justify-center w-14 h-14 gradient-bg rounded-2xl mb-5 shadow-lg shadow-emerald-500/20">
+                        <div className="inline-flex items-center justify-center w-14 h-14 bg-emerald-600 rounded-2xl mb-5">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
                             </svg>
@@ -155,15 +155,15 @@ const SignUp = () => {
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3">
-                            <InputField name="first_name" label="First Name" icon={MdPerson} placeholder="John" />
-                            <InputField name="last_name" label="Last Name" icon={MdPerson} placeholder="Doe" />
+                            <InputField name="first_name" label="First Name" icon={MdPerson} placeholder="Enter first name" />
+                            <InputField name="last_name" label="Last Name" icon={MdPerson} placeholder="Enter last name" />
                         </motion.div>
 
                         <motion.div variants={itemVariants}>
-                            <InputField name="email" label="Email Address" type="email" icon={MdEmail} placeholder="you@example.com" />
+                            <InputField name="email" label="Email Address" type="email" icon={MdEmail} placeholder="Enter email address" />
                         </motion.div>
                         <motion.div variants={itemVariants}>
-                            <InputField name="password" label="Password" type="password" icon={MdLock} placeholder="Create a password" />
+                            <InputField name="password" label="Password" type="password" icon={MdLock} placeholder="Enter password" />
                         </motion.div>
 
                         {/* Password Strength */}
@@ -181,14 +181,14 @@ const SignUp = () => {
                         )}
 
                         <motion.div variants={itemVariants}>
-                            <InputField name="confirm_password" label="Confirm Password" type="password" icon={MdLock} placeholder="Repeat your password" />
+                            <InputField name="confirm_password" label="Confirm Password" type="password" icon={MdLock} placeholder="Enter confirm password" />
                         </motion.div>
 
                         <motion.div variants={itemVariants} className="pt-2">
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`w-full flex items-center justify-center py-3.5 px-4 gradient-bg rounded-xl text-sm font-bold text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                className={`w-full flex items-center justify-center py-3.5 px-4 bg-emerald-600 rounded-xl text-sm font-bold text-white hover:bg-emerald-700 transition-all duration-200 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
                                 {loading ? (
                                     <div className="flex items-center gap-2">

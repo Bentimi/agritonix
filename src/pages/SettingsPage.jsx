@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import {
     MdDarkMode, MdLightMode, MdSecurity, MdKey, MdBlock, MdWarning,
-    MdPalette, MdTune, MdCheck, MdNotifications, MdLanguage
+    MdPalette, MdCheck, MdPerson, MdArrowForward
 } from 'react-icons/md';
 import DashboardLayout from '../components/DashboardLayout';
 import api from '../services/api';
@@ -81,26 +81,37 @@ const SettingsPage = () => {
                     </motion.div>
 
                     <div className="space-y-5">
-                        {/* ── General Settings ── */}
+
+                        {/* ── My Profile Link ── */}
                         <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 overflow-hidden">
                             <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800/70 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/20 text-sky-600 flex items-center justify-center"><MdTune /></div>
+                                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 flex items-center justify-center"><MdPerson /></div>
                                 <div>
-                                    <h2 className="font-bold text-gray-900 dark:text-white text-sm" style={{ fontFamily: "'Outfit', sans-serif" }}>General</h2>
-                                    <p className="text-xs text-gray-400 dark:text-slate-500">Basic application preferences</p>
+                                    <h2 className="font-bold text-gray-900 dark:text-white text-sm" style={{ fontFamily: "'Outfit', sans-serif" }}>Account</h2>
+                                    <p className="text-xs text-gray-400 dark:text-slate-500">Your profile and personal information</p>
                                 </div>
                             </div>
-                            <div className="divide-y divide-gray-50 dark:divide-slate-800/50">
-                                <SettingRow
-                                    icon={<MdLanguage />} iconBg="bg-gray-100 dark:bg-slate-800 text-gray-500"
-                                    label="Language" description="Interface display language"
-                                    action={<span className="text-xs font-semibold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">English</span>}
-                                />
-                                <SettingRow
-                                    icon={<MdNotifications />} iconBg="bg-gray-100 dark:bg-slate-800 text-gray-500"
-                                    label="Notifications" description="In-app notification preferences"
-                                    action={<ToggleSwitch defaultChecked />}
-                                />
+                            <div className="p-5">
+                                <button
+                                    onClick={() => navigate('/profile')}
+                                    className="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-900/40 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/5 transition-all group"
+                                >
+                                    <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-sm uppercase shrink-0">
+                                        {user?.first_name?.[0]}{user?.last_name?.[0]}
+                                    </div>
+                                    <div className="flex-1 text-left min-w-0">
+                                        <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{user?.first_name} {user?.last_name}</p>
+                                        <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{user?.email}</p>
+                                        <span className={`inline-flex items-center gap-1 mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                                            user?.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400'
+                                            : user?.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400'
+                                            : 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                                        }`}>{user?.role}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:gap-2.5 transition-all">
+                                        View Profile <MdArrowForward size={16} />
+                                    </div>
+                                </button>
                             </div>
                         </motion.div>
 
@@ -166,7 +177,7 @@ const SettingsPage = () => {
                         {/* ── About ── */}
                         <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-6">
                             <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 gradient-bg rounded-xl flex items-center justify-center shadow-md shadow-emerald-500/20">
+                                <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
                                     </svg>
@@ -224,7 +235,7 @@ const SettingsPage = () => {
                                 )}
                                 <div className="pt-3 flex gap-3">
                                     <button type="button" onClick={() => setIsChangingPw(false)} className="flex-1 py-3 text-gray-500 font-semibold text-xs uppercase tracking-wider hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all">Cancel</button>
-                                    <button type="submit" disabled={isPwSaving} className="flex-1 py-3 gradient-bg text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50">
+                                    <button type="submit" disabled={isPwSaving} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50">
                                         {isPwSaving ? 'Saving...' : 'Update Password'}
                                     </button>
                                 </div>
@@ -276,16 +287,6 @@ const SettingRow = ({ icon, iconBg, label, description, action }) => (
     </div>
 );
 
-const ToggleSwitch = ({ defaultChecked }) => {
-    const [on, setOn] = useState(defaultChecked);
-    return (
-        <button onClick={() => setOn(!on)} className={`relative w-10 h-5.5 rounded-full transition-colors ${on ? 'gradient-bg' : 'bg-gray-200 dark:bg-slate-700'}`} style={{ height: '22px', width: '40px' }}>
-            <motion.span animate={{ x: on ? 18 : 2 }} transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                className="absolute top-0.5 left-0 w-4.5 h-4.5 rounded-full bg-white shadow-sm" style={{ width: '18px', height: '18px' }} />
-        </button>
-    );
-};
-
 const ThemeOption = ({ label, icon, active, onClick, preview }) => (
     <button onClick={onClick}
         className={`relative p-4 rounded-xl border-2 transition-all text-left group ${active ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600'}`}>
@@ -295,7 +296,7 @@ const ThemeOption = ({ label, icon, active, onClick, preview }) => (
             <span className="text-xs font-semibold text-gray-900 dark:text-white">{label}</span>
         </div>
         {active && (
-            <div className="absolute top-2 right-2 w-5 h-5 rounded-full gradient-bg flex items-center justify-center">
+            <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center">
                 <MdCheck className="text-white text-[10px]" />
             </div>
         )}

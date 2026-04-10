@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     MdDashboard, MdPeople, MdInventory, MdSettings, MdLogout,
     MdMenu, MdClose, MdDarkMode, MdLightMode, MdKeyboardArrowRight,
-    MdKeyboardArrowDown, MdPersonSearch, MdAdminPanelSettings, MdToggleOn,
     MdPerson
 } from 'react-icons/md';
 
@@ -16,17 +15,16 @@ const DashboardLayout = ({ children, activeNav }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [usersExpanded, setUsersExpanded] = useState(() =>
-        location.pathname.includes('/admin/users')
-    );
+
+    const isAdmin = user?.role === 'admin';
 
     const isNavActive = (key) => {
         if (activeNav) return key === activeNav;
         const path = location.pathname;
-        if (key === 'dashboard') return path === '/admin';
+        if (key === 'dashboard') return isAdmin ? path === '/admin' : path === '/dashboard';
         if (key === 'users') return path.startsWith('/admin/users');
         if (key === 'products') return path === '/admin/products';
-        if (key === 'settings') return path === '/admin/settings';
+        if (key === 'settings') return isAdmin ? path === '/admin/settings' : path === '/settings';
         if (key === 'profile') return path === '/profile';
         return false;
     };
@@ -40,6 +38,9 @@ const DashboardLayout = ({ children, activeNav }) => {
         }
         return location.pathname === subPath;
     };
+
+    const dashboardLink = isAdmin ? '/admin' : '/dashboard';
+    const settingsLink = isAdmin ? '/admin/settings' : '/settings';
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex">
@@ -59,8 +60,8 @@ const DashboardLayout = ({ children, activeNav }) => {
                 {/* Logo */}
                 <div className="px-6 pt-8 pb-6">
                     <div className="flex items-center justify-between">
-                        <Link to="/admin" className="flex items-center gap-3">
-                            <div className="w-9 h-9 gradient-bg rounded-xl flex items-center justify-center shadow-md shadow-emerald-500/20">
+                        <Link to={dashboardLink} className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
                                 </svg>
@@ -81,51 +82,23 @@ const DashboardLayout = ({ children, activeNav }) => {
                     <p className="text-[10px] font-bold text-gray-300 dark:text-slate-600 uppercase tracking-widest px-3 mb-3">Menu</p>
                     <div className="space-y-1">
                         {/* Dashboard */}
-                        <NavLink to="/admin" icon={<MdDashboard />} label="Dashboard" active={isNavActive('dashboard')} onClick={() => setSidebarOpen(false)} />
+                        <NavLink to={dashboardLink} icon={<MdDashboard />} label="Dashboard" active={isNavActive('dashboard')} onClick={() => setSidebarOpen(false)} />
 
-                        {/* Users (Expandable) — only show for admins */}
-                        {user?.role === 'admin' && (
-                            <div>
-                                <button
-                                    onClick={() => setUsersExpanded(!usersExpanded)}
-                                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 group relative w-full ${
-                                        isNavActive('users') || isNavActive('roles') || isNavActive('status')
-                                            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/10'
-                                            : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/60 hover:text-gray-900 dark:hover:text-white'
-                                    }`}
-                                >
-                                    <span className={`text-lg ${isNavActive('users') || isNavActive('roles') || isNavActive('status') ? 'text-emerald-500' : 'text-gray-400 dark:text-slate-500 group-hover:text-emerald-500'} transition-colors`}>
-                                        <MdPeople />
-                                    </span>
-                                    Users
-                                    <span className={`ml-auto transition-transform duration-200 ${usersExpanded ? 'rotate-180' : ''}`}>
-                                        <MdKeyboardArrowDown size={18} />
-                                    </span>
-                                </button>
-
-                                <AnimatePresence>
-                                    {usersExpanded && (
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
-                                            className="overflow-hidden"
-                                        >
-                                            <div className="ml-4 pl-4 border-l-2 border-gray-100 dark:border-slate-800 mt-1 space-y-0.5">
-                                                <SubNavLink to="/admin/users" icon={<MdPersonSearch />} label="All Users" active={isSubActive('/admin/users')} onClick={() => setSidebarOpen(false)} />
-                                                <SubNavLink to="/admin/users/roles" icon={<MdAdminPanelSettings />} label="Assign Role" active={isSubActive('/admin/users/roles')} onClick={() => setSidebarOpen(false)} />
-                                                <SubNavLink to="/admin/users/status" icon={<MdToggleOn />} label="Account Status" active={isSubActive('/admin/users/status')} onClick={() => setSidebarOpen(false)} />
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
+                        {/* Users — only for admins */}
+                        {isAdmin && (
+                            <NavLink to="/admin/users" icon={<MdPeople />} label="Users" active={isNavActive('users') || isNavActive('roles') || isNavActive('status')} onClick={() => setSidebarOpen(false)} />
                         )}
 
-                        {/* Products */}
-                        <NavLink to="/admin/products" icon={<MdInventory />} label="Products" active={isNavActive('products')} onClick={() => setSidebarOpen(false)} />
+                        {/* Products — only for admin */}
+                        {isAdmin && (
+                            <NavLink to="/admin/products" icon={<MdInventory />} label="Products" active={isNavActive('products')} onClick={() => setSidebarOpen(false)} />
+                        )}
 
-                        {/* Settings */}
-                        <NavLink to="/admin/settings" icon={<MdSettings />} label="Settings" active={isNavActive('settings')} onClick={() => setSidebarOpen(false)} />
+                        {/* My Profile — for all users */}
+                        <NavLink to="/profile" icon={<MdPerson />} label="My Profile" active={isNavActive('profile')} onClick={() => setSidebarOpen(false)} />
+
+                        {/* Settings — for all users */}
+                        <NavLink to={settingsLink} icon={<MdSettings />} label="Settings" active={isNavActive('settings')} onClick={() => setSidebarOpen(false)} />
                     </div>
                 </nav>
 
@@ -146,7 +119,7 @@ const DashboardLayout = ({ children, activeNav }) => {
                         title="My Profile"
                     >
                         <div className="avatar-ring">
-                            <div className="w-9 h-9 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-xs uppercase shadow-sm">
+                            <div className="w-9 h-9 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xs uppercase">
                                 {user?.first_name?.[0]}{user?.last_name?.[0]}
                             </div>
                         </div>
@@ -174,7 +147,7 @@ const DashboardLayout = ({ children, activeNav }) => {
                         <MdMenu size={22} />
                     </button>
                     <span className="font-bold text-gray-900 dark:text-white text-sm" style={{ fontFamily: "'Outfit', sans-serif" }}>Agritronix</span>
-                    <button onClick={() => navigate('/profile')} className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-[10px] uppercase shadow-sm hover:shadow-md hover:shadow-emerald-500/20 transition-all">
+                    <button onClick={() => navigate('/profile')} className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-[10px] uppercase hover:bg-emerald-700 transition-all">
                         {user?.first_name?.[0]}{user?.last_name?.[0]}
                     </button>
                 </header>
@@ -193,7 +166,7 @@ const NavLink = ({ to, icon, label, active, onClick }) => (
     <Link to={to} onClick={onClick}
         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 group relative ${
             active
-                ? 'gradient-bg text-white shadow-md shadow-emerald-500/20'
+                ? 'bg-emerald-600 text-white'
                 : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/60 hover:text-gray-900 dark:hover:text-white'
         }`}
     >
