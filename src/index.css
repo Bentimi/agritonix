@@ -40,15 +40,25 @@
 }
 
 /* ─── Base Typography ─── */
+html {
+  @apply bg-gray-50;
+}
+
+.dark html {
+  @apply bg-slate-950;
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-slate-100;
+  min-height: 100vh;
 }
 
-.dark body {
-  @apply bg-slate-950 text-slate-100;
+/* Global cursor pointer for interactive elements */
+button, a, [role="button"], select, label[for] {
+  cursor: pointer;
 }
 
 h1, h2, h3, h4, h5, h6 {
