@@ -145,7 +145,7 @@ const UsersPage = () => {
 
     return (
         <DashboardLayout activeNav="users">
-            <div className="p-6 lg:p-10 page-enter">
+            <div className="p-4 sm:p-6 lg:p-10 page-enter">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
@@ -160,16 +160,19 @@ const UsersPage = () => {
                     )}
                 </div>
 
-                {/* Stat Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
                     {statCards.map((s, i) => (
                         <motion.div key={s.label}
                             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.07, duration: 0.35, ease: 'easeOut' }}
-                            className={`stat-accent ${s.accent} bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800/70`}>
-                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg mb-3 ${s.iconBg}`}>{s.icon}</div>
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>{s.value}</h3>
-                            <p className="text-[11px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">{s.label}</p>
+                            className={`stat-accent ${s.accent} bg-white dark:bg-slate-900 px-4 sm:px-5 py-5 sm:py-6 rounded-2xl border border-gray-100 dark:border-slate-800/70`}>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2.5 sm:gap-3">
+                                    <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 ${s.iconBg}`}>{s.icon}</div>
+                                    <p className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-slate-400">{s.label}</p>
+                                </div>
+                                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>{s.value}</h3>
+                            </div>
                         </motion.div>
                     ))}
                 </div>
@@ -212,7 +215,7 @@ const UsersPage = () => {
 
                 {/* Table */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 overflow-hidden">
-                    <div className="overflow-x-auto">
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
@@ -281,7 +284,7 @@ const UsersPage = () => {
                                                         className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-40">
                                                         {roleLoading ? <SpinIcon /> : <MdCheck size={14} />}
                                                     </button>
-                                                    <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-xs text-gray-500 hover:text-gray-700 font-medium">Cancel</button>
+                                                    <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-xs text-red-500 hover:text-red-700 font-medium">Cancel</button>
                                                 </div>
                                             ) : (
                                                 <button onClick={() => { setRoleEditing(u.id); setSelectedRole(u.role); }}
@@ -311,6 +314,93 @@ const UsersPage = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Mobile Card List */}
+                    <div className="md:hidden divide-y divide-gray-50 dark:divide-slate-800/50">
+                        {loading ? (
+                            [...Array(5)].map((_, i) => (
+                                <div key={i} className="p-4 flex items-center gap-3">
+                                    <div className="skeleton w-10 h-10 rounded-xl shrink-0" />
+                                    <div className="flex-1 space-y-2">
+                                        <div className="skeleton h-3.5 w-32" />
+                                        <div className="skeleton h-2.5 w-44" />
+                                    </div>
+                                </div>
+                            ))
+                        ) : paginatedUsers.length === 0 ? (
+                            <div className="px-4 py-16 text-center">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                                        <MdSearch className="text-2xl text-gray-300 dark:text-slate-600" />
+                                    </div>
+                                    <p className="text-sm font-semibold text-gray-400 dark:text-slate-500">No members found</p>
+                                    <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Try adjusting your search term</p>
+                                </div>
+                            </div>
+                        ) : paginatedUsers.map((u) => (
+                            <div key={u.id} className="p-4 hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                <div className="flex items-start gap-3">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-[11px] uppercase shrink-0 ${
+                                        u.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
+                                        : u.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
+                                        : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
+                                    }`}>
+                                        {u.first_name?.[0]}{u.last_name?.[0]}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{u.first_name} {u.last_name}</p>
+                                        <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{u.email}</p>
+                                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                            <RoleBadge role={u.role} />
+                                            <StatusBadge active={u.active} />
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Mobile actions row */}
+                                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-slate-800/50">
+                                    {/* Role Management */}
+                                    <div>
+                                        {roleEditing === u.id ? (
+                                            <div className="flex items-center gap-2">
+                                                <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}
+                                                    className="px-2 py-1.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
+                                                    <option value="">Select</option>
+                                                    <option value="user">Customer</option>
+                                                    <option value="staff">Staff</option>
+                                                    <option value="admin">Admin</option>
+                                                </select>
+                                                <button onClick={() => handleRoleAssign(u.id)} disabled={!selectedRole || roleLoading}
+                                                    className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-40">
+                                                    {roleLoading ? <SpinIcon /> : <MdCheck size={14} />}
+                                                </button>
+                                                <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-xs text-red-500 hover:text-red-700 font-medium">Cancel</button>
+                                            </div>
+                                        ) : (
+                                            <button onClick={() => { setRoleEditing(u.id); setSelectedRole(u.role); }}
+                                                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded-lg transition-all border border-gray-200 dark:border-slate-700">
+                                                <MdAdminPanelSettings size={14} /> Role
+                                            </button>
+                                        )}
+                                    </div>
+                                    {/* Actions */}
+                                    <div className="flex gap-1">
+                                        <Link to={`/admin/users/${u.id}`} className="p-2 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded-lg transition-all border border-gray-200 dark:border-slate-700" title="View">
+                                            <MdVisibility size={16} />
+                                        </Link>
+                                        <button onClick={() => setConfirmUser(u)}
+                                            className={`p-2 rounded-lg transition-all border ${
+                                                u.active
+                                                ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
+                                                : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
+                                            }`}
+                                            title={u.active ? 'Deactivate' : 'Activate'}>
+                                            {u.active ? <MdToggleOn size={18} /> : <MdToggleOff size={18} />}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     {/* Pagination */}
@@ -379,7 +469,7 @@ const UsersPage = () => {
                             </p>
                             <div className="flex gap-3">
                                 <button onClick={() => setConfirmUser(null)} disabled={statusLoading}
-                                    className="flex-1 py-3 font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all disabled:opacity-50">
+                                    className="flex-1 py-3 font-semibold text-xs uppercase tracking-wider text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all disabled:opacity-50">
                                     Cancel
                                 </button>
                                 <button onClick={handleStatusToggleConfirm} disabled={statusLoading}

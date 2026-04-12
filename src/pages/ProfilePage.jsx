@@ -114,10 +114,10 @@ const ProfilePage = () => {
 
     return (
         <DashboardLayout activeNav="profile">
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="p-6 lg:p-10">
+            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="p-4 sm:p-6 lg:p-10">
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
-                    <motion.div variants={itemVariants} className="flex items-center justify-between mb-8">
+                    <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-8">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
                                 My Profile
@@ -126,14 +126,14 @@ const ProfilePage = () => {
                         </div>
                         <button
                             onClick={openEditModal}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all"
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all w-full sm:w-auto justify-center"
                         >
                             <MdEdit size={16} /> Edit Profile
                         </button>
                     </motion.div>
 
                     {/* Profile Hero Card */}
-                    <motion.div variants={itemVariants} className="relative bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-8 mb-6 overflow-hidden">
+                    <motion.div variants={itemVariants} className="relative bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-5 sm:p-8 mb-6 overflow-hidden">
                         {/* Decorative gradient strip */}
                         <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-600 rounded-t-2xl" />
                         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
@@ -250,13 +250,13 @@ const ProfilePage = () => {
                     <ModalWrapper onClose={() => setIsEditing(false)}>
                         <ModalHeader title="Edit Profile" subtitle={`${user?.first_name} ${user?.last_name}`} onClose={() => setIsEditing(false)} />
                         <form onSubmit={handleSaveProfile} className="p-7 space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <FormField label="First Name" value={editData.first_name} onChange={(v) => setEditData({ ...editData, first_name: v })} required />
                                 <FormField label="Last Name" value={editData.last_name} onChange={(v) => setEditData({ ...editData, last_name: v })} required />
                             </div>
                             <FormField label="Email Address" type="email" value={editData.email} onChange={(v) => setEditData({ ...editData, email: v })} required />
                             <FormField label="Phone Number" value={editData.phone_number} onChange={(v) => setEditData({ ...editData, phone_number: v })} />
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <FormSelect label="Gender" value={editData.gender} onChange={(v) => setEditData({ ...editData, gender: v })} options={[{ v: '', l: 'Select' }, { v: 'male', l: 'Male' }, { v: 'female', l: 'Female' }, { v: 'other', l: 'Other' }]} />
                                 <FormSelect label="Marital Status" value={editData.marital_status} onChange={(v) => setEditData({ ...editData, marital_status: v })} options={[{ v: 'single', l: 'Single' }, { v: 'married', l: 'Married' }, { v: 'divorced', l: 'Divorced' }, { v: 'other', l: 'Other' }]} />
                             </div>

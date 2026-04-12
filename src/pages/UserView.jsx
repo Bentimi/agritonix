@@ -119,7 +119,7 @@ const UserView = () => {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="p-6 lg:p-10"
+                className="p-4 sm:p-6 lg:p-10"
             >
                 <div className="max-w-4xl mx-auto">
                     {/* Top Bar */}
@@ -297,14 +297,14 @@ const UserView = () => {
 
                             {/* Modal Form */}
                             <form onSubmit={handleSave} className="p-7 space-y-5">
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <FormField label="First Name" value={editData.first_name} onChange={(v) => setEditData({...editData, first_name: v})} required />
                                     <FormField label="Last Name" value={editData.last_name} onChange={(v) => setEditData({...editData, last_name: v})} required />
                                 </div>
                                 <FormField label="Email Address" type="email" value={editData.email} onChange={(v) => setEditData({...editData, email: v})} required />
                                 <FormField label="Phone Number" value={editData.phone_number} onChange={(v) => setEditData({...editData, phone_number: v})} required placeholder="+233 XX XXX XXXX" />
 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Gender</label>
                                         <select

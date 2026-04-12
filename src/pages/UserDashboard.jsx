@@ -65,7 +65,7 @@ const UserDashboard = () => {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="p-6 lg:p-10"
+                className="p-4 sm:p-6 lg:p-10"
             >
                 <div className="max-w-4xl mx-auto">
                     {/* Welcome Header */}

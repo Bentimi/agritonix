@@ -112,10 +112,17 @@ const DashboardLayout = ({ children, activeNav }) => {
                         {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
                     </button>
 
+                    <button
+                        onClick={logout}
+                        className="flex items-center gap-2.5 w-full px-3 py-2 mb-2 rounded-xl text-gray-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-500 text-[13px] font-medium transition-all"
+                    >
+                        <MdLogout className="text-lg" /> Sign Out
+                    </button>
+
                     {/* User profile card */}
                     <button
                         onClick={() => { navigate('/profile'); setSidebarOpen(false); }}
-                        className="flex items-center gap-3 px-3 py-2 mb-1 w-full rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all group"
+                        className="flex items-center gap-3 px-3 py-2 w-full rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all group"
                         title="My Profile"
                     >
                         <div className="avatar-ring">
@@ -128,13 +135,6 @@ const DashboardLayout = ({ children, activeNav }) => {
                             <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">{user?.role}</p>
                         </div>
                         <MdPerson className="text-gray-300 dark:text-slate-600 group-hover:text-emerald-500 transition-colors text-base" />
-                    </button>
-
-                    <button
-                        onClick={logout}
-                        className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-gray-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-500 text-[13px] font-medium transition-all"
-                    >
-                        <MdLogout className="text-lg" /> Sign Out
                     </button>
                 </div>
             </aside>

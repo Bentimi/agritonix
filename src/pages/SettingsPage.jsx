@@ -71,7 +71,7 @@ const SettingsPage = () => {
             <motion.div
                 initial="hidden" animate="visible"
                 variants={{ visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } } }}
-                className="p-6 lg:p-10"
+                className="p-4 sm:p-6 lg:p-10"
             >
                 <div className="max-w-3xl mx-auto">
                     {/* Header */}

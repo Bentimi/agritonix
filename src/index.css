@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme {
+@custom-variant dark (&:is(.dark *));@theme {
   /* Primary Emerald Palette */
   --color-primary-50: #ecfdf5;
   --color-primary-100: #d1fae5;
@@ -202,6 +202,15 @@ h1, h2, h3, h4, h5, h6 {
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400 dark:bg-slate-600;
+}
+
+/* ─── Hide Scrollbar Utility ─── */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* ─── Focus Ring Utility ─── */

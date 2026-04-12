@@ -110,7 +110,7 @@ const AdminDashboard = () => {
 
     return (
         <DashboardLayout activeNav="dashboard">
-            <div className="p-6 lg:p-10 page-enter">
+            <div className="p-4 sm:p-6 lg:p-10 page-enter">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
@@ -131,35 +131,36 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     {statCards.map((stat, i) => (
                         <motion.div
                             key={stat.label}
                             initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.08, duration: 0.4, ease: 'easeOut' }}
-                            className={`stat-accent ${stat.accent} bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800/70 hover:shadow-lg hover:shadow-gray-100/50 dark:hover:shadow-slate-900/50 hover:-translate-y-0.5 transition-all duration-300 cursor-default`}
+                            className={`stat-accent ${stat.accent} bg-white dark:bg-slate-900 px-5 py-6 rounded-2xl border border-gray-100 dark:border-slate-800/70 hover:shadow-lg hover:shadow-gray-100/50 dark:hover:shadow-slate-900/50 hover:-translate-y-0.5 transition-all duration-300 cursor-default`}
                         >
-                            <div className="flex items-center justify-between mb-3">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${stat.iconBg}`}>
-                                    {stat.icon}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${stat.iconBg}`}>
+                                        {stat.icon}
+                                    </div>
+                                    <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">{stat.label}</p>
                                 </div>
+                                <h3 className="text-3xl font-bold text-gray-900 dark:text-white" style={{fontFamily: "'Outfit', sans-serif"}}>{stat.value}</h3>
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white" style={{fontFamily: "'Outfit', sans-serif"}}>{stat.value}</h3>
-                            <p className="text-[11px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">{stat.label}</p>
                         </motion.div>
                     ))}
                 </div>
 
-                {/* Users Table */}
+                {/* Users Table — Desktop */}
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.35, duration: 0.4 }}
                     className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 overflow-hidden"
                 >
-                    <div className="px-6 py-5 border-b border-gray-100 dark:border-slate-800/70 flex justify-between items-center">
+                    <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 dark:border-slate-800/70 flex justify-between items-center">
                         <div>
                             <h2 className="font-bold text-gray-900 dark:text-white text-base" style={{fontFamily: "'Outfit', sans-serif"}}>Active Members</h2>
                             <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{users.length} total records</p>
@@ -172,7 +173,8 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    {/* Desktop Table */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
@@ -269,6 +271,82 @@ const AdminDashboard = () => {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Mobile Card List */}
+                    <div className="md:hidden divide-y divide-gray-50 dark:divide-slate-800/50">
+                        {loading ? (
+                            [...Array(5)].map((_, i) => (
+                                <div key={i} className="p-4 flex items-center gap-3">
+                                    <div className="skeleton w-10 h-10 rounded-xl shrink-0" />
+                                    <div className="flex-1 space-y-2">
+                                        <div className="skeleton h-3.5 w-32" />
+                                        <div className="skeleton h-2.5 w-44" />
+                                    </div>
+                                </div>
+                            ))
+                        ) : filteredUsers.length === 0 ? (
+                            <div className="px-4 py-16 text-center">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                                        <MdSearch className="text-2xl text-gray-300 dark:text-slate-600" />
+                                    </div>
+                                    <p className="text-sm font-semibold text-gray-400 dark:text-slate-500">No members found</p>
+                                    <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Try adjusting your search term</p>
+                                </div>
+                            </div>
+                        ) : filteredUsers.map((u, i) => (
+                            <motion.div
+                                key={u.id}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: i * 0.03 }}
+                                className="p-4 flex items-center gap-3 hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                            >
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-[11px] uppercase shrink-0 ${
+                                    u.role === 'admin'
+                                        ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
+                                        : u.role === 'staff'
+                                            ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
+                                            : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
+                                }`}>
+                                    {u.first_name?.[0]}{u.last_name?.[0]}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{u.first_name} {u.last_name}</p>
+                                    <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{u.email}</p>
+                                    <div className="flex items-center gap-2 mt-1.5">
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] uppercase font-bold tracking-wider ${
+                                            u.role === 'admin'
+                                                ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/15 dark:text-violet-400'
+                                                : u.role === 'staff'
+                                                    ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/15 dark:text-sky-400'
+                                                    : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/15 dark:text-emerald-400'
+                                        }`}>
+                                            {u.role}
+                                        </span>
+                                        <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider ${u.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${u.active ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                            {u.active ? 'Active' : 'Locked'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex gap-1 shrink-0">
+                                    <Link
+                                        to={`/admin/users/${u.id}`}
+                                        className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded-lg transition-all"
+                                    >
+                                        <MdVisibility size={16} />
+                                    </Link>
+                                    <button
+                                        onClick={() => handleEditClick(u)}
+                                        className="p-2 text-gray-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/15 rounded-lg transition-all"
+                                    >
+                                        <MdEdit size={16} />
+                                    </button>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
                 </motion.div>
             </div>
 
@@ -300,7 +378,7 @@ const AdminDashboard = () => {
                                 </button>
                             </div>
                             <form onSubmit={handleUpdate} className="p-7 space-y-5">
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <ModalInput label="First Name" value={editData.first_name} onChange={(v) => setEditData({...editData, first_name: v})} required />
                                     <ModalInput label="Last Name" value={editData.last_name} onChange={(v) => setEditData({...editData, last_name: v})} required />
                                 </div>
@@ -324,7 +402,7 @@ const AdminDashboard = () => {
                                 </div>
 
                                 <div className="pt-4 flex gap-3">
-                                    <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-3 text-gray-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-wider hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all">
+                                    <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-3 text-red-500 dark:text-red-400 font-semibold text-xs uppercase tracking-wider hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all">
                                         Cancel
                                     </button>
                                     <button type="submit" disabled={isUpdating} className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-all disabled:opacity-50">
