@@ -10,6 +10,9 @@ import ProfilePage from './pages/ProfilePage';
 import ProductsPage from './pages/ProductsPage';
 import SettingsPage from './pages/SettingsPage';
 import UserDashboard from './pages/UserDashboard';
+import PublicProductsPage from './pages/PublicProductsPage';
+import CartPage from './pages/CartPage';
+import DashboardLayout from './components/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const App = () => {
@@ -18,13 +21,23 @@ const App = () => {
     return (
         <Routes>
             {/* Public Routes */}
+            <Route path="/" element={!user ? <Navigate to="/signin" /> : <Navigate to={user?.role === 'admin' ? '/admin' : '/products'} />} />
             <Route path="/signin" element={!user ? <SignIn /> : <Navigate to="/" />} />
             <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" />} />
 
             {/* Protected Routes — all authenticated users */}
             <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Navigate to={user?.role === 'admin' ? '/admin' : '/dashboard'} />} />
                 <Route path="/dashboard" element={<UserDashboard />} />
+                <Route path="/products" element={
+                    <DashboardLayout activeNav="products">
+                        <PublicProductsPage />
+                    </DashboardLayout>
+                } />
+                <Route path="/cart" element={
+                    <DashboardLayout activeNav="cart">
+                        <CartPage />
+                    </DashboardLayout>
+                } />
                 {/* Profile — available to ALL authenticated users */}
                 <Route path="/profile" element={<ProfilePage />} />
                 {/* Settings — available to ALL authenticated users */}

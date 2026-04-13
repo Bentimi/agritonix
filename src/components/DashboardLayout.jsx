@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     MdDashboard, MdPeople, MdInventory, MdSettings, MdLogout,
     MdMenu, MdClose, MdDarkMode, MdLightMode, MdKeyboardArrowRight,
-    MdPerson
+    MdPerson, MdShoppingCart
 } from 'react-icons/md';
 
 const DashboardLayout = ({ children, activeNav }) => {
@@ -23,7 +23,7 @@ const DashboardLayout = ({ children, activeNav }) => {
         const path = location.pathname;
         if (key === 'dashboard') return isAdmin ? path === '/admin' : path === '/dashboard';
         if (key === 'users') return path.startsWith('/admin/users');
-        if (key === 'products') return path === '/admin/products';
+        if (key === 'products') return isAdmin ? path === '/admin/products' : path === '/products';
         if (key === 'settings') return isAdmin ? path === '/admin/settings' : path === '/settings';
         if (key === 'profile') return path === '/profile';
         return false;
@@ -89,10 +89,11 @@ const DashboardLayout = ({ children, activeNav }) => {
                             <NavLink to="/admin/users" icon={<MdPeople />} label="Users" active={isNavActive('users') || isNavActive('roles') || isNavActive('status')} onClick={() => setSidebarOpen(false)} />
                         )}
 
-                        {/* Products — only for admin */}
-                        {isAdmin && (
-                            <NavLink to="/admin/products" icon={<MdInventory />} label="Products" active={isNavActive('products')} onClick={() => setSidebarOpen(false)} />
-                        )}
+                        {/* Products — for all users */}
+                        <NavLink to={isAdmin ? "/admin/products" : "/products"} icon={<MdInventory />} label="Products" active={isNavActive('products')} onClick={() => setSidebarOpen(false)} />
+
+                        {/* Cart — for all users */}
+                        <NavLink to="/cart" icon={<MdShoppingCart />} label="My Cart" active={location.pathname === '/cart'} onClick={() => setSidebarOpen(false)} />
 
                         {/* My Profile — for all users */}
                         <NavLink to="/profile" icon={<MdPerson />} label="My Profile" active={isNavActive('profile')} onClick={() => setSidebarOpen(false)} />
