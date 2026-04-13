@@ -145,101 +145,89 @@ const UsersPage = () => {
 
     return (
         <DashboardLayout activeNav="users">
-            <div className="p-4 sm:p-6 lg:p-10 page-enter">
+            <div className="p-4 sm:p-6 lg:p-10 page-enter max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>All Users</h1>
-                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">View and manage all registered members</p>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>Users</h1>
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Manage user accounts and permissions</p>
                     </div>
-                    {!loading && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-xs font-semibold text-gray-600 dark:text-slate-300">
-                            <MdPeople className="text-emerald-500" />
-                            {filteredUsers.length} of {users.length} members
-                        </span>
-                    )}
                 </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
+                {!loading && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-xs font-semibold text-gray-600 dark:text-slate-300 mb-6">
+                        <MdPeople className="text-emerald-500" />
+                        {filteredUsers.length} of {users.length} members
+                    </span>
+                )}
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
                     {statCards.map((s, i) => (
                         <motion.div key={s.label}
                             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.07, duration: 0.35, ease: 'easeOut' }}
-                            className={`stat-accent ${s.accent} bg-white dark:bg-slate-900 px-4 sm:px-5 py-5 sm:py-6 rounded-2xl border border-gray-100 dark:border-slate-800/70`}>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2.5 sm:gap-3">
-                                    <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 ${s.iconBg}`}>{s.icon}</div>
-                                    <p className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-slate-400">{s.label}</p>
-                                </div>
-                                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>{s.value}</h3>
+                            className={`stat-accent ${s.accent} stat-card bg-white dark:bg-slate-900 px-3 sm:px-4 py-3 sm:py-4 rounded-xl border border-gray-100 dark:border-slate-800/70 relative`}>
+                            <div className="flex justify-between items-start mb-2">
+                                <span className="stat-label">{s.label}</span>
+                                <div className="stat-icon" style={{ opacity: 0.8 }}>{s.icon}</div>
                             </div>
+                            <span className="stat-value">{s.value}</span>
                         </motion.div>
                     ))}
                 </div>
-
                 {/* Controls */}
-                <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                    <div className="relative group flex-1">
-                        <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
-                        <input type="text" placeholder="Search by name, email, or username..."
-                            value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm w-full dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                        />
-                        {searchTerm && (
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                                {filteredUsers.length} results
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <MdFilterList className="text-gray-400" />
-                        <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}
-                            className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
-                            <option value="all">All Roles</option>
-                            <option value="admin">Admin</option>
-                            <option value="staff">Staff</option>
-                            <option value="user">Customer</option>
-                        </select>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <label className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Per page</label>
-                        <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}
-                            className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all">
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                        </select>
+                <div className="flex flex-col lg:flex-row gap-3 mb-5">
+                    <div className="flex-1 flex gap-2">
+                        <div className="relative group flex-1">
+                            <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                            <input type="text" placeholder="Search by name or email..."
+                                value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                                className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm w-full dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-400"
+                            />
+                            {searchTerm && (
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                    {filteredUsers.length} results
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <MdFilterList className="text-gray-400" />
+                            <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
+                                className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
+                                <option value="all">All Roles</option>
+                                <option value="admin">Admin</option>
+                                <option value="staff">Staff</option>
+                                <option value="user">Customer</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-
                 {/* Table */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 overflow-hidden">
-                    <div className="hidden md:block overflow-x-auto">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden max-w-[22rem] md:max-w-full">
+                    <div className="table-wrapper">
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Member</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Role</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Manage</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Member</th>
+                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Role</th>
+                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Manage</th>
+                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
                                 {loading ? (
                                     [...Array(5)].map((_, i) => (
                                         <tr key={i}>
-                                            <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="skeleton w-9 h-9 rounded-xl" /><div><div className="skeleton h-3.5 w-32 mb-2" /><div className="skeleton h-2.5 w-44" /></div></div></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-5 w-16 rounded-md" /></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-5 w-14 rounded-md" /></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-5 w-24 rounded-md" /></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-5 w-16 rounded-md ml-auto" /></td>
+                                            <td className="px-2 sm:px-4 py-3"><div className="flex items-center gap-2"><div className="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gray-200 dark:bg-slate-700 animate-pulse shrink-0" /><div className="min-w-0"><div className="h-2.5 w-16 sm:w-32 bg-gray-200 dark:bg-slate-700 rounded animate-pulse mb-1" /><div className="h-2 w-12 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></div></div></td>
+                                            <td className="px-2 sm:px-3 py-3"><div className="h-3 w-12 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                            <td className="px-2 sm:px-3 py-3"><div className="h-3 w-10 sm:w-14 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                            <td className="px-2 sm:px-3 py-3"><div className="h-3 w-16 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                            <td className="px-2 sm:px-4 py-3 text-right"><div className="h-5 w-8 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded-lg ml-auto animate-pulse" /></td>
                                         </tr>
                                     ))
                                 ) : paginatedUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-16 text-center">
+                                        <td colSpan={5} className="px-2 sm:px-4 py-8 sm:py-12 text-center">
                                             <div className="flex flex-col items-center">
                                                 <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
                                                     <MdSearch className="text-2xl text-gray-300 dark:text-slate-600" />
@@ -252,61 +240,61 @@ const UsersPage = () => {
                                 ) : paginatedUsers.map((u) => (
                                     <tr key={u.id} className="table-row-hover group">
                                         {/* Member */}
-                                        <td className="px-6 py-3.5">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-[11px] uppercase shrink-0 ${
+                                        <td className="px-2 sm:px-4 py-2">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center font-bold text-[9px] sm:text-[11px] uppercase shrink-0 ${
                                                     u.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
                                                     : u.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
                                                     : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
                                                 }`}>
                                                     {u.first_name?.[0]}{u.last_name?.[0]}
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{u.first_name} {u.last_name}</p>
-                                                    <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{u.email}</p>
+                                                <div>
+                                                    <p className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm whitespace-nowrap">{u.first_name} {u.last_name}</p>
+                                                    <p className="text-[10px] sm:text-xs text-gray-400 dark:text-slate-500 whitespace-nowrap hidden sm:block">{u.email}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-3.5"><RoleBadge role={u.role} /></td>
-                                        <td className="px-6 py-3.5"><StatusBadge active={u.active} /></td>
+                                        <td className="px-2 sm:px-3 py-2"><RoleBadge role={u.role} /></td>
+                                        <td className="px-2 sm:px-3 py-2"><StatusBadge active={u.active} /></td>
                                         {/* Role Management */}
-                                        <td className="px-6 py-3.5">
+                                        <td className="px-2 sm:px-3 py-2 whitespace-nowrap">
                                             {roleEditing === u.id ? (
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-1">
                                                     <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}
-                                                        className="px-3 py-1.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
-                                                        <option value="">Select role</option>
+                                                        className="px-1.5 py-1 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded text-[9px] font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
+                                                        <option value="">Select</option>
                                                         <option value="user">Customer</option>
                                                         <option value="staff">Staff</option>
                                                         <option value="admin">Admin</option>
                                                     </select>
                                                     <button onClick={() => handleRoleAssign(u.id)} disabled={!selectedRole || roleLoading}
-                                                        className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-40">
-                                                        {roleLoading ? <SpinIcon /> : <MdCheck size={14} />}
+                                                        className="p-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-all disabled:opacity-40">
+                                                        {roleLoading ? <SpinIcon /> : <MdCheck size={10} />}
                                                     </button>
-                                                    <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-xs text-red-500 hover:text-red-700 font-medium">Cancel</button>
+                                                    <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-[9px] text-red-500 hover:text-red-700 font-medium">✕</button>
                                                 </div>
                                             ) : (
                                                 <button onClick={() => { setRoleEditing(u.id); setSelectedRole(u.role); }}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded-lg transition-all border border-gray-200 dark:border-slate-700">
-                                                    <MdAdminPanelSettings size={14} /> Change Role
+                                                    className="flex items-center gap-1 px-1.5 py-1 text-[9px] font-semibold text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded transition-all border border-gray-200 dark:border-slate-700">
+                                                    <MdAdminPanelSettings size={10} /> Role
                                                 </button>
                                             )}
                                         </td>
                                         {/* Actions */}
-                                        <td className="px-6 py-3.5 text-right">
+                                        <td className="px-2 sm:px-3 py-2 text-right">
                                             <div className="flex justify-end gap-1">
-                                                <Link to={`/admin/users/${u.id}`} className="p-2 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded-lg transition-all border border-gray-200 dark:border-slate-700" title="View">
-                                                    <MdVisibility size={16} />
+                                                <Link to={`/admin/users/${u.id}`} className="p-1 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded transition-all border border-gray-200 dark:border-slate-700" title="View">
+                                                    <MdVisibility size={10} />
                                                 </Link>
                                                 <button onClick={() => setConfirmUser(u)}
-                                                    className={`p-2 rounded-lg transition-all border ${
+                                                    className={`p-1 rounded transition-all border ${
                                                         u.active
                                                         ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
                                                         : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
                                                     }`}
                                                     title={u.active ? 'Deactivate' : 'Activate'}>
-                                                    {u.active ? <MdToggleOn size={18} /> : <MdToggleOff size={18} />}
+                                                    {u.active ? <MdToggleOn size={12} /> : <MdToggleOff size={12} />}
                                                 </button>
                                             </div>
                                         </td>
@@ -316,96 +304,9 @@ const UsersPage = () => {
                         </table>
                     </div>
 
-                    {/* Mobile Card List */}
-                    <div className="md:hidden divide-y divide-gray-50 dark:divide-slate-800/50">
-                        {loading ? (
-                            [...Array(5)].map((_, i) => (
-                                <div key={i} className="p-4 flex items-center gap-3">
-                                    <div className="skeleton w-10 h-10 rounded-xl shrink-0" />
-                                    <div className="flex-1 space-y-2">
-                                        <div className="skeleton h-3.5 w-32" />
-                                        <div className="skeleton h-2.5 w-44" />
-                                    </div>
-                                </div>
-                            ))
-                        ) : paginatedUsers.length === 0 ? (
-                            <div className="px-4 py-16 text-center">
-                                <div className="flex flex-col items-center">
-                                    <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
-                                        <MdSearch className="text-2xl text-gray-300 dark:text-slate-600" />
-                                    </div>
-                                    <p className="text-sm font-semibold text-gray-400 dark:text-slate-500">No members found</p>
-                                    <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Try adjusting your search term</p>
-                                </div>
-                            </div>
-                        ) : paginatedUsers.map((u) => (
-                            <div key={u.id} className="p-4 hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                                <div className="flex items-start gap-3">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-[11px] uppercase shrink-0 ${
-                                        u.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
-                                        : u.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
-                                        : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
-                                    }`}>
-                                        {u.first_name?.[0]}{u.last_name?.[0]}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{u.first_name} {u.last_name}</p>
-                                        <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{u.email}</p>
-                                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                            <RoleBadge role={u.role} />
-                                            <StatusBadge active={u.active} />
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* Mobile actions row */}
-                                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-slate-800/50">
-                                    {/* Role Management */}
-                                    <div>
-                                        {roleEditing === u.id ? (
-                                            <div className="flex items-center gap-2">
-                                                <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}
-                                                    className="px-2 py-1.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
-                                                    <option value="">Select</option>
-                                                    <option value="user">Customer</option>
-                                                    <option value="staff">Staff</option>
-                                                    <option value="admin">Admin</option>
-                                                </select>
-                                                <button onClick={() => handleRoleAssign(u.id)} disabled={!selectedRole || roleLoading}
-                                                    className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-40">
-                                                    {roleLoading ? <SpinIcon /> : <MdCheck size={14} />}
-                                                </button>
-                                                <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-xs text-red-500 hover:text-red-700 font-medium">Cancel</button>
-                                            </div>
-                                        ) : (
-                                            <button onClick={() => { setRoleEditing(u.id); setSelectedRole(u.role); }}
-                                                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded-lg transition-all border border-gray-200 dark:border-slate-700">
-                                                <MdAdminPanelSettings size={14} /> Role
-                                            </button>
-                                        )}
-                                    </div>
-                                    {/* Actions */}
-                                    <div className="flex gap-1">
-                                        <Link to={`/admin/users/${u.id}`} className="p-2 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded-lg transition-all border border-gray-200 dark:border-slate-700" title="View">
-                                            <MdVisibility size={16} />
-                                        </Link>
-                                        <button onClick={() => setConfirmUser(u)}
-                                            className={`p-2 rounded-lg transition-all border ${
-                                                u.active
-                                                ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
-                                                : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
-                                            }`}
-                                            title={u.active ? 'Deactivate' : 'Activate'}>
-                                            {u.active ? <MdToggleOn size={18} /> : <MdToggleOff size={18} />}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
                     {/* Pagination */}
-                    {!loading && filteredUsers.length > 0 && (
-                        <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    {!loading && filteredUsers.length > pageSize && (
+                        <div className="px-2 sm:px-4 py-2 sm:py-3 border-t border-gray-100 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-2">
                             <p className="text-xs text-gray-400 dark:text-slate-500">
                                 Showing <span className="font-semibold text-gray-600 dark:text-slate-300">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-semibold text-gray-600 dark:text-slate-300">{Math.min(currentPage * pageSize, filteredUsers.length)}</span> of <span className="font-semibold text-gray-600 dark:text-slate-300">{filteredUsers.length}</span> members
                             </p>

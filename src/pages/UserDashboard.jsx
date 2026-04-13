@@ -103,7 +103,7 @@ const UserDashboard = () => {
                                     {user?.first_name} {user?.last_name}
                                 </h2>
                                 <p className="text-sm text-gray-500 dark:text-slate-400 mb-3">
-                                    @{user?.username} · {user?.email}
+                                    {user?.username} · {user?.email}
                                 </p>
                                 <div className="flex flex-wrap justify-center sm:justify-start gap-2">
                                     <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${roleStyle.bg}`}>

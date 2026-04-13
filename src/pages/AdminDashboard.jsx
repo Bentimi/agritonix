@@ -2,8 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import {
-    MdSearch, MdEdit, MdVisibility, MdClose,
-    MdPeople, MdAdminPanelSettings, MdBadge, MdInventory2
+    MdSearch, MdEdit, MdVisibility, MdClose, MdSave, MdLock, MdWarning, MdPerson, MdEmail, MdPhone, MdBadge, MdSecurity, MdCalendarMonth, MdVerified, MdKey, MdBlock, MdToggleOn, MdToggleOff, MdAdminPanelSettings, MdPeople, MdInventory2
 } from 'react-icons/md';
 import { useNavigate, Link } from 'react-router';
 import { toast } from 'react-toastify';
@@ -23,6 +22,10 @@ const AdminDashboard = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [editData, setEditData] = useState({});
     const [isUpdating, setIsUpdating] = useState(false);
+
+    // Account Status Modal State
+    const [confirmStatusUser, setConfirmStatusUser] = useState(null);
+    const [statusLoading, setStatusLoading] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -69,9 +72,7 @@ const AdminDashboard = () => {
             email: u.email || '',
             phone_number: u.phone_number || '',
             gender: u.gender || '',
-            marital_status: u.marital_status || 'single',
-            role: u.role || 'user',
-            active: u.active
+            marital_status: u.marital_status || 'single'
         });
         setIsEditModalOpen(true);
     };
@@ -89,6 +90,22 @@ const AdminDashboard = () => {
             toast.error(result.message);
         }
         setIsUpdating(false);
+    };
+
+    const handleStatusToggleConfirm = async () => {
+        if (!confirmStatusUser) return;
+        setStatusLoading(true);
+        try {
+            const res = await api.patch(`/user/active-status/${confirmStatusUser.id}`);
+            if (res.data.status === 'success') {
+                toast.success('Account status updated');
+                setUsers(prev => prev.map(u => u.id === confirmStatusUser.id ? { ...u, active: !u.active } : u));
+                setConfirmStatusUser(null);
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update status');
+        }
+        setStatusLoading(false);
     };
 
     // Time-based greeting
@@ -110,7 +127,7 @@ const AdminDashboard = () => {
 
     return (
         <DashboardLayout activeNav="dashboard">
-            <div className="p-4 sm:p-6 lg:p-10 page-enter">
+            <div className="p-4 sm:p-6 lg:p-10 page-enter max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
@@ -119,84 +136,73 @@ const AdminDashboard = () => {
                         </h1>
                         <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Here's what's happening with the farm today.</p>
                     </div>
-                    <div className="relative group w-full sm:w-auto">
-                        <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Search members..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm w-full sm:w-72 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                        />
-                    </div>
                 </div>
+                {!loading && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-xs font-semibold text-gray-600 dark:text-slate-300 mb-6">
+                        <MdPeople className="text-emerald-500" />
+                        {filteredUsers.length} of {users.length} members
+                    </span>
+                )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    {statCards.map((stat, i) => (
-                        <motion.div
-                            key={stat.label}
-                            initial={{ opacity: 0, y: 16 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.08, duration: 0.4, ease: 'easeOut' }}
-                            className={`stat-accent ${stat.accent} bg-white dark:bg-slate-900 px-5 py-6 rounded-2xl border border-gray-100 dark:border-slate-800/70 hover:shadow-lg hover:shadow-gray-100/50 dark:hover:shadow-slate-900/50 hover:-translate-y-0.5 transition-all duration-300 cursor-default`}
-                        >
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${stat.iconBg}`}>
-                                        {stat.icon}
-                                    </div>
-                                    <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">{stat.label}</p>
-                                </div>
-                                <h3 className="text-3xl font-bold text-gray-900 dark:text-white" style={{fontFamily: "'Outfit', sans-serif"}}>{stat.value}</h3>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                    {statCards.map((s, i) => (
+                        <motion.div key={s.label}
+                            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.07, duration: 0.35, ease: 'easeOut' }}
+                            className={`stat-accent ${s.accent} stat-card bg-white dark:bg-slate-900 px-3 sm:px-4 py-3 sm:py-4 rounded-xl border border-gray-100 dark:border-slate-800/70 relative`}>
+                            <div className="flex justify-between items-start mb-2">
+                                <span className="stat-label">{s.label}</span>
+                                <div className="stat-icon" style={{ opacity: 0.8 }}>{s.icon}</div>
                             </div>
+                            <span className="stat-value">{s.value}</span>
                         </motion.div>
                     ))}
                 </div>
-
-                {/* Users Table — Desktop */}
-                <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.35, duration: 0.4 }}
-                    className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 overflow-hidden"
-                >
-                    <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 dark:border-slate-800/70 flex justify-between items-center">
-                        <div>
-                            <h2 className="font-bold text-gray-900 dark:text-white text-base" style={{fontFamily: "'Outfit', sans-serif"}}>Active Members</h2>
-                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{users.length} total records</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                {stats.active} Online
-                            </span>
+                {/* Controls */}
+                <div className="flex flex-col lg:flex-row gap-3 mb-5">
+                    <div className="flex-1 flex gap-2">
+                        <div className="relative group flex-1">
+                            <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                            <input type="text" placeholder="Search by name or email..."
+                                value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                                className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm w-full dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-400"
+                            />
+                            {searchTerm && (
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                    {filteredUsers.length} results
+                                </span>
+                            )}
                         </div>
                     </div>
+                </div>
 
-                    {/* Desktop Table */}
-                    <div className="hidden md:block overflow-x-auto">
+                {/* Table */}
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden max-w-[22rem] md:max-w-full">
+                    <div className="table-wrapper">
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Member</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Role</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Member</th>
+                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Role</th>
+                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
                             </thead>
+
                             <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
                                 {loading ? (
                                     [...Array(5)].map((_, i) => (
                                         <tr key={i}>
-                                            <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="skeleton w-9 h-9 rounded-xl" /><div><div className="skeleton h-3.5 w-32 mb-2" /><div className="skeleton h-2.5 w-44" /></div></div></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-5 w-16 rounded-md" /></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-5 w-14 rounded-md" /></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-5 w-16 rounded-md ml-auto" /></td>
+                                            <td className="px-2 sm:px-4 py-3"><div className="flex items-center gap-2"><div className="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gray-200 dark:bg-slate-700 animate-pulse shrink-0" /><div className="min-w-0"><div className="h-2.5 w-16 sm:w-32 bg-gray-200 dark:bg-slate-700 rounded animate-pulse mb-1" /><div className="h-2 w-12 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></div></div></td>
+                                            <td className="px-2 sm:px-3 py-3"><div className="h-3 w-12 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                            <td className="px-2 sm:px-3 py-3"><div className="h-3 w-10 sm:w-14 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                            <td className="px-2 sm:px-4 py-3 text-right"><div className="h-5 w-8 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded-lg ml-auto animate-pulse" /></td>
                                         </tr>
                                     ))
                                 ) : filteredUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-16 text-center">
+                                        <td colSpan={4} className="px-2 sm:px-4 py-8 sm:py-12 text-center">
                                             <div className="flex flex-col items-center">
                                                 <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
                                                     <MdSearch className="text-2xl text-gray-300 dark:text-slate-600" />
@@ -207,31 +213,24 @@ const AdminDashboard = () => {
                                         </td>
                                     </tr>
                                 ) : filteredUsers.map((u, i) => (
-                                    <motion.tr
-                                        key={u.id}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: i * 0.03 }}
-                                        className="table-row-hover group"
-                                    >
-                                        <td className="px-6 py-3.5">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-[11px] uppercase shrink-0 ${
-                                                    u.role === 'admin'
-                                                        ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
-                                                        : u.role === 'staff'
-                                                            ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
-                                                            : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
+                                    <tr key={u.id} className="table-row-hover group">
+                                        {/* Member */}
+                                        <td className="px-2 sm:px-4 py-2">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center font-bold text-[9px] sm:text-[11px] uppercase shrink-0 ${
+                                                    u.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
+                                                    : u.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
+                                                    : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
                                                 }`}>
                                                     {u.first_name?.[0]}{u.last_name?.[0]}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{u.first_name} {u.last_name}</p>
-                                                    <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{u.email}</p>
+                                                    <p className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm truncate">{u.first_name} {u.last_name}</p>
+                                                    <p className="text-[10px] sm:text-xs text-gray-400 dark:text-slate-500 truncate hidden sm:block">{u.email}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-3.5">
+                                        <td className="px-2 sm:px-3 py-2">
                                             <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] uppercase font-bold tracking-wider ${
                                                 u.role === 'admin'
                                                     ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/15 dark:text-violet-400'
@@ -242,209 +241,183 @@ const AdminDashboard = () => {
                                                 {u.role}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-3.5">
+                                        <td className="px-2 sm:px-3 py-2">
                                             <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${u.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
                                                 <span className={`w-1.5 h-1.5 rounded-full ${u.active ? 'bg-emerald-500' : 'bg-red-500'}`} />
                                                 {u.active ? 'Active' : 'Locked'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-3.5 text-right">
-                                            <div className="flex justify-end gap-1 group-hover:opacity-100 transition-opacity">
-                                                <Link
-                                                    to={`/admin/users/${u.id}`}
-                                                    className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded-lg transition-all"
-                                                    title="View Profile"
-                                                >
-                                                    <MdVisibility size={16} />
+                                        {/* Actions */}
+                                        <td className="px-2 sm:px-3 py-2 text-right">
+                                            <div className="flex justify-end gap-1">
+                                                <Link to={`/admin/users/${u.id}`} className="p-1 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded transition-all border border-gray-200 dark:border-slate-700" title="View">
+                                                    <MdVisibility size={10} />
                                                 </Link>
-                                                <button
-                                                    onClick={() => handleEditClick(u)}
-                                                    className="p-2 text-gray-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/15 rounded-lg transition-all"
-                                                    title="Edit"
-                                                >
-                                                    <MdEdit size={16} />
+                                                <button onClick={() => handleEditClick(u)}
+                                                    className="p-1 text-gray-500 dark:text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/15 rounded transition-all border border-gray-200 dark:border-slate-700" title="Edit">
+                                                    <MdEdit size={10} />
+                                                </button>
+                                                <button onClick={() => setConfirmStatusUser(u)}
+                                                    className={`p-1 rounded transition-all border ${
+                                                        u.active
+                                                        ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
+                                                        : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
+                                                    }`}
+                                                    title={u.active ? 'Deactivate' : 'Activate'}>
+                                                    {u.active ? <MdToggleOn size={12} /> : <MdToggleOff size={12} />}
                                                 </button>
                                             </div>
                                         </td>
-                                    </motion.tr>
+                                    </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
+                </div>
 
-                    {/* Mobile Card List */}
-                    <div className="md:hidden divide-y divide-gray-50 dark:divide-slate-800/50">
-                        {loading ? (
-                            [...Array(5)].map((_, i) => (
-                                <div key={i} className="p-4 flex items-center gap-3">
-                                    <div className="skeleton w-10 h-10 rounded-xl shrink-0" />
-                                    <div className="flex-1 space-y-2">
-                                        <div className="skeleton h-3.5 w-32" />
-                                        <div className="skeleton h-2.5 w-44" />
-                                    </div>
-                                </div>
-                            ))
-                        ) : filteredUsers.length === 0 ? (
-                            <div className="px-4 py-16 text-center">
-                                <div className="flex flex-col items-center">
-                                    <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
-                                        <MdSearch className="text-2xl text-gray-300 dark:text-slate-600" />
-                                    </div>
-                                    <p className="text-sm font-semibold text-gray-400 dark:text-slate-500">No members found</p>
-                                    <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Try adjusting your search term</p>
-                                </div>
-                            </div>
-                        ) : filteredUsers.map((u, i) => (
-                            <motion.div
-                                key={u.id}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: i * 0.03 }}
-                                className="p-4 flex items-center gap-3 hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors"
-                            >
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-[11px] uppercase shrink-0 ${
-                                    u.role === 'admin'
-                                        ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
-                                        : u.role === 'staff'
-                                            ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
-                                            : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
-                                }`}>
-                                    {u.first_name?.[0]}{u.last_name?.[0]}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{u.first_name} {u.last_name}</p>
-                                    <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{u.email}</p>
-                                    <div className="flex items-center gap-2 mt-1.5">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] uppercase font-bold tracking-wider ${
-                                            u.role === 'admin'
-                                                ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/15 dark:text-violet-400'
-                                                : u.role === 'staff'
-                                                    ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/15 dark:text-sky-400'
-                                                    : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/15 dark:text-emerald-400'
-                                        }`}>
-                                            {u.role}
-                                        </span>
-                                        <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider ${u.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${u.active ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                                            {u.active ? 'Active' : 'Locked'}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="flex gap-1 shrink-0">
-                                    <Link
-                                        to={`/admin/users/${u.id}`}
-                                        className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded-lg transition-all"
-                                    >
-                                        <MdVisibility size={16} />
-                                    </Link>
-                                    <button
-                                        onClick={() => handleEditClick(u)}
-                                        className="p-2 text-gray-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/15 rounded-lg transition-all"
-                                    >
-                                        <MdEdit size={16} />
-                                    </button>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.div>
             </div>
 
             {/* Edit Modal */}
             <AnimatePresence>
                 {isEditModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-                            onClick={() => setIsEditModalOpen(false)}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            transition={{ duration: 0.25, ease: 'easeOut' }}
-                            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10 border border-gray-100 dark:border-slate-800/70"
-                        >
-                            <div className="px-7 py-5 border-b border-gray-100 dark:border-slate-800/70 flex justify-between items-center">
-                                <div>
-                                    <h2 className="font-bold text-gray-900 dark:text-white text-base" style={{fontFamily: "'Outfit', sans-serif"}}>Edit Member</h2>
-                                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{selectedUser?.first_name} {selectedUser?.last_name}</p>
-                                </div>
-                                <button onClick={() => setIsEditModalOpen(false)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all">
-                                    <MdClose size={18} />
+                    <ModalWrapper onClose={() => setIsEditModalOpen(false)}>
+                        <ModalHeader title="Edit Member" subtitle={`${selectedUser?.first_name} ${selectedUser?.last_name}`} onClose={() => setIsEditModalOpen(false)} />
+                        <form onSubmit={handleUpdate} className="p-7 space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <FormField label="First Name" value={editData.first_name} onChange={(v) => setEditData({...editData, first_name: v})} required />
+                                <FormField label="Last Name" value={editData.last_name} onChange={(v) => setEditData({...editData, last_name: v})} required />
+                            </div>
+                            <FormField label="Email Address" type="email" value={editData.email} onChange={(v) => setEditData({...editData, email: v})} required />
+                            <FormField label="Phone Number" value={editData.phone_number} onChange={(v) => setEditData({...editData, phone_number: v})} />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <FormSelect label="Gender" value={editData.gender} onChange={(v) => setEditData({...editData, gender: v})} options={[{ v: '', l: 'Select' }, { v: 'male', l: 'Male' }, { v: 'female', l: 'Female' }, { v: 'other', l: 'Other' }]} />
+                                <FormSelect label="Marital Status" value={editData.marital_status} onChange={(v) => setEditData({...editData, marital_status: v})} options={[{ v: 'single', l: 'Single' }, { v: 'married', l: 'Married' }, { v: 'divorced', l: 'Divorced' }, { v: 'other', l: 'Other' }]} />
+                            </div>
+
+                            <div className="pt-3 flex gap-3">
+                                <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-3 text-gray-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-wider hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all">Cancel</button>
+                                <button type="submit" disabled={isUpdating} className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-all disabled:opacity-50">
+                                    {isUpdating ? <SpinIcon /> : <MdSave size={14} />}
+                                    {isUpdating ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
-                            <form onSubmit={handleUpdate} className="p-7 space-y-5">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <ModalInput label="First Name" value={editData.first_name} onChange={(v) => setEditData({...editData, first_name: v})} required />
-                                    <ModalInput label="Last Name" value={editData.last_name} onChange={(v) => setEditData({...editData, last_name: v})} required />
-                                </div>
-                                <ModalInput label="Email Address" type="email" value={editData.email} onChange={(v) => setEditData({...editData, email: v})} required />
-                                <div className="grid grid-cols-2 gap-3">
-                                    <ModalInput label="Phone Number" value={editData.phone_number} onChange={(v) => setEditData({...editData, phone_number: v})} required />
-                                    <ModalSelect label="Gender" value={editData.gender} onChange={(v) => setEditData({...editData, gender: v})} options={[{v: '', l: 'Select'}, {v: 'male', l: 'Male'}, {v: 'female', l: 'Female'}, {v: 'other', l: 'Other'}]} />
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <ModalSelect label="Marital Status" value={editData.marital_status} onChange={(v) => setEditData({...editData, marital_status: v})} options={[{v: 'single', l: 'Single'}, {v: 'married', l: 'Married'}, {v: 'divorced', l: 'Divorced'}, {v: 'other', l: 'Other'}]} />
-                                    <ModalSelect label="Access Role" value={editData.role} onChange={(v) => setEditData({...editData, role: v})} options={[{v: 'user', l: 'Customer'}, {v: 'staff', l: 'Staff'}, {v: 'admin', l: 'Admin'}]} />
-                                </div>
+                        </form>
+                    </ModalWrapper>
+                )}
+            </AnimatePresence>
 
-                                {/* Account Status Toggle */}
+            {/* ── Confirm Status Toggle Modal ── */}
+            <AnimatePresence>
+                {confirmStatusUser && (
+                    <ModalWrapper onClose={() => !statusLoading && setConfirmStatusUser(null)}>
+                        <div className="p-7">
+                            {/* Icon */}
+                            <div className={`flex items-center justify-center w-14 h-14 rounded-2xl text-2xl mx-auto mb-4 ${confirmStatusUser.active ? 'bg-red-100 dark:bg-red-900/20 text-red-500' : 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600'}`}>
+                                <MdWarning />
+                            </div>
+                            <h2 className="text-center font-bold text-gray-900 dark:text-white text-base mb-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                {confirmStatusUser.active ? 'Deactivate Account?' : 'Activate Account?'}
+                            </h2>
+                            {/* User info */}
+                            <div className="flex items-center gap-3 bg-gray-50 dark:bg-slate-800/60 rounded-xl p-3 mb-4">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] uppercase ${
+                                    confirmStatusUser.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
+                                    : confirmStatusUser.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
+                                    : 'bg-gray-200 dark:bg-slate-700 text-gray-500'
+                                }`}>
+                                    {confirmStatusUser.first_name?.[0]}{confirmStatusUser.last_name?.[0]}
+                                </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">Account Status</label>
-                                    <div className="flex rounded-xl bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 p-1">
-                                        <button type="button" onClick={() => setEditData({...editData, active: true})} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${editData.active ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-gray-600'}`}>Active</button>
-                                        <button type="button" onClick={() => setEditData({...editData, active: false})} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${!editData.active ? 'bg-red-500 text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Restricted</button>
-                                    </div>
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{confirmStatusUser.first_name} {confirmStatusUser.last_name}</p>
+                                    <p className="text-xs text-gray-400 dark:text-slate-500">{confirmStatusUser.email}</p>
                                 </div>
-
-                                <div className="pt-4 flex gap-3">
-                                    <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-3 text-red-500 dark:text-red-400 font-semibold text-xs uppercase tracking-wider hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all">
-                                        Cancel
-                                    </button>
-                                    <button type="submit" disabled={isUpdating} className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-all disabled:opacity-50">
-                                        {isUpdating ? 'Saving...' : 'Save Changes'}
-                                    </button>
-                                </div>
-                            </form>
-                        </motion.div>
-                    </div>
+                                <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ml-auto ${confirmStatusUser.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${confirmStatusUser.active ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                    {confirmStatusUser.active ? 'Active' : 'Locked'}
+                                </span>
+                            </div>
+                            <p className="text-center text-sm text-gray-500 dark:text-slate-400 mb-6">
+                                {confirmStatusUser.active
+                                    ? 'This will immediately restrict their access to the platform.'
+                                    : 'This will restore their access to the platform.'}
+                            </p>
+                            <div className="flex gap-3">
+                                <button onClick={() => setConfirmStatusUser(null)} disabled={statusLoading}
+                                    className="flex-1 py-3 font-semibold text-xs uppercase tracking-wider text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all disabled:opacity-50">
+                                    Cancel
+                                </button>
+                                <button onClick={handleStatusToggleConfirm} disabled={statusLoading}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 ${confirmStatusUser.active ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                                    {statusLoading ? <SpinIcon /> : null}
+                                    {statusLoading ? 'Processing...' : confirmStatusUser.active ? 'Yes, Deactivate' : 'Yes, Activate'}
+                                </button>
+                            </div>
+                        </div>
+                    </ModalWrapper>
                 )}
             </AnimatePresence>
         </DashboardLayout>
     );
 };
 
-// ─── Sub-components ─────────────────────────────────────────────
+// ─── Shared Sub-components ──────────────────────────────────────────
 
-const ModalInput = ({ label, value, onChange, type = "text", required = false }) => (
+const ModalWrapper = ({ children, onClose }) => (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={onClose}
+        />
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10 border border-gray-100 dark:border-slate-800/70"
+        >
+            {children}
+        </motion.div>
+    </div>
+);
+
+const ModalHeader = ({ title, subtitle, onClose }) => (
+    <div className="px-7 py-5 border-b border-gray-100 dark:border-slate-800/70 flex justify-between items-center">
+        <div>
+            <h2 className="font-bold text-gray-900 dark:text-white text-base" style={{ fontFamily: "'Outfit', sans-serif" }}>{title}</h2>
+            {subtitle && <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{subtitle}</p>}
+        </div>
+        <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all">
+            <MdClose size={18} />
+        </button>
+    </div>
+);
+
+const FormField = ({ label, type = 'text', value, onChange, required = false, placeholder = '' }) => (
     <div>
         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
         <input
-            type={type}
-            required={required}
-            value={value}
+            type={type} required={required} value={value} placeholder={placeholder}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all placeholder:text-gray-300"
+            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
         />
     </div>
 );
 
-const ModalSelect = ({ label, value, onChange, options }) => (
+const FormSelect = ({ label, value, onChange, options }) => (
     <div>
         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
-        <select
-            required
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
-        >
+        <select value={value} onChange={(e) => onChange(e.target.value)}
+            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all">
             {options.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
         </select>
     </div>
+);
+
+const SpinIcon = () => (
+    <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 12a9 9 0 11-6.219-8.56" />
+    </svg>
 );
 
 const LoadingScreen = () => (

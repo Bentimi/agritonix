@@ -260,6 +260,87 @@ h1, h2, h3, h4, h5, h6 {
 .stat-accent-amber::before { background: linear-gradient(90deg, #d97706, #fbbf24); }
 .stat-accent-sky::before { background: linear-gradient(90deg, #0284c7, #38bdf8); }
 
+/* ─── Stat Card Pattern (Title and icon justify-between, number centered) ─── */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  justify-content: center;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-gray-500, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.dark .stat-label {
+  color: var(--color-slate-400, #94a3b8);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-gray-900, #111827);
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  line-height: 1.2;
+  display: block;
+}
+
+.dark .stat-value {
+  color: var(--color-white, #ffffff);
+}
+
+.stat-icon {
+  font-size: 1.25rem;
+  opacity: 0.8;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-accent-emerald .stat-icon { color: #059669; }
+.stat-accent-violet .stat-icon { color: #7c3aed; }
+.stat-accent-amber .stat-icon { color: #d97706; }
+.stat-accent-sky .stat-icon { color: #0284c7; }
+
+.dark .stat-accent-emerald .stat-icon { color: #34d399; }
+.dark .stat-accent-violet .stat-icon { color: #a78bfa; }
+.dark .stat-accent-amber .stat-icon { color: #fbbf24; }
+.dark .stat-accent-sky .stat-icon { color: #38bdf8; }
+
+/* ─── Table Wrapper for Horizontal Overflow ─── */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-300, #d1d5db) transparent;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-300, #d1d5db);
+  border-radius: 3px;
+}
+
+.dark .table-wrapper::-webkit-scrollbar-thumb {
+  background-color: var(--color-slate-600, #475569);
+}
+
 /* ─── Smooth page transitions ─── */
 .page-enter {
   animation: slide-up 0.4s ease-out forwards;

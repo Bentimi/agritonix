@@ -155,7 +155,7 @@ const ProfilePage = () => {
                                     {user?.first_name} {user?.last_name}
                                 </h2>
                                 <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
-                                    @{user?.username} · Joined {user?.date_joined ? new Date(user.date_joined).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}
+                                    {user?.username} · Joined {user?.date_joined ? new Date(user.date_joined).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}
                                 </p>
                                 <div className="flex flex-wrap justify-center sm:justify-start gap-2">
                                     <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${roleStyle.bg}`}>
@@ -181,7 +181,7 @@ const ProfilePage = () => {
                             <SectionHeader icon={<MdBadge />} iconBg="bg-violet-100 dark:bg-violet-900/20 text-violet-600" title="Personal Info" />
                             <div className="space-y-5">
                                 <InfoRow label="Full Name" value={`${user?.first_name} ${user?.last_name}`} />
-                                <InfoRow label="Username" value={`@${user?.username}`} />
+                                <InfoRow label="Username" value={`${user?.username}`} />
                                 <InfoRow label="Gender" value={user?.gender || 'Not specified'} capitalize />
                                 <InfoRow label="Marital Status" value={user?.marital_status || 'Not specified'} capitalize />
                             </div>
