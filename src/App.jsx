@@ -12,6 +12,10 @@ import SettingsPage from './pages/SettingsPage';
 import UserDashboard from './pages/UserDashboard';
 import PublicProductsPage from './pages/PublicProductsPage';
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import PaymentPendingPage from './pages/PaymentPendingPage';
+import PaymentFailedPage from './pages/PaymentFailedPage';
 import DashboardLayout from './components/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -21,9 +25,14 @@ const App = () => {
     return (
         <Routes>
             {/* Public Routes */}
-            <Route path="/" element={!user ? <Navigate to="/signin" /> : <Navigate to={user?.role === 'admin' ? '/admin' : '/products'} />} />
+            <Route path="/" element={!user ? <Navigate to="/signin" /> : <Navigate to={user?.role === 'admin' ? '/admin' : user?.role === 'staff' ? '/admin/users' : '/products'} />} />
             <Route path="/signin" element={!user ? <SignIn /> : <Navigate to="/" />} />
             <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" />} />
+
+            {/* Payment Routes — accessible without auth (redirected from gateway) */}
+            <Route path="/payment/success" element={<PaymentSuccessPage />} />
+            <Route path="/payment/pending" element={<PaymentPendingPage />} />
+            <Route path="/payment/failed" element={<PaymentFailedPage />} />
 
             {/* Protected Routes — all authenticated users */}
             <Route element={<ProtectedRoute />}>
@@ -36,6 +45,11 @@ const App = () => {
                 <Route path="/cart" element={
                     <DashboardLayout activeNav="cart">
                         <CartPage />
+                    </DashboardLayout>
+                } />
+                <Route path="/checkout" element={
+                    <DashboardLayout activeNav="cart">
+                        <CheckoutPage />
                     </DashboardLayout>
                 } />
                 {/* Profile — available to ALL authenticated users */}

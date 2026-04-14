@@ -28,8 +28,6 @@ const PublicProductsPage = () => {
                 // console.log('Cart API response:', response.data);
                 if (response.data.status === 'success') {
                     const cartData = response.data.data;
-                    // console.log('Cart data type:', typeof cartData, cartData);
-                    // Backend returns { cart: cartItems, totalPrice, totalItems }
                     if (cartData && cartData.cart && Array.isArray(cartData.cart)) {
                         setCart(cartData.cart);
                     } else {

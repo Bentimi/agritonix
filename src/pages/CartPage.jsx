@@ -130,8 +130,7 @@ const CartPage = () => {
             toast.error('Your cart is empty');
             return;
         }
-        toast.success('Proceeding to checkout...');
-        // TODO: Implement checkout logic
+        navigate('/checkout');
     };
 
     if (loading) {
@@ -297,12 +296,6 @@ const CartPage = () => {
                                         <span className="text-gray-600 dark:text-slate-400">Subtotal</span>
                                         <span className="font-medium text-gray-900 dark:text-white">
                                             ₦{getCartTotal().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600 dark:text-slate-400">Shipping</span>
-                                        <span className="font-medium text-gray-900 dark:text-white">
-                                            Calculated at checkout
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-sm">

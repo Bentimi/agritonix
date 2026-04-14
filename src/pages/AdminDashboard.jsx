@@ -178,9 +178,9 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Table */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden max-w-[22rem] md:max-w-full">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-full">
                     <div className="table-wrapper">
-                        <table className="w-full text-left">
+                        <table className="w-full text-left min-w-[700px]">
                             <thead>
                                 <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
                                     <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Member</th>
@@ -253,19 +253,28 @@ const AdminDashboard = () => {
                                                 <Link to={`/admin/users/${u.id}`} className="p-1 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded transition-all border border-gray-200 dark:border-slate-700" title="View">
                                                     <MdVisibility size={10} />
                                                 </Link>
-                                                <button onClick={() => handleEditClick(u)}
-                                                    className="p-1 text-gray-500 dark:text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/15 rounded transition-all border border-gray-200 dark:border-slate-700" title="Edit">
-                                                    <MdEdit size={10} />
-                                                </button>
-                                                <button onClick={() => setConfirmStatusUser(u)}
-                                                    className={`p-1 rounded transition-all border ${
-                                                        u.active
-                                                        ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
-                                                        : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
-                                                    }`}
-                                                    title={u.active ? 'Deactivate' : 'Activate'}>
-                                                    {u.active ? <MdToggleOn size={12} /> : <MdToggleOff size={12} />}
-                                                </button>
+                                                {(!user || user.role === 'admin' || (user.role === 'staff' && u.role === 'user')) ? (
+                                                    <>
+                                                        <button onClick={() => handleEditClick(u)}
+                                                            className="p-1 text-gray-500 dark:text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/15 rounded transition-all border border-gray-200 dark:border-slate-700" title="Edit">
+                                                            <MdEdit size={10} />
+                                                        </button>
+                                                        <button onClick={() => setConfirmStatusUser(u)}
+                                                            className={`p-1 rounded transition-all border ${
+                                                                u.active
+                                                                ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
+                                                                : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
+                                                            }`}
+                                                            title={u.active ? 'Deactivate' : 'Activate'}>
+                                                            {u.active ? <MdToggleOn size={12} /> : <MdToggleOff size={12} />}
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="p-1 text-gray-300 dark:text-slate-600 border border-transparent" title="No permission"><MdEdit size={10} /></div>
+                                                        <div className="p-1 text-gray-300 dark:text-slate-600 border border-transparent" title="No permission">{u.active ? <MdToggleOn size={12} /> : <MdToggleOff size={12} />}</div>
+                                                    </>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>

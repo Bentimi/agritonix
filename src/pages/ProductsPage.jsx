@@ -374,10 +374,10 @@ const ProductsPage = () => {
                     ))}
                 </div>
 
-                {/* Controls */}
-                <div className="flex flex-col lg:flex-row gap-3 mb-5">
-                    <div className="flex-1 flex gap-2">
-                        <div className="relative group flex-1">
+                {/* Controls Header that was above the table */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-5 w-full">
+                    <div className="flex-1 flex flex-col sm:flex-row gap-3">
+                        <div className="relative group w-full sm:flex-1">
                             <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
                             <input type="text" placeholder="Search by name or category..."
                                 value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
@@ -389,10 +389,10 @@ const ProductsPage = () => {
                                 </span>
                             )}
                         </div>
-                        <div className="flex items-center gap-2">
-                            <MdFilterList className="text-gray-400" />
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <MdFilterList className="text-gray-400 hidden sm:block" />
                             <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                                className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
+                                className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all w-full sm:w-auto">
                                 <option value="all">All Status</option>
                                 <option value="approved">Approved</option>
                                 <option value="pending">Pending</option>
@@ -403,16 +403,19 @@ const ProductsPage = () => {
                     </div>
                 </div>
 
-                {/* Table */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden">
+                                        {/* Original Table */}
+                                        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-full">
+
                     <div className="table-wrapper">
-                        <table className="w-full text-left">
+                        <table className="w-full text-left min-w-[900px]">
                             <thead>
                                 <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
                                     <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Product</th>
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest hidden sm:table-cell">Category</th>
+                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Category</th>
                                     <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Price</th>
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest hidden sm:table-cell">Stock</th>
+                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Stock</th>
+                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-center">Desc.</th>
+                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-center">Visibility</th>
                                     <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
                                     <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
@@ -425,13 +428,15 @@ const ProductsPage = () => {
                                             <td className="px-3 sm:px-6 py-3"><div className="h-3 w-16 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
                                             <td className="px-3 sm:px-6 py-3"><div className="h-3 w-14 sm:w-20 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
                                             <td className="px-3 sm:px-6 py-3"><div className="h-3 w-8 sm:w-12 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                            <td className="px-3 sm:px-6 py-3"><div className="h-4 w-4 bg-gray-200 dark:bg-slate-700 rounded-full animate-pulse mx-auto" /></td>
+                                            <td className="px-3 sm:px-6 py-3"><div className="h-4 w-10 sm:w-14 bg-gray-200 dark:bg-slate-700 rounded animate-pulse mx-auto" /></td>
                                             <td className="px-3 sm:px-6 py-3"><div className="h-4 w-12 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
                                             <td className="px-3 sm:px-6 py-3 text-right"><div className="h-6 w-12 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded-lg ml-auto animate-pulse" /></td>
                                         </tr>
                                     ))
                                 ) : paginated.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-2 sm:px-4 py-8 sm:py-12 text-center">
+                                        <td colSpan={8} className="px-2 sm:px-4 py-8 sm:py-12 text-center">
                                             <div className="flex flex-col items-center">
                                                 <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
                                                     <MdInventory2 className="text-2xl text-gray-300 dark:text-slate-600" />
@@ -460,7 +465,7 @@ const ProductsPage = () => {
                                                     </div>
                                                 </td>
                                                 {/* Category */}
-                                                <td className="px-2 sm:px-4 py-2 hidden sm:table-cell">
+                                                <td className="px-2 sm:px-4 py-2">
                                                     <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-slate-300">
                                                         <MdCategory className="text-gray-400 text-xs" />
                                                         <span className="truncate max-w-[60px]">{product.category?.category || '—'}</span>
@@ -473,9 +478,23 @@ const ProductsPage = () => {
                                                     </p>
                                                 </td>
                                                 {/* Stock */}
-                                                <td className="px-2 sm:px-4 py-2 hidden sm:table-cell">
+                                                <td className="px-2 sm:px-4 py-2">
                                                     <span className={`font-semibold text-xs ${product.quantity === 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
                                                         {product.quantity ?? '—'}
+                                                    </span>
+                                                </td>
+                                                {/* Description Indicator */}
+                                                <td className="px-2 sm:px-4 py-2 text-center">
+                                                    {(product.descriptions?.[0]?.description || product.descriptions?.[0]?.photo?.length > 0 || product.description) ? (
+                                                        <span className="text-emerald-500 block mx-auto w-max" title="Has Description"><MdCheckCircle size={14} /></span>
+                                                    ) : (
+                                                        <span className="text-gray-300 dark:text-slate-600 block text-center" title="No Description">—</span>
+                                                    )}
+                                                </td>
+                                                {/* Visibility */}
+                                                <td className="px-2 sm:px-4 py-2 text-center">
+                                                    <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[8px] sm:text-[9px] uppercase font-bold tracking-wider ${product.draft ? 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-slate-800' : 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/15'}`}>
+                                                        {product.draft ? 'DRAFT' : 'PUB'}
                                                     </span>
                                                 </td>
                                                 {/* Status */}
@@ -493,6 +512,13 @@ const ProductsPage = () => {
                                                             title="View"
                                                         >
                                                             <MdVisibility size={12} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => openDescriptionModal(product)}
+                                                            className="p-1 text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/15 rounded transition-all"
+                                                            title="Images & Descriptions"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                                         </button>
                                                         <button
                                                             onClick={() => openEditModal(product)}
@@ -537,6 +563,19 @@ const ProductsPage = () => {
                 </div>
             </div>
         </DashboardLayout>
+
+            {/* Add Product Modal */}
+            <AnimatePresence>
+                {addProductModal && (
+                    <AddEditProductModal
+                        isOpen={addProductModal}
+                        onClose={() => setAddProductModal(false)}
+                        onSubmit={handleAddProduct}
+                        submitting={submitting}
+                        mode="add"
+                    />
+                )}
+            </AnimatePresence>
 
             {/* Product Detail Modal */}
             <AnimatePresence>
@@ -608,18 +647,7 @@ const ProductsPage = () => {
                 )}
             </AnimatePresence>
 
-            {/* Add Product Modal */}
-            <AnimatePresence>
-                {addProductModal && (
-                    <AddEditProductModal
-                        isOpen={addProductModal}
-                        onClose={() => setAddProductModal(false)}
-                        onSubmit={handleAddProduct}
-                        submitting={submitting}
-                        mode="add"
-                    />
-                )}
-            </AnimatePresence>
+            {/* Add Product Modal is now handled inside Accordion*/}
 
             {/* Edit Product Modal */}
             <AnimatePresence>
@@ -941,7 +969,7 @@ const ProductsPage = () => {
 };
 
 // Add/Edit Product Modal Component
-const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, product }) => {
+const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, product, isModal = true }) => {
     const [formData, setFormData] = useState({
         name: '',
         price: '',
@@ -1079,36 +1107,22 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-                onClick={onClose}
-            />
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto hide-scrollbar relative z-10 border border-gray-100 dark:border-slate-800/70"
-            >
-                <div className="p-6">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                            {mode === 'add' ? 'Add New Product' : 'Edit Product'}
-                        </h2>
-                        <button
-                            onClick={onClose}
-                            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
-                        >
-                            <MdClose size={20} />
-                        </button>
-                    </div>
-
+    const content = (
+        <div className={isModal ? "p-6" : ""}>
+            {/* Header */}
+            {isModal && (
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        {mode === 'add' ? 'Add New Product' : 'Edit Product'}
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
+                    >
+                        <MdClose size={20} />
+                    </button>
+                </div>
+            )}
                     {/* Form */}
                     <form onSubmit={handleSubmit}>
                         <div className="space-y-5">
@@ -1329,7 +1343,28 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                             </button>
                         </div>
                     </form>
-                </div>
+        </div>
+    );
+
+    if (!isModal) return content;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                onClick={onClose}
+            />
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto hide-scrollbar relative z-10 border border-gray-100 dark:border-slate-800/70"
+            >
+                {content}
             </motion.div>
         </div>
     );
