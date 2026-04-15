@@ -24,15 +24,15 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error('Failed to fetch user profile:', error);
             setUser(null);
-            sessionStorage.removeItem('userId');
+            localStorage.removeItem('userId');
         } finally {
             setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        // Use sessionStorage to persist identity through refresh without permanent storage
-        const savedId = sessionStorage.getItem('userId');
+        // Use localStorage to persist identity through reloads
+        const savedId = localStorage.getItem('userId');
         if (savedId) {
             fetchUserProfile(savedId);
         } else {
@@ -46,8 +46,8 @@ export const AuthProvider = ({ children }) => {
             if (response.data.status === 'success') {
                 const userData = response.data.data.user || response.data.data;
                 setUser(userData);
-                // Save ID to sessionStorage for refresh persistence
-                sessionStorage.setItem('userId', userData.id);
+                // Save ID to localStorage for reload persistence
+                localStorage.setItem('userId', userData.id);
                 return { success: true };
             }
         } catch (error) {
@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }) => {
             console.error('Logout failed on server:', error);
         } finally {
             setUser(null);
-            sessionStorage.removeItem('userId');
+            localStorage.removeItem('userId');
         }
     };
 

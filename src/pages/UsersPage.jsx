@@ -242,11 +242,10 @@ const UsersPage = () => {
                                         {/* Member */}
                                         <td className="px-2 sm:px-4 py-2">
                                             <div className="flex items-center gap-2">
-                                                <div className={`w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center font-bold text-[9px] sm:text-[11px] uppercase shrink-0 ${
-                                                    u.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
-                                                    : u.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
-                                                    : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
-                                                }`}>
+                                                <div className={`w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center font-bold text-[9px] sm:text-[11px] uppercase shrink-0 ${u.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
+                                                        : u.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
+                                                            : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
+                                                    }`}>
                                                     {u.first_name?.[0]}{u.last_name?.[0]}
                                                 </div>
                                                 <div>
@@ -291,11 +290,10 @@ const UsersPage = () => {
                                                 </Link>
                                                 {(!authUser || authUser.role === 'admin' || (authUser.role === 'staff' && u.role === 'user')) ? (
                                                     <button onClick={() => setConfirmUser(u)}
-                                                        className={`p-1 rounded transition-all border ${
-                                                            u.active
-                                                            ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
-                                                            : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
-                                                        }`}
+                                                        className={`p-1 rounded transition-all border ${u.active
+                                                                ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
+                                                                : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
+                                                            }`}
                                                         title={u.active ? 'Deactivate' : 'Activate'}>
                                                         {u.active ? <MdToggleOn size={12} /> : <MdToggleOff size={12} />}
                                                     </button>
@@ -358,11 +356,10 @@ const UsersPage = () => {
                             </h2>
                             {/* User info */}
                             <div className="flex items-center gap-3 bg-gray-50 dark:bg-slate-800/60 rounded-xl p-3 mb-4">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] uppercase ${
-                                    confirmUser.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
-                                    : confirmUser.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
-                                    : 'bg-gray-200 dark:bg-slate-700 text-gray-500'
-                                }`}>
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] uppercase ${confirmUser.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
+                                        : confirmUser.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
+                                            : 'bg-gray-200 dark:bg-slate-700 text-gray-500'
+                                    }`}>
                                     {confirmUser.first_name?.[0]}{confirmUser.last_name?.[0]}
                                 </div>
                                 <div>
@@ -398,11 +395,10 @@ const UsersPage = () => {
 // ─── Badges & Helpers ─────────────────────────
 
 const RoleBadge = ({ role }) => (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] uppercase font-bold tracking-wider ${
-        role === 'admin' ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/15 dark:text-violet-400'
-        : role === 'staff' ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/15 dark:text-sky-400'
-        : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/15 dark:text-emerald-400'
-    }`}>{role}</span>
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] uppercase font-bold tracking-wider ${role === 'admin' ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/15 dark:text-violet-400'
+            : role === 'staff' ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/15 dark:text-sky-400'
+                : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/15 dark:text-emerald-400'
+        }`}>{role}</span>
 );
 
 const StatusBadge = ({ active }) => (

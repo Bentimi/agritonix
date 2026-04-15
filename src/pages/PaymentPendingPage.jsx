@@ -7,7 +7,7 @@ import api from '../services/api';
 const PaymentPendingPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const [status, setStatus] = useState('processing'); // processing, checking
+    const [status, setStatus] = useState('processing');
     const [attempts, setAttempts] = useState(0);
     const [error, setError] = useState(null);
     
@@ -16,11 +16,10 @@ const PaymentPendingPage = () => {
     const paymentStatus = searchParams.get('status');
 
     useEffect(() => {
-        // Log all URL params for debugging
         const allParams = Object.fromEntries(searchParams.entries());
         console.log('PaymentPending URL params:', allParams);
         
-        // If payment status is successful, go to success page immediately
+        // If payment already successful, go to success page
         if (paymentStatus === 'successful' || paymentStatus === 'success') {
             const queryParam = reference ? `reference=${reference}` : `tx_ref=${searchParams.get('tx_ref')}`;
             navigate(`/payment/success?${queryParam}`);
@@ -28,9 +27,7 @@ const PaymentPendingPage = () => {
         }
         
         if (!reference && !orderId) {
-            console.log('No reference or order_id found, waiting...');
-            // Don't redirect immediately, let user see the error
-            setError('No payment reference found in URL. Please check your email for order status.');
+            navigate('/cart');
             return;
         }
 
@@ -47,20 +44,13 @@ const PaymentPendingPage = () => {
                 if (response.data.status === 'success') {
                     const orderStatus = response.data.data?.order_status || response.data.data?.status;
                     
-                    // Verify payment with backend
-                    const verifyResponse = await api.get(`/payment/verify?reference=${reference}`);
-                    if (verifyResponse.data.status === 'success') {
-                        toast.success('Payment verified successfully!');
-                    } else if (orderStatus === 'failed' || orderStatus === 'failed') {
-                        // Payment failed
-                        navigate(`/payment/failed?${queryParam}`);
-                        return;
-                    } else if (orderStatus === 'successful' || orderStatus === 'success') {
-                        // Payment completed successfully
+                    if (orderStatus === 'successful' || orderStatus === 'success') {
                         navigate(`/payment/success?${queryParam}`);
                         return;
+                    } else if (orderStatus === 'failed') {
+                        navigate(`/payment/failed?${queryParam}`);
+                        return;
                     }
-                    // If still pending/processing, continue checking
                 }
             } catch (err) {
                 console.error('Error checking order status:', err);
@@ -71,13 +61,8 @@ const PaymentPendingPage = () => {
             setStatus('processing');
         };
 
-        // Check immediately
         checkOrderStatus();
-
-        // Check every 5 seconds
         checkInterval = setInterval(checkOrderStatus, 5000);
-
-        // Stop after 2 minutes (24 attempts)
         timeout = setTimeout(() => {
             clearInterval(checkInterval);
             setError('Payment verification timed out. Please check your orders page.');
@@ -87,7 +72,7 @@ const PaymentPendingPage = () => {
             clearInterval(checkInterval);
             clearTimeout(timeout);
         };
-    }, [reference, orderId, navigate]);
+    }, [reference, orderId, paymentStatus, searchParams, navigate]);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-4">
@@ -96,7 +81,6 @@ const PaymentPendingPage = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-8 max-w-md w-full text-center"
             >
-                {/* Animated Processing Icon */}
                 <div className="w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-6 relative">
                     <motion.div
                         animate={{ rotate: 360 }}
@@ -114,22 +98,14 @@ const PaymentPendingPage = () => {
                     Please wait while we confirm your payment. This may take a few moments.
                 </p>
 
-                {/* Progress Indicator */}
                 <div className="mb-6">
                     <div className="flex items-center justify-center gap-2 mb-3">
                         <div className="flex items-center gap-1">
                             {[...Array(3)].map((_, i) => (
                                 <motion.div
                                     key={i}
-                                    animate={{ 
-                                        scale: [1, 1.2, 1],
-                                        opacity: [0.3, 1, 0.3]
-                                    }}
-                                    transition={{ 
-                                        duration: 1.5, 
-                                        repeat: Infinity, 
-                                        delay: i * 0.2 
-                                    }}
+                                    animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
+                                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
                                     className="w-2 h-2 bg-amber-500 rounded-full"
                                 />
                             ))}
@@ -138,14 +114,11 @@ const PaymentPendingPage = () => {
                             {status === 'checking' ? 'Checking...' : 'Processing...'}
                         </span>
                     </div>
-                    
-                    {/* Attempt counter */}
                     <p className="text-xs text-gray-400 dark:text-slate-500">
                         Check {attempts} of ~24
                     </p>
                 </div>
 
-                {/* Info Card */}
                 <div className="bg-gray-50 dark:bg-slate-800 rounded-lg p-4 mb-6">
                     <div className="flex items-center gap-3">
                         <MdHourglassEmpty className="text-gray-400 dark:text-slate-500 text-xl" />
@@ -160,7 +133,6 @@ const PaymentPendingPage = () => {
                     </div>
                 </div>
 
-                {/* Error Message */}
                 {error && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
@@ -171,14 +143,12 @@ const PaymentPendingPage = () => {
                     </motion.div>
                 )}
 
-                {/* Reference Info */}
                 {reference && (
                     <div className="text-xs text-gray-400 dark:text-slate-500 mb-4">
                         Ref: {reference}
                     </div>
                 )}
 
-                {/* Manual Refresh Button */}
                 <button
                     onClick={() => window.location.reload()}
                     className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 text-sm flex items-center justify-center gap-2 mx-auto transition-colors"

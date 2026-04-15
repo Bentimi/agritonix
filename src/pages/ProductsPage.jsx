@@ -38,10 +38,11 @@ const ProductsPage = () => {
     const [descriptionForm, setDescriptionForm] = useState({
         description: '',
         images: [],
-        photo: null,
-        descriptionType: 'basic' // 'basic' or 'complex'
+        retainedImages: [] // URLs of existing images to keep
     });
     const [descriptionSubmitting, setDescriptionSubmitting] = useState(false);
+    const [existingDescriptions, setExistingDescriptions] = useState([]);
+    const [editingDescriptionId, setEditingDescriptionId] = useState(null);
     const pageSize = 10;
     const categorySearchDebounceRef = useRef(null);
 
@@ -147,7 +148,7 @@ const ProductsPage = () => {
                 setCategoriesList(res.data.data || []);
             }
         } catch (error) {
-            toast.error('Failed to fetch categories');
+            console.error('Failed to fetch categories:', error);
         } finally {
             setCategoriesLoading(false);
         }
@@ -198,38 +199,44 @@ const ProductsPage = () => {
         setCategoryModal(true);
     };
 
-    const closeCategoryModal = () => {
-        setCategoryModal(false);
-        setCategoryForm({ name: '', editingId: null });
-        setCategorySearchTerm('');
-        setCategoryPage(1);
-    };
 
     // Description modal functions
     const openDescriptionModal = (product) => {
         setSelectedProductForDescription(product);
-        // Load existing description if available
-        const existingDescription = product.descriptions?.[0];
+        setExistingDescriptions(product.descriptions || []);
+        setEditingDescriptionId(null);
         setDescriptionForm({
-            description: existingDescription?.description || '',
+            description: '',
             images: [],
-            retainedImages: existingDescription?.photo || [],
-            photo: null,
-            descriptionType: existingDescription?.photo?.length > 0 ? 'complex' : 'basic'
+            retainedImages: []
         });
         setDescriptionModal(true);
     };
 
-    const closeDescriptionModal = () => {
-        setDescriptionModal(false);
-        setSelectedProductForDescription(null);
+
+    const startEditDescription = (desc) => {
+        setEditingDescriptionId(desc.id);
+        setDescriptionForm({
+            description: desc.description || '',
+            images: [], // New files to upload
+            retainedImages: desc.photo || [] // Existing images to keep
+        });
+    };
+
+    const cancelEditDescription = () => {
+        setEditingDescriptionId(null);
         setDescriptionForm({
             description: '',
             images: [],
-            retainedImages: [],
-            photo: null,
-            descriptionType: 'basic'
+            retainedImages: []
         });
+    };
+
+    const removeRetainedImage = (imageUrl) => {
+        setDescriptionForm(prev => ({
+            ...prev,
+            retainedImages: prev.retainedImages.filter(url => url !== imageUrl)
+        }));
     };
 
     const handleDescriptionSubmit = async () => {
@@ -240,34 +247,45 @@ const ProductsPage = () => {
             const submitData = new FormData();
             submitData.append('description', descriptionForm.description);
             
-            // Add product photo if selected
-            if (descriptionForm.photo) {
-                submitData.append('photo', descriptionForm.photo);
+            // Add retained images (existing images to keep)
+            if (descriptionForm.retainedImages && descriptionForm.retainedImages.length > 0) {
+                submitData.append('retainedImages', JSON.stringify(descriptionForm.retainedImages));
+            } else {
+                submitData.append('retainedImages', JSON.stringify([]));
             }
             
-            // Add all images (photo + additional images) as photo array
-            const allImages = [];
-            if (descriptionForm.photo) {
-                allImages.push(descriptionForm.photo);
-            }
-            allImages.push(...descriptionForm.images);
-            
-            allImages.forEach((image) => {
-                submitData.append('photo', image);
+            // Add new description images
+            descriptionForm.images.forEach((image) => {
+                submitData.append('images', image);
             });
-            
-            // Append retained photos
-            submitData.append('retainedImages', JSON.stringify(descriptionForm.retainedImages));
 
-            const res = await api.post(`/product/description/${selectedProductForDescription.id}`, submitData);
+            let res;
+            if (editingDescriptionId) {
+                // Update existing description
+                res = await api.put(`/product/description/${selectedProductForDescription.id}/${editingDescriptionId}`, submitData);
+            } else {
+                // Create new description
+                res = await api.post(`/product/description/${selectedProductForDescription.id}`, submitData);
+            }
+            
             if (res.data.status === 'success') {
-                toast.success('Product description updated successfully');
-                setDescriptionModal(false);
-                setSelectedProductForDescription(null);
+                toast.success(editingDescriptionId ? 'Description updated successfully' : 'Description added successfully');
+                // Reset form and refresh
+                setEditingDescriptionId(null);
+                setDescriptionForm({
+                    description: '',
+                    images: [],
+                    retainedImages: []
+                });
                 // Refresh products list
                 const productsRes = await api.get('/product/all-products');
                 if (productsRes.data.status === 'success') {
                     setProducts(productsRes.data.data || []);
+                    // Update existing descriptions
+                    const updatedProduct = productsRes.data.data.find(p => p.id === selectedProductForDescription.id);
+                    if (updatedProduct) {
+                        setExistingDescriptions(updatedProduct.descriptions || []);
+                    }
                 }
             }
         } catch (error) {
@@ -277,15 +295,6 @@ const ProductsPage = () => {
         }
     };
 
-    const handleDescriptionPhotoChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setDescriptionForm(prev => ({
-                ...prev,
-                photo: file
-            }));
-        }
-    };
 
     const handleDescriptionImagesChange = (e) => {
         const files = Array.from(e.target.files);
@@ -299,13 +308,6 @@ const ProductsPage = () => {
         setDescriptionForm(prev => ({
             ...prev,
             images: prev.images.filter((_, i) => i !== index)
-        }));
-    };
-
-    const removeRetainedImage = (index) => {
-        setDescriptionForm(prev => ({
-            ...prev,
-            retainedImages: prev.retainedImages.filter((_, i) => i !== index)
         }));
     };
 
@@ -333,9 +335,8 @@ const ProductsPage = () => {
     };
 
     return (
-        <>
-            <DashboardLayout activeNav="products">
-            <div className="p-4 sm:p-6 lg:p-10 page-enter max-w-7xl mx-auto">
+        <DashboardLayout activeNav="products">
+            <div className="p-6 lg:p-10 page-enter">
 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -343,23 +344,18 @@ const ProductsPage = () => {
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>Products</h1>
                         <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Manage farm inventory and product listings</p>
                     </div>
-                    <div className="flex gap-2 sm:gap-3 ml-auto">
-                        <button onClick={() => openCategoryModal()} className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-sky-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-sky-700 transition-all whitespace-nowrap">
-                            <MdCategory className="size-3.5 sm:size-5" /> 
-                            <span className="hidden sm:inline">Category</span>
-                            <span className="sm:hidden">Cat</span>
+                    <div className="flex gap-3">
+                        <button onClick={() => openCategoryModal()} className="flex items-center gap-2 px-4 py-2.5 bg-sky-600 text-white rounded-xl text-sm font-semibold hover:bg-sky-700 transition-all">
+                            <MdCategory size={18} /> Manage Categories
                         </button>
-                        
-                        <button onClick={() => setAddProductModal(true)} className="flex items-center gap-2 px-2 sm:px-4 py-2 lg:py-2.5 bg-emerald-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-emerald-700 transition-all whitespace-nowrap">
-                            <MdAdd className="size-4 sm:size-5" /> 
-                            <span className="hidden sm:inline">Add Product</span>
-                            <span className="sm:hidden">Add</span>
+                        <button onClick={() => setAddProductModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all">
+                            <MdAdd size={18} /> Add Product
                         </button>
                     </div>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                {/* Stat Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
                     {statCards.map((s, i) => (
                         <motion.div key={s.label}
                             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
@@ -374,69 +370,62 @@ const ProductsPage = () => {
                     ))}
                 </div>
 
-                {/* Controls Header that was above the table */}
-                <div className="flex flex-col sm:flex-row gap-3 mb-5 w-full">
-                    <div className="flex-1 flex flex-col sm:flex-row gap-3">
-                        <div className="relative group w-full sm:flex-1">
-                            <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
-                            <input type="text" placeholder="Search by name or category..."
-                                value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm w-full dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-400"
-                            />
-                            {searchTerm && (
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                                    {filtered.length} results
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <MdFilterList className="text-gray-400 hidden sm:block" />
-                            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                                className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all w-full sm:w-auto">
-                                <option value="all">All Status</option>
-                                <option value="approved">Approved</option>
-                                <option value="pending">Pending</option>
-                                <option value="rejected">Rejected</option>
-                                <option value="review">Under Review</option>
-                            </select>
-                        </div>
+                {/* Controls */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-5">
+                    <div className="relative group flex-1">
+                        <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                        <input type="text" placeholder="Search by name or category..."
+                            value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                            className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm w-full dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-400"
+                        />
+                        {searchTerm && (
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                {filtered.length} results
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <MdFilterList className="text-gray-400" />
+                        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+                            className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
+                            <option value="all">All Status</option>
+                            <option value="approved">Approved</option>
+                            <option value="pending">Pending</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="review">Under Review</option>
+                        </select>
                     </div>
                 </div>
 
-                                        {/* Original Table */}
-                                        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-full">
-
-                    <div className="table-wrapper">
-                        <table className="w-full text-left min-w-[900px]">
+                {/* Table */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Product</th>
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Category</th>
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Price</th>
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Stock</th>
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-center">Desc.</th>
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-center">Visibility</th>
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Product</th>
+                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Category</th>
+                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Price</th>
+                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Stock</th>
+                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
                                 {loading ? (
                                     [...Array(5)].map((_, i) => (
                                         <tr key={i}>
-                                            <td className="px-3 sm:px-6 py-3"><div className="flex items-center gap-2 sm:gap-3"><div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gray-200 dark:bg-slate-700 animate-pulse shrink-0" /><div className="min-w-0"><div className="h-3 w-20 sm:w-32 bg-gray-200 dark:bg-slate-700 rounded animate-pulse mb-1" /><div className="h-2 w-16 sm:w-20 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></div></div></td>
-                                            <td className="px-3 sm:px-6 py-3"><div className="h-3 w-16 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
-                                            <td className="px-3 sm:px-6 py-3"><div className="h-3 w-14 sm:w-20 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
-                                            <td className="px-3 sm:px-6 py-3"><div className="h-3 w-8 sm:w-12 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
-                                            <td className="px-3 sm:px-6 py-3"><div className="h-4 w-4 bg-gray-200 dark:bg-slate-700 rounded-full animate-pulse mx-auto" /></td>
-                                            <td className="px-3 sm:px-6 py-3"><div className="h-4 w-10 sm:w-14 bg-gray-200 dark:bg-slate-700 rounded animate-pulse mx-auto" /></td>
-                                            <td className="px-3 sm:px-6 py-3"><div className="h-4 w-12 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
-                                            <td className="px-3 sm:px-6 py-3 text-right"><div className="h-6 w-12 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded-lg ml-auto animate-pulse" /></td>
+                                            <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="skeleton w-10 h-10 rounded-xl" /><div><div className="skeleton h-3.5 w-32 mb-2" /><div className="skeleton h-2.5 w-20" /></div></div></td>
+                                            <td className="px-6 py-4"><div className="skeleton h-4 w-24 rounded-md" /></td>
+                                            <td className="px-6 py-4"><div className="skeleton h-4 w-20 rounded-md" /></td>
+                                            <td className="px-6 py-4"><div className="skeleton h-4 w-12 rounded-md" /></td>
+                                            <td className="px-6 py-4"><div className="skeleton h-5 w-16 rounded-md" /></td>
+                                            <td className="px-6 py-4 text-right"><div className="skeleton h-7 w-16 rounded-lg ml-auto" /></td>
                                         </tr>
                                     ))
                                 ) : paginated.length === 0 ? (
                                     <tr>
-                                        <td colSpan={8} className="px-2 sm:px-4 py-8 sm:py-12 text-center">
+                                        <td colSpan={6} className="px-6 py-16 text-center">
                                             <div className="flex flex-col items-center">
                                                 <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
                                                     <MdInventory2 className="text-2xl text-gray-300 dark:text-slate-600" />
@@ -446,90 +435,86 @@ const ProductsPage = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                ) : paginated.map((product, i) => {
+                                ) : paginated.map((product) => {
                                     const statusKey = (product.approved || 'pending').toLowerCase();
                                     return (
                                         <tr key={product.id} className="table-row-hover">
-                                                {/* Product */}
-                                                <td className="px-2 sm:px-4 py-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-gray-100 dark:bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center">
-                                                            {product.photo
-                                                                ? <img src={product.photo} alt={product.name} className="w-full h-full object-cover" />
-                                                                : <MdInventory2 className="text-gray-300 dark:text-slate-600 text-xs sm:text-sm" />
-                                                            }
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <p className="font-semibold text-gray-900 dark:text-white text-xs truncate">{product.name || '—'}</p>
-                                                        </div>
+                                            {/* Product */}
+                                            <td className="px-6 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center">
+                                                        {product.photo
+                                                            ? <img src={product.photo} alt={product.name} className="w-full h-full object-cover" />
+                                                            : <MdInventory2 className="text-gray-300 dark:text-slate-600 text-lg" />
+                                                        }
                                                     </div>
-                                                </td>
-                                                {/* Category */}
-                                                <td className="px-2 sm:px-4 py-2">
-                                                    <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-slate-300">
-                                                        <MdCategory className="text-gray-400 text-xs" />
-                                                        <span className="truncate max-w-[60px]">{product.category?.category || '—'}</span>
-                                                    </span>
-                                                </td>
-                                                {/* Price */}
-                                                <td className="px-2 sm:px-4 py-2">
-                                                    <p className="font-semibold text-gray-900 dark:text-white text-xs">
-                                                        {product.price ? `₦${Number(product.price).toLocaleString()}` : '—'}
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{product.name || '—'}</p>
+                                                            {product.descriptions && product.descriptions.length > 0 && (
+                                                                <div className="w-2 h-2 bg-emerald-500 rounded-full" title="Has description" />
+                                                            )}
+                                                        </div>
+                                                        <p className="text-xs text-gray-400 dark:text-slate-500 truncate">
+                                                            {product.draft ? 'Draft' : 'Published'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            {/* Category */}
+                                            <td className="px-6 py-3.5">
+                                                <span className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-slate-300">
+                                                    <MdCategory className="text-gray-400 text-xs" />
+                                                    {product.category?.category || '—'}
+                                                </span>
+                                            </td>
+                                            {/* Price */}
+                                            <td className="px-6 py-3.5">
+                                                <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                                                    {product.price ? `₦${Number(product.price).toLocaleString()}` : '—'}
+                                                </p>
+                                                {product.newPrice && (
+                                                    <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                                                        Sale: ₦{Number(product.newPrice).toLocaleString()}
                                                     </p>
-                                                </td>
-                                                {/* Stock */}
-                                                <td className="px-2 sm:px-4 py-2">
-                                                    <span className={`font-semibold text-xs ${product.quantity === 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
-                                                        {product.quantity ?? '—'}
-                                                    </span>
-                                                </td>
-                                                {/* Description Indicator */}
-                                                <td className="px-2 sm:px-4 py-2 text-center">
-                                                    {(product.descriptions?.[0]?.description || product.descriptions?.[0]?.photo?.length > 0 || product.description) ? (
-                                                        <span className="text-emerald-500 block mx-auto w-max" title="Has Description"><MdCheckCircle size={14} /></span>
-                                                    ) : (
-                                                        <span className="text-gray-300 dark:text-slate-600 block text-center" title="No Description">—</span>
-                                                    )}
-                                                </td>
-                                                {/* Visibility */}
-                                                <td className="px-2 sm:px-4 py-2 text-center">
-                                                    <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[8px] sm:text-[9px] uppercase font-bold tracking-wider ${product.draft ? 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-slate-800' : 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/15'}`}>
-                                                        {product.draft ? 'DRAFT' : 'PUB'}
-                                                    </span>
-                                                </td>
-                                                {/* Status */}
-                                                <td className="px-2 sm:px-4 py-2">
-                                                    <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[8px] sm:text-[9px] uppercase font-bold tracking-wider ${STATUS_COLORS[statusKey] || STATUS_COLORS.pending}`}>
-                                                        {statusKey}
-                                                    </span>
-                                                </td>
-                                                {/* Actions */}
-                                                <td className="px-2 sm:px-4 py-2 text-right">
-                                                    <div className="flex justify-end gap-0.5">
-                                                        <button
-                                                            onClick={() => setViewProduct(product)}
-                                                            className="p-1 text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded transition-all"
-                                                            title="View"
-                                                        >
-                                                            <MdVisibility size={12} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => openDescriptionModal(product)}
-                                                            className="p-1 text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/15 rounded transition-all"
-                                                            title="Images & Descriptions"
-                                                        >
-                                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => openEditModal(product)}
-                                                            className="p-1 text-gray-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/15 rounded transition-all"
-                                                            title="Edit"
-                                                        >
-                                                            <MdEdit size={12} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                                )}
+                                            </td>
+                                            {/* Stock */}
+                                            <td className="px-6 py-3.5">
+                                                <span className={`font-semibold text-sm ${product.quantity === 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                                                    {product.quantity ?? '—'}
+                                                </span>
+                                            </td>
+                                            {/* Status */}
+                                            <td className="px-6 py-3.5">
+                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] uppercase font-bold tracking-wider ${STATUS_COLORS[statusKey] || STATUS_COLORS.pending}`}>
+                                                    {statusKey}
+                                                </span>
+                                            </td>
+                                            {/* Actions */}
+                                            <td className="px-6 py-3.5 text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <button
+                                                        onClick={() => setViewProduct(product)}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 border border-gray-200 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-emerald-900/40 rounded-lg transition-all"
+                                                    >
+                                                        <MdVisibility size={14} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => openDescriptionModal(product)}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 border border-gray-200 dark:border-slate-700 hover:border-amber-200 dark:hover:border-amber-900/40 rounded-lg transition-all"
+                                                    >
+                                                        <MdInventory2 size={14} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => openEditModal(product)}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 border border-gray-200 dark:border-slate-700 hover:border-sky-200 dark:hover:border-sky-900/40 rounded-lg transition-all"
+                                                    >
+                                                        <MdEdit size={14} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     );
                                 })}
                             </tbody>
@@ -538,7 +523,7 @@ const ProductsPage = () => {
 
                     {/* Pagination */}
                     {!loading && filtered.length > pageSize && (
-                        <div className="px-2 sm:px-4 py-2 sm:py-3 border-t border-gray-100 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-2">
+                        <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-3">
                             <p className="text-xs text-gray-400 dark:text-slate-500">
                                 Showing <span className="font-semibold text-gray-600 dark:text-slate-300">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-semibold text-gray-600 dark:text-slate-300">{Math.min(currentPage * pageSize, filtered.length)}</span> of <span className="font-semibold text-gray-600 dark:text-slate-300">{filtered.length}</span> products
                             </p>
@@ -553,271 +538,340 @@ const ProductsPage = () => {
                                         {page}
                                     </button>
                                 ))}
-                                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0}
-                                    className="p-1.5 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                                    <MdChevronRight size={18} />
-                                </button>
                             </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </DashboardLayout>
-
-            {/* Add Product Modal */}
-            <AnimatePresence>
-                {addProductModal && (
-                    <AddEditProductModal
-                        isOpen={addProductModal}
-                        onClose={() => setAddProductModal(false)}
-                        onSubmit={handleAddProduct}
-                        submitting={submitting}
-                        mode="add"
-                    />
+                    </div>
                 )}
-            </AnimatePresence>
+            </div>
+            </div>
 
             {/* Product Detail Modal */}
             <AnimatePresence>
                 {viewProduct && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setViewProduct(null)} />
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setViewProduct(null)} />
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }} transition={{ duration: 0.22, ease: 'easeOut' }}
-                            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10 border border-gray-100 dark:border-slate-800/70 max-h-[90vh] overflow-y-auto hide-scrollbar">
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }} transition={{ duration: 0.25, ease: 'easeOut' }}
+                            className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-4xl overflow-hidden relative z-10 border border-white/20 dark:border-slate-700/50 max-h-[90vh] flex flex-col md:flex-row">
+                            
+                            {/* Close Button - absolute positioning over the whole modal */}
+                            <button onClick={() => setViewProduct(null)}
+                                className="absolute top-4 right-4 z-20 p-2.5 bg-white/80 hover:bg-white text-gray-700 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:text-gray-300 rounded-2xl transition-all backdrop-blur-md shadow-sm border border-white/50 dark:border-slate-700">
+                                <MdClose size={20} />
+                            </button>
 
-                            {/* Image / Header */}
-                            <div className="relative h-52 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700">
-                                {viewProduct.photo
-                                    ? <img src={viewProduct.photo} alt={viewProduct.name} className="w-full h-full object-cover" />
-                                    : <div className="w-full h-full flex items-center justify-center"><MdInventory2 className="text-5xl text-gray-200 dark:text-slate-600" /></div>
-                                }
-                                <button onClick={() => setViewProduct(null)}
-                                    className="absolute top-3 right-3 p-2 bg-black/30 hover:bg-black/50 text-white rounded-xl transition-all backdrop-blur-sm">
-                                    <MdClose size={18} />
-                                </button>
-                                <span className={`absolute bottom-3 left-3 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[(viewProduct.approved || 'pending').toLowerCase()] || STATUS_COLORS.pending}`}>
-                                    {viewProduct.approved || 'pending'}
-                                </span>
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-7">
-                                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>{viewProduct.name}</h2>
-                                {viewProduct.category?.category && (
-                                    <p className="text-xs text-gray-400 dark:text-slate-500 mb-5 flex items-center gap-1"><MdCategory size={12} /> {viewProduct.category.category}</p>
-                                )}
-                                <div className="grid grid-cols-3 gap-4 mb-5">
-                                    <div className="bg-gray-50 dark:bg-slate-800/60 rounded-xl p-3">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Price</p>
-                                        <p className="font-bold text-gray-900 dark:text-white">{viewProduct.price ? `₦${Number(viewProduct.price).toLocaleString()}` : '—'}</p>
-                                    </div>
-                                    <div className="bg-gray-50 dark:bg-slate-800/60 rounded-xl p-3">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Stock</p>
-                                        <p className={`font-bold ${viewProduct.quantity === 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>{viewProduct.quantity ?? '—'}</p>
-                                    </div>
-                                    <div className="bg-gray-50 dark:bg-slate-800/60 rounded-xl p-3">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Draft</p>
-                                        <p className="font-bold text-gray-900 dark:text-white">{viewProduct.draft ? 'Yes' : 'No'}</p>
+                            {/* Left Side: Product Image View */}
+                            <div className="w-full md:w-2/5 md:min-w-[320px] relative bg-gray-50 dark:bg-slate-800/30 flex flex-col shrink-0 border-b md:border-b-0 md:border-r border-gray-100 dark:border-slate-800/70">
+                                <div className="h-64 md:h-full w-full relative">
+                                    {viewProduct.photo ? (
+                                        <div className="w-full h-full relative group">
+                                            <img src={viewProduct.photo} alt={viewProduct.name} className="w-full h-full object-cover" />
+                                            {/* Gradient overlay for mobile only text visibility if needed */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent md:hidden" />
+                                        </div>
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 dark:text-slate-600">
+                                            <MdInventory2 className="text-7xl mb-3 opacity-50" />
+                                            <span className="text-sm font-medium">No Image Available</span>
+                                        </div>
+                                    )}
+                                    
+                                    {/* Mobile Status Badge inside image */}
+                                    <div className="absolute bottom-4 left-4 md:hidden">
+                                        <span className={`inline-flex px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-md ${STATUS_COLORS[(viewProduct.approved || 'pending').toLowerCase()] || STATUS_COLORS.pending}`}>
+                                            {viewProduct.approved || 'pending'}
+                                        </span>
                                     </div>
                                 </div>
-                                {viewProduct.description && (
-                                    <div>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Description</p>
-                                        <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed max-h-32 overflow-y-auto hide-scrollbar pr-2 custom-scrollbar">{viewProduct.description}</p>
-                                    </div>
-                                )}
+                            </div>
+
+                            {/* Right Side: Product Details */}
+                            <div className="flex flex-col flex-1 overflow-y-auto hide-scrollbar p-6 md:p-8 bg-white dark:bg-slate-900">
                                 
-                                {viewProduct.descriptions && viewProduct.descriptions[0]?.photo?.length > 0 && (
-                                    <div className="mt-5">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Gallery</p>
-                                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto hide-scrollbar pr-1">
-                                            {viewProduct.descriptions[0].photo.map((imgUrl, i) => (
-                                                <div key={i} className="aspect-square bg-gray-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700">
-                                                    <img src={imgUrl} alt={`Gallery ${i+1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                                {/* Header Info */}
+                                <div className="mb-6 pr-12">
+                                    <div className="flex flex-wrap items-center gap-2.5 mb-3">
+                                        <span className={`hidden md:inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[(viewProduct.approved || 'pending').toLowerCase()] || STATUS_COLORS.pending}`}>
+                                            {viewProduct.approved || 'pending'}
+                                        </span>
+                                        <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 px-2.5 py-1 rounded-lg">
+                                            <MdCategory size={14} />
+                                            {viewProduct.category?.category || 'Uncategorized'}
+                                        </span>
+                                        {viewProduct.draft && (
+                                            <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 px-2.5 py-1 rounded-lg">
+                                                Draft
+                                            </span>
+                                        )}
+                                    </div>
+                                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                        {viewProduct.name}
+                                    </h2>
+                                </div>
+                                
+                                {/* Key Stats Grid */}
+                                <div className="grid grid-cols-2 gap-4 mb-8">
+                                    <div className="bg-gray-50 dark:bg-slate-800/40 rounded-2xl p-5 border border-gray-100 dark:border-slate-800/70 relative overflow-hidden group">
+                                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-emerald-100 dark:bg-emerald-900/20 rounded-full blur-2xl group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/40 transition-colors" />
+                                        <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Price</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                            {viewProduct.price ? `₦${Number(viewProduct.price).toLocaleString()}` : '—'}
+                                        </p>
+                                        {viewProduct.newPrice && (
+                                            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-500 mt-1.5 flex items-center gap-1">
+                                                SALE: ₦{Number(viewProduct.newPrice).toLocaleString()}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="bg-gray-50 dark:bg-slate-800/40 rounded-2xl p-5 border border-gray-100 dark:border-slate-800/70 relative overflow-hidden group">
+                                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-sky-100 dark:bg-sky-900/20 rounded-full blur-2xl group-hover:bg-sky-200 dark:group-hover:bg-sky-900/40 transition-colors" />
+                                        <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Inventory Stock</p>
+                                        <div className="flex items-baseline gap-1.5">
+                                            <span className={`text-2xl font-bold ${viewProduct.quantity === 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`} style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                                {viewProduct.quantity ?? '—'}
+                                            </span>
+                                            <span className="text-sm font-semibold text-gray-400 dark:text-slate-500">items</span>
+                                        </div>
+                                        <p className="text-xs font-medium text-gray-500 dark:text-slate-400 mt-1.5">
+                                            {viewProduct.quantity === 0 ? 'Currently out of stock' : 'Available to order'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Main Description */}
+                                <div className="mb-8">
+                                    <h3 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                        <MdInventory2 className="text-emerald-500" /> Description
+                                    </h3>
+                                    {viewProduct.description ? (
+                                        <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-slate-400 leading-relaxed bg-gray-50/50 dark:bg-slate-800/20 p-5 rounded-2xl border border-gray-100 dark:border-slate-800/50">
+                                            {viewProduct.description}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-gray-50/50 dark:bg-slate-800/20 p-5 rounded-2xl border border-gray-100 dark:border-slate-800/50">
+                                            <p className="text-sm text-gray-400 dark:text-slate-500 italic">No description provided for this product.</p>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {/* Additional Descriptions with Images */}
+                                {viewProduct.descriptions && viewProduct.descriptions.length > 0 && (
+                                    <div className="pt-6 border-t border-gray-100 dark:border-slate-800/70">
+                                        <h3 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                            <MdStore className="text-sky-500" /> Additional Information
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {viewProduct.descriptions.map((desc, index) => (
+                                                <div key={desc.id || index} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700/60 overflow-hidden shadow-sm">
+                                                    {desc.description && (
+                                                        <div className="p-4 border-b border-gray-100 dark:border-slate-800/60">
+                                                            <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">{desc.description}</p>
+                                                        </div>
+                                                    )}
+                                                    {desc.photo && desc.photo.length > 0 && (
+                                                        <div className="p-4 bg-gray-50/80 dark:bg-slate-800/40">
+                                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                                                {desc.photo.map((imgUrl, imgIndex) => (
+                                                                    <a key={imgIndex} href={imgUrl} target="_blank" rel="noopener noreferrer" className="block aspect-square bg-white dark:bg-slate-800 rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors group">
+                                                                        <img 
+                                                                            src={imgUrl} 
+                                                                            alt={`Detail ${imgIndex + 1}`}
+                                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                                        />
+                                                                    </a>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
                                 )}
+
                             </div>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
 
-            {/* Add Product Modal is now handled inside Accordion*/}
-
-            {/* Edit Product Modal */}
-            <AnimatePresence>
-                {editProductModal && selectedProduct && (
-                    <AddEditProductModal
-                        isOpen={editProductModal}
-                        onClose={() => {
-                            setEditProductModal(false);
-                            setSelectedProduct(null);
-                        }}
-                        onSubmit={handleEditProduct}
-                        submitting={submitting}
-                        mode="edit"
-                        product={selectedProduct}
-                    />
-                )}
-            </AnimatePresence>
 
             {/* Category Management Modal */}
             <AnimatePresence>
                 {categoryModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto hide-scrollbar">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md"
                             onClick={() => setCategoryModal(false)}
                         />
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            transition={{ duration: 0.22, ease: 'easeOut' }}
-                            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto hide-scrollbar relative z-10 border border-gray-100 dark:border-slate-800/70"
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-white/20 dark:border-slate-800/50"
                         >
-                            <div className="p-6">
-                                {/* Header */}
-                                <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                                        Manage Categories
-                                    </h2>
+                            {/* Header with Pattern */}
+                            <div className="relative h-28 bg-emerald-600 dark:bg-emerald-900/40 overflow-hidden">
+                                <div className="absolute inset-0 opacity-10">
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_35%,#fff_0,transparent_40%),radial-gradient(circle_at_75%_65%,#fff_0,transparent_45%)]" />
+                                </div>
+                                <div className="absolute inset-0 p-8 flex items-center justify-between backdrop-blur-sm">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
+                                            <MdCategory className="text-white text-2xl" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-bold text-white uppercase tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                                Categories
+                                            </h2>
+                                            <p className="text-emerald-50/80 text-xs font-bold tracking-widest uppercase">Management System</p>
+                                        </div>
+                                    </div>
                                     <button
                                         onClick={() => setCategoryModal(false)}
-                                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
+                                        className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-all border border-white/10"
                                     >
                                         <MdClose size={20} />
                                     </button>
                                 </div>
+                            </div>
 
-                                {/* Add/Edit Form */}
-                                <div className="mb-6 p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
-                                    <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">
-                                        {categoryForm.editingId ? 'Edit Category' : 'Add New Category'}
+                            <div className="p-8 space-y-8">
+                                {/* Action Form */}
+                                <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-slate-200/60 dark:border-slate-700/50 shadow-sm relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+                                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">
+                                        {categoryForm.editingId ? 'Modify Category' : 'Create New Category'}
                                     </h3>
-                                    <div className="flex gap-3">
-                                        <input
-                                            type="text"
-                                            value={categoryForm.name}
-                                            onChange={(e) => setCategoryForm(prev => ({ ...prev, name: e.target.value }))}
-                                            className="flex-1 px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
-                                            placeholder="Enter category name"
-                                        />
-                                        <button
-                                            onClick={handleCategorySubmit}
-                                            disabled={categorySubmitting || !categoryForm.name.trim()}
-                                            className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {categorySubmitting ? 'Processing...' : categoryForm.editingId ? 'Update' : 'Add'}
-                                        </button>
-                                        {categoryForm.editingId && (
+                                    <div className="flex flex-col sm:flex-row gap-4 relative z-10">
+                                        <div className="flex-1">
+                                            <input
+                                                type="text"
+                                                value={categoryForm.name}
+                                                onChange={(e) => setCategoryForm(prev => ({ ...prev, name: e.target.value }))}
+                                                placeholder="Enter category name..."
+                                                className="w-full px-5 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
                                             <button
-                                                onClick={() => setCategoryForm({ name: '', editingId: null })}
-                                                className="px-6 py-2.5 bg-red-500 text-white rounded-xl font-semibold text-sm hover:bg-red-600 transition-all"
+                                                onClick={handleCategorySubmit}
+                                                disabled={categorySubmitting || !categoryForm.name.trim()}
+                                                className="px-8 py-3.5 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 text-white rounded-2xl font-bold transition-all shadow-lg active:scale-95 disabled:opacity-50"
                                             >
-                                                Cancel
+                                                {categorySubmitting ? '...' : categoryForm.editingId ? 'Update' : 'Add'}
                                             </button>
-                                        )}
+                                            {categoryForm.editingId && (
+                                                <button
+                                                    onClick={() => setCategoryForm({ name: '', editingId: null })}
+                                                    className="p-3.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
+                                                >
+                                                    <MdClose size={20} />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Categories List */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">
-                                            Existing Categories
-                                        </h3>
-                                        <span className="text-xs text-gray-500 dark:text-slate-400">
-                                            {filteredCategories.length} total
-                                        </span>
-                                    </div>
-                                    
-                                    {/* Search */}
-                                    <div className="relative mb-4">
-                                        <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                                        <input
-                                            type="text"
-                                            placeholder="Search categories..."
-                                            defaultValue={categorySearchTerm}
-                                            onChange={(e) => {
-                                                clearTimeout(categorySearchDebounceRef.current);
-                                                categorySearchDebounceRef.current = setTimeout(() => {
-                                                    setCategorySearchTerm(e.target.value);
-                                                    setCategoryPage(1);
-                                                }, 300);
-                                            }}
-                                            className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
-                                        />
+                                {/* Categories Insight & List */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between px-2">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Inventory</h3>
+                                            <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black">{filteredCategories.length}</span>
+                                        </div>
+                                        <div className="relative w-48">
+                                            <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                            <input
+                                                type="text"
+                                                placeholder="Filter list..."
+                                                defaultValue={categorySearchTerm}
+                                                onChange={(e) => {
+                                                    clearTimeout(categorySearchDebounceRef.current);
+                                                    categorySearchDebounceRef.current = setTimeout(() => {
+                                                        setCategorySearchTerm(e.target.value);
+                                                        setCategoryPage(1);
+                                                    }, 300);
+                                                }}
+                                                className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                            />
+                                        </div>
                                     </div>
 
                                     {categoriesLoading ? (
-                                        <div className="text-center py-8 text-gray-500 dark:text-slate-400">
-                                            Loading categories...
+                                        <div className="flex flex-col items-center justify-center py-12 gap-4">
+                                            <div className="w-10 h-10 border-4 border-slate-100 border-t-emerald-500 rounded-full animate-spin" />
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Synchronizing Data</p>
                                         </div>
                                     ) : filteredCategories.length === 0 ? (
-                                        <div className="text-center py-8 text-gray-500 dark:text-slate-400">
-                                            {categorySearchTerm ? 'No categories match your search.' : 'No categories found. Add your first category above.'}
+                                        <div className="bg-slate-50 dark:bg-slate-800/30 rounded-[2rem] border border-dashed border-slate-200 dark:border-slate-700 p-12 text-center">
+                                            <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-3xl flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4 border border-slate-100 dark:border-slate-700/50 shadow-sm">
+                                                <MdCategory size={32} />
+                                            </div>
+                                            <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Discovery Failed</p>
+                                            <p className="text-xs text-slate-400 mt-1">Try a different search term or add a new category.</p>
                                         </div>
                                     ) : (
-                                        <>
-                                            <div className="space-y-2 max-h-64 overflow-y-auto hide-scrollbar">
-                                                {paginatedCategories.map((category) => (
-                                                <div
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 hide-scrollbar">
+                                            {paginatedCategories.map((category) => (
+                                                <motion.div
+                                                    layout
                                                     key={category.id}
-                                                    className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-all"
+                                                    className="flex items-center justify-between p-4 bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-2xl hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center">
-                                                            <MdCategory size={16} className="text-emerald-600 dark:text-emerald-400" />
+                                                        <div className="w-10 h-10 bg-slate-50 dark:bg-slate-900 rounded-xl flex items-center justify-center group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20 transition-colors border border-slate-100 dark:border-slate-700">
+                                                            <MdCategory className="text-slate-400 group-hover:text-emerald-500 transition-colors" size={18} />
                                                         </div>
-                                                        <span className="font-medium text-gray-900 dark:text-white">
+                                                        <span className="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[120px]">
                                                             {category.category}
                                                         </span>
                                                     </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={() => setCategoryForm({ name: category.category, editingId: category.id })}
-                                                            className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-all"
-                                                            title="Edit category"
-                                                        >
-                                                            <MdEdit size={16} />
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                                    <button
+                                                        onClick={() => setCategoryForm({ name: category.category, editingId: category.id })}
+                                                        className="p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 rounded-xl transition-all border border-slate-100 dark:border-slate-700 shadow-sm"
+                                                        title="Refine category"
+                                                    >
+                                                        <MdEdit size={16} />
+                                                    </button>
+                                                </motion.div>
                                             ))}
+                                        </div>
+                                    )}
+
+                                    {/* Advanced Pagination */}
+                                    {totalCategoryPages > 1 && (
+                                        <div className="flex items-center justify-center gap-2 pt-4">
+                                            <button
+                                                onClick={() => setCategoryPage(p => Math.max(1, p - 1))}
+                                                disabled={categoryPage === 1}
+                                                className="p-2 text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-colors"
+                                            >
+                                                <MdChevronLeft size={24} />
+                                            </button>
+                                            <div className="flex gap-1.5">
+                                                {[...Array(totalCategoryPages)].map((_, i) => (
+                                                    <button
+                                                        key={i + 1}
+                                                        onClick={() => setCategoryPage(i + 1)}
+                                                        className={`w-8 h-8 rounded-xl text-xs font-black transition-all ${categoryPage === i + 1 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                                                    >
+                                                        {i + 1}
+                                                    </button>
+                                                ))}
                                             </div>
-                                            
-                                            {/* Pagination */}
-                                            {totalCategoryPages > 1 && (
-                                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
-                                                    <button
-                                                        onClick={() => setCategoryPage(p => Math.max(1, p - 1))}
-                                                        disabled={categoryPage === 1}
-                                                        className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                                    >
-                                                        Previous
-                                                    </button>
-                                                    <span className="text-sm text-gray-500 dark:text-slate-400">
-                                                        Page {categoryPage} of {totalCategoryPages}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => setCategoryPage(p => Math.min(totalCategoryPages, p + 1))}
-                                                        disabled={categoryPage === totalCategoryPages}
-                                                        className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                                    >
-                                                        Next
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </>
+                                            <button
+                                                onClick={() => setCategoryPage(p => Math.min(totalCategoryPages, p + 1))}
+                                                disabled={categoryPage === totalCategoryPages}
+                                                className="p-2 text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-colors"
+                                            >
+                                                <MdChevronRight size={24} />
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -826,164 +880,254 @@ const ProductsPage = () => {
                 )}
             </AnimatePresence>
 
-            {/* Product Description & Images Modal */}
+            {/* Add/Edit Product Modal */}
+            <AddEditProductModal
+                isOpen={addProductModal || editProductModal}
+                onClose={() => {
+                    setAddProductModal(false);
+                    setEditProductModal(false);
+                    setSelectedProduct(null);
+                }}
+                onSubmit={addProductModal ? handleAddProduct : handleEditProduct}
+                submitting={submitting}
+                mode={addProductModal ? 'add' : 'edit'}
+                product={selectedProduct}
+            />
+
+            {/* Product Narrative Archive Modal */}
             <AnimatePresence>
                 {descriptionModal && selectedProductForDescription && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto hide-scrollbar">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md"
                             onClick={() => setDescriptionModal(false)}
                         />
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            transition={{ duration: 0.22, ease: 'easeOut' }}
-                            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto hide-scrollbar relative z-10 border border-gray-100 dark:border-slate-800/70"
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-800/50 flex flex-col max-h-[90vh]"
                         >
-                            <div className="p-6">
-                                {/* Header */}
-                                <div className="flex items-center justify-between mb-6">
-                                    <div>
-                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                                            Product Details
-                                        </h2>
-                                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-                                            {selectedProductForDescription.name}
-                                        </p>
+                            {/* Minimalist Professional Header */}
+                            <div className="relative p-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                                <div className="relative flex items-center justify-between">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
+                                            <MdInventory2 className="text-emerald-600 dark:text-emerald-400 text-3xl" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                                {existingDescriptions.length > 0 ? 'Narrative Archive' : 'Add Narrative'}
+                                            </h2>
+                                            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                                                {selectedProductForDescription.name}
+                                            </p>
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => setDescriptionModal(false)}
-                                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
+                                        className="p-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
                                     >
-                                        <MdClose size={20} />
+                                        <MdClose size={22} />
                                     </button>
                                 </div>
+                            </div>
 
-                                {/* Form */}
-                                <div className="space-y-5">
-                                    {/* Description */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                                            Description Details
-                                        </label>
-                                        <textarea
-                                            value={descriptionForm.description}
-                                            onChange={(e) => setDescriptionForm(prev => ({ ...prev, description: e.target.value }))}
-                                            rows={6}
-                                            className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all resize-none"
-                                            placeholder="Enter a detailed product description with specifications, features, benefits..."
-                                        />
-                                    </div>
-
-
-                                    {/* Additional Images */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                                            Additional Images
-                                        </label>
-                                        <div className="space-y-3">
-                                            <label className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-all">
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    multiple
-                                                    onChange={handleDescriptionImagesChange}
-                                                    className="hidden"
+                            <div className="flex-1 overflow-y-auto p-8 space-y-8 hide-scrollbar">
+                                {/* Create/Edit Narrative Section */}
+                                {(existingDescriptions.length === 0 || editingDescriptionId) && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="space-y-6 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-slate-200/60 dark:border-slate-700/50"
+                                    >
+                                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] px-1">
+                                            {editingDescriptionId ? 'Modify Narrative' : 'New Narrative'}
+                                        </h3>
+                                        
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Narrative Text</label>
+                                                <textarea
+                                                    value={descriptionForm.description}
+                                                    onChange={(e) => setDescriptionForm(prev => ({ ...prev, description: e.target.value }))}
+                                                    rows={5}
+                                                    className="w-full px-5 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium resize-none shadow-sm"
+                                                    placeholder="Enter product description and details..."
                                                 />
-                                                <MdAdd size={16} />
-                                                Add Images
-                                            </label>
-                                            
-                                            {(descriptionForm.images.length > 0 || descriptionForm.retainedImages.length > 0) && (
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-                                                    {descriptionForm.retainedImages.map((imgUrl, index) => (
-                                                        <div key={`retained-${index}`} className="relative group">
-                                                            <div className="aspect-square bg-gray-100 dark:bg-slate-800 rounded-lg overflow-hidden">
-                                                                <img
-                                                                    src={imgUrl}
-                                                                    alt={`Saved ${index + 1}`}
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                            </div>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Visual Gallery</label>
+                                                
+                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                                    {/* Upload Trigger */}
+                                                    <label className="aspect-square bg-white dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-emerald-50/30 hover:border-emerald-500/50 transition-all group">
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            multiple
+                                                            onChange={handleDescriptionImagesChange}
+                                                            className="hidden"
+                                                        />
+                                                        <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-emerald-500 group-hover:scale-110 transition-all mb-1">
+                                                            <MdAdd size={24} />
+                                                        </div>
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase">Enrich</span>
+                                                    </label>
+
+                                                    {/* Retained Images */}
+                                                    {editingDescriptionId && descriptionForm.retainedImages.map((imageUrl, index) => (
+                                                        <div key={`retained-${index}`} className="relative group aspect-square">
+                                                            <img
+                                                                src={imageUrl}
+                                                                alt={`Current ${index + 1}`}
+                                                                className="w-full h-full object-cover rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"
+                                                            />
                                                             <button
                                                                 type="button"
-                                                                onClick={() => removeRetainedImage(index)}
-                                                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                onClick={() => removeRetainedImage(imageUrl)}
+                                                                className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg scale-90 group-hover:scale-100"
                                                             >
-                                                                <MdClose size={12} />
+                                                                <MdClose size={14} />
                                                             </button>
                                                         </div>
                                                     ))}
+
+                                                    {/* New Images */}
                                                     {descriptionForm.images.map((image, index) => (
-                                                        <div key={`new-${index}`} className="relative group">
-                                                            <div className="aspect-square bg-gray-100 dark:bg-slate-800 rounded-lg overflow-hidden">
-                                                                <img
-                                                                    src={URL.createObjectURL(image)}
-                                                                    alt={`Description ${index + 1}`}
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                            </div>
+                                                        <div key={`new-${index}`} className="relative group aspect-square">
+                                                            <img
+                                                                src={URL.createObjectURL(image)}
+                                                                alt={`New ${index + 1}`}
+                                                                className="w-full h-full object-cover rounded-2xl border-2 border-emerald-500 shadow-sm ring-4 ring-emerald-500/10"
+                                                            />
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeDescriptionImage(index)}
-                                                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg scale-90 group-hover:scale-100"
                                                             >
-                                                                <MdClose size={12} />
+                                                                <MdClose size={14} />
                                                             </button>
+                                                            <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-emerald-500 text-white text-[8px] font-black rounded-md uppercase">New</div>
                                                         </div>
                                                     ))}
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-4 pt-2">
+                                            <button
+                                                onClick={handleDescriptionSubmit}
+                                                disabled={descriptionSubmitting || !descriptionForm.description.trim()}
+                                                className="flex-1 py-4 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 text-white rounded-2xl font-bold text-sm shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 flex items-center justify-center gap-2"
+                                            >
+                                                {descriptionSubmitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
+                                                {editingDescriptionId ? 'Save Changes' : 'Confirm Narrative'}
+                                            </button>
+                                            {editingDescriptionId && (
+                                                <button
+                                                    onClick={cancelEditDescription}
+                                                    className="px-6 py-4 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-300 transition-all"
+                                                >
+                                                    Discard
+                                                </button>
                                             )}
                                         </div>
-                                    </div>
+                                    </motion.div>
+                                )}
 
-                                    {/* Actions */}
-                                    <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
-                                        <button
-                                            onClick={() => setDescriptionModal(false)}
-                                            disabled={descriptionSubmitting}
-                                            className="flex-1 py-3 font-semibold text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all disabled:opacity-50"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleDescriptionSubmit}
-                                            disabled={descriptionSubmitting}
-                                            className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {descriptionSubmitting ? 'Processing...' : 'Update Details'}
-                                        </button>
+                                {/* Archived Narratives Section */}
+                                {existingDescriptions.length > 0 && !editingDescriptionId && (
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between px-2">
+                                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Archived Narratives</h3>
+                                            <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-full text-[10px] font-black">{existingDescriptions.length} ENTRY</span>
+                                        </div>
+                                        
+                                        <div className="space-y-4">
+                                            {existingDescriptions.map((desc) => (
+                                                <motion.div 
+                                                    layout
+                                                    key={desc.id} 
+                                                    className="bg-white dark:bg-slate-800/40 rounded-[2rem] border border-slate-200/60 dark:border-slate-700 shadow-sm overflow-hidden hover:border-emerald-500/40 transition-all group"
+                                                >
+                                                    <div className="p-6">
+                                                        <div className="flex items-start justify-between gap-6 mb-4">
+                                                            <p className="text-sm font-medium text-slate-700 dark:text-slate-200 leading-relaxed flex-1">
+                                                                {desc.description}
+                                                            </p>
+                                                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <button
+                                                                    onClick={() => startEditDescription(desc)}
+                                                                    className="p-2.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl hover:bg-emerald-100 transition-all border border-emerald-100 dark:border-emerald-800/50"
+                                                                    title="Edit Narrative"
+                                                                >
+                                                                    <MdEdit size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {desc.photo && desc.photo.length > 0 && (
+                                                            <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50 dark:border-slate-700/50">
+                                                                {desc.photo.map((imgUrl, imgIndex) => (
+                                                                    <div key={imgIndex} className="w-14 h-14 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm">
+                                                                        <img
+                                                                            src={imgUrl}
+                                                                            alt={`${imgIndex + 1}`}
+                                                                            className="w-full h-full object-cover hover:scale-110 transition-transform cursor-pointer"
+                                                                            onClick={() => window.open(imgUrl, '_blank')}
+                                                                        />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
+
+                            {/* Modal Footer */}
+                            {!editingDescriptionId && (
+                                <div className="p-8 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex justify-end">
+                                    <button
+                                        onClick={() => setDescriptionModal(false)}
+                                        className="px-8 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 transition-all shadow-sm"
+                                    >
+                                        Close Portal
+                                    </button>
+                                </div>
+                            )}
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
-        </>
+        </DashboardLayout>
     );
 };
 
 // Add/Edit Product Modal Component
-const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, product, isModal = true }) => {
+const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, product }) => {
     const [formData, setFormData] = useState({
         name: '',
         price: '',
         newPrice: '',
         quantity: '',
         categoryId: '',
-        coverDescription: '',
+        description: '',
         draft: false,
         status: 'pending'
     });
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (isOpen) {
@@ -994,22 +1138,20 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                     price: product.price || '',
                     newPrice: product.newPrice || '',
                     quantity: product.quantity || '',
-                    categoryId: product.categoryId || '',
-                    coverDescription: product.description || '',
+                    categoryId: product.categoryId || product.category?.id || '',
+                    description: product.description || '',
                     draft: product.draft !== undefined ? product.draft : false,
                     status: product.approved || 'pending'
                 });
-                // Set existing image preview for edit mode
                 setImagePreview(product.photo || null);
             } else {
-                // Reset form for add mode
                 setFormData({
                     name: '',
                     price: '',
                     newPrice: '',
                     quantity: '',
                     categoryId: '',
-                    coverDescription: '',
+                    description: '',
                     draft: false,
                     status: 'pending'
                 });
@@ -1027,8 +1169,6 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
             }
         } catch (error) {
             console.error('Failed to fetch categories:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -1040,15 +1180,13 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
         if (formData.newPrice) submitData.append('newPrice', formData.newPrice);
         submitData.append('quantity', formData.quantity);
         submitData.append('categoryId', formData.categoryId);
-        submitData.append('coverDescription', formData.coverDescription);
+        submitData.append('description', formData.description);
         submitData.append('draft', formData.draft);
 
-        // Add image if selected
         if (selectedImage) {
             submitData.append('photo', selectedImage);
         }
 
-        // Add status for edit mode
         if (mode === 'edit') {
             submitData.append('approved', formData.status);
         }
@@ -1068,7 +1206,6 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
         const file = e.target.files[0];
         if (file) {
             setSelectedImage(file);
-            // Create preview URL
             const reader = new FileReader();
             reader.onload = (e) => setImagePreview(e.target.result);
             reader.readAsDataURL(file);
@@ -1080,293 +1217,276 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
         setImagePreview(mode === 'edit' ? (product?.photo || null) : null);
     };
 
-    const handleUpdateProductImage = async () => {
-        if (!selectedImage || !product?.id) return;
-        setSubmitting(true);
-        try {
-            const imageData = new FormData();
-            imageData.append('photo', selectedImage);
-            const res = await api.patch(`/product/${product.id}`, imageData);
-            if (res.data.status === 'success') {
-                toast.success('Product image updated successfully');
-                const updatedProduct = res.data.data.product || res.data.data;
-                setSelectedImage(null);
-                setImagePreview(updatedProduct.photo || null);
-                setSelectedProduct(updatedProduct);
-                const productsRes = await api.get('/product/all-products');
-                if (productsRes.data.status === 'success') {
-                    setProducts(productsRes.data.data || []);
-                }
-            }
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to update product image');
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
     if (!isOpen) return null;
 
-    const content = (
-        <div className={isModal ? "p-6" : ""}>
-            {/* Header */}
-            {isModal && (
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                        {mode === 'add' ? 'Add New Product' : 'Edit Product'}
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
-                    >
-                        <MdClose size={20} />
-                    </button>
-                </div>
-            )}
-                    {/* Form */}
-                    <form onSubmit={handleSubmit}>
-                        <div className="space-y-5">
-                            {/* Name */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                                    Product Name *
-                                </label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    disabled={submitting}
-                                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all disabled:bg-gray-100 dark:disabled:bg-slate-900 disabled:cursor-not-allowed"
-                                    placeholder="Enter product name"
-                                    required
-                                />
+    return (
+        <AnimatePresence>
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto hide-scrollbar">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-slate-900/60 backdrop-blur-md"
+                    onClick={onClose}
+                />
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 40 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 40 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                    className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden border border-slate-200 dark:border-slate-800/50 flex flex-col lg:flex-row min-h-[600px] max-h-[90vh]"
+                >
+                    {/* Professional Header - Absolute on Top */}
+                    <div className="absolute top-6 right-6 z-20">
+                        <button
+                            onClick={onClose}
+                            className="p-3 bg-white/10 hover:bg-white/20 dark:bg-slate-800/50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-white rounded-2xl transition-all backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-lg"
+                        >
+                            <MdClose size={22} />
+                        </button>
+                    </div>
+
+                    {/* Left Panel: Visual Experience & Context (col-span-5) */}
+                    <div className="lg:w-5/12 relative bg-slate-50 dark:bg-slate-800/30 overflow-hidden flex flex-col border-r border-slate-100 dark:border-slate-800">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-blue-500/5" />
+                        
+                        <div className="p-10 relative z-10 flex-1 flex flex-col">
+                            <div className="mb-10">
+                                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-full mb-3 inline-block border border-emerald-500/20">
+                                    Catalog Manager
+                                </span>
+                                <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight leading-none" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                    {mode === 'add' ? 'New Product' : 'Edit Listing'}
+                                </h3>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-3 font-medium">
+                                    {mode === 'add' ? 'Bring your harvest to the global marketplace.' : 'Excellence requires constant refinement.'}
+                                </p>
                             </div>
 
-                            {/* Price and New Price */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                                        Price *
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="price"
-                                        value={formData.price}
-                                        onChange={handleChange}
-                                        disabled={submitting}
-                                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all disabled:bg-gray-100 dark:disabled:bg-slate-900 disabled:cursor-not-allowed"
-                                        placeholder="0.00"
-                                        min="0"
-                                        step="0.01"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                                        New Price
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="newPrice"
-                                        value={formData.newPrice}
-                                        onChange={handleChange}
-                                        disabled={submitting}
-                                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all disabled:bg-gray-100 dark:disabled:bg-slate-900 disabled:cursor-not-allowed"
-                                        placeholder="0.00"
-                                        min="0"
-                                        step="0.01"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Quantity and Category */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                                        Quantity *
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="quantity"
-                                        value={formData.quantity}
-                                        onChange={handleChange}
-                                        disabled={submitting}
-                                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all disabled:bg-gray-100 dark:disabled:bg-slate-900 disabled:cursor-not-allowed"
-                                        placeholder="0"
-                                        min="0"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                                        Category *
-                                    </label>
-                                    <select
-                                        name="categoryId"
-                                        value={formData.categoryId}
-                                        onChange={handleChange}
-                                        disabled={submitting}
-                                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all disabled:bg-gray-100 dark:disabled:bg-slate-900 disabled:cursor-not-allowed"
-                                        required
-                                    >
-                                        <option value="">Select category</option>
-                                        {categories.map(cat => (
-                                            <option key={cat.id} value={cat.id}>{cat.category}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Cover Description */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                                    Cover Description
-                                </label>
-                                <textarea
-                                    name="coverDescription"
-                                    value={formData.coverDescription}
-                                    onChange={handleChange}
-                                    disabled={submitting}
-                                    rows={3}
-                                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all resize-none disabled:bg-gray-100 dark:disabled:bg-slate-900 disabled:cursor-not-allowed"
-                                    placeholder="Enter a description for the product cover image..."
-                                />
-                            </div>
-
-                            {/* Product Image Upload */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                                    Product Image
-                                </label>
-                                <div className="space-y-3">
-                                    {/* Image Preview */}
-                                    {imagePreview && (
-                                        <div className="relative inline-block">
-                                            <img
-                                                src={imagePreview}
-                                                alt="Product preview"
-                                                className="w-32 h-32 object-cover rounded-xl border border-gray-200 dark:border-slate-700"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={removeImage}
-                                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                                                disabled={submitting}
-                                            >
-                                                <MdClose size={14} />
-                                            </button>
-                                        </div>
+                            {/* Image Showcase */}
+                            <div className="relative group flex-1 flex flex-col">
+                                <div className={`flex-1 min-h-[300px] rounded-[2rem] border-2 border-dashed flex flex-col items-center justify-center transition-all relative overflow-hidden bg-white dark:bg-slate-900 ${imagePreview ? 'border-emerald-500/50 shadow-2xl' : 'border-slate-200 dark:border-slate-700 hover:border-emerald-400 group-hover:bg-emerald-50/10'}`}>
+                                    {imagePreview ? (
+                                        <>
+                                            <img src={imagePreview} className="w-full h-full object-cover" alt="Product" />
+                                            <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
+                                                <div className="flex items-center justify-center gap-3">
+                                                    <label className="px-5 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-xl cursor-pointer backdrop-blur-md transition-all border border-white/20 text-xs font-black uppercase flex items-center gap-2">
+                                                        <MdEdit size={16} />
+                                                        Update
+                                                        <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                                    </label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={removeImage}
+                                                        className="px-5 py-2.5 bg-red-500/20 hover:bg-red-500/40 text-red-200 rounded-xl backdrop-blur-md transition-all border border-red-500/30 text-xs font-black uppercase flex items-center gap-2"
+                                                    >
+                                                        <MdClose size={16} />
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer transition-all">
+                                            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-3xl shadow-sm flex items-center justify-center text-slate-400 mb-4 border border-slate-100 dark:border-slate-700 group-hover:scale-110 group-hover:text-emerald-500 transition-all">
+                                                <MdAdd size={32} />
+                                            </div>
+                                            <span className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">Showcase Image</span>
+                                            <span className="text-xs text-slate-400 mt-2">Tap to select professional file</span>
+                                            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                        </label>
                                     )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                    {/* Image Upload */}
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex items-center gap-4">
-                                            <label className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-all">
-                                                <MdAdd size={16} />
-                                                {imagePreview ? 'Change Image' : 'Choose Image'}
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={handleImageChange}
-                                                    disabled={submitting}
-                                                    className="hidden"
-                                                />
-                                            </label>
-                                            {selectedImage && (
-                                                <span className="text-sm text-gray-600 dark:text-slate-400">
-                                                    {selectedImage.name}
-                                                </span>
-                                            )}
+                    {/* Right Panel: Structured Form (col-span-7) */}
+                    <div className="lg:w-7/12 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
+                        <form onSubmit={handleSubmit} id="product-form" className="flex-1 flex flex-col overflow-hidden">
+                            <div className="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-10">
+                                {/* Section: Attributes */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-800" />
+                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Core Attributes</h4>
+                                        <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-800" />
+                                    </div>
+                                    
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Identity</label>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                required
+                                                placeholder="e.g. Organic Highland Wheat"
+                                                className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold"
+                                            />
                                         </div>
 
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Classification</label>
+                                                <div className="relative">
+                                                    <select
+                                                        name="categoryId"
+                                                        value={formData.categoryId}
+                                                        onChange={handleChange}
+                                                        required
+                                                        className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold appearance-none"
+                                                    >
+                                                        <option value="">Choose Category</option>
+                                                        {categories.map(cat => (
+                                                            <option key={cat.id} value={cat.id}>{cat.category}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Units Available</label>
+                                                <input
+                                                    type="number"
+                                                    name="quantity"
+                                                    value={formData.quantity}
+                                                    onChange={handleChange}
+                                                    required
+                                                    min="0"
+                                                    className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Status - Only for Edit Mode */}
-                            {mode === 'edit' && (
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                                        Status
-                                    </label>
-                                    <select
-                                        name="status"
-                                        value={formData.status}
-                                        onChange={handleChange}
-                                        disabled={submitting}
-                                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all disabled:bg-gray-100 dark:disabled:bg-slate-900 disabled:cursor-not-allowed"
-                                    >
-                                        <option value="pending">Pending</option>
-                                        <option value="approved">Approved</option>
-                                        <option value="rejected">Rejected</option>
-                                        <option value="review">Under Review</option>
-                                    </select>
+                                {/* Section: Value */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-800" />
+                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Value Definition</h4>
+                                        <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-800" />
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Standard Price</label>
+                                            <div className="relative">
+                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-400 font-black">₦</span>
+                                                <input
+                                                    type="number"
+                                                    name="price"
+                                                    value={formData.price}
+                                                    onChange={handleChange}
+                                                    required
+                                                    min="0"
+                                                    step="0.01"
+                                                    className="w-full pl-10 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Promotional Rate</label>
+                                            <div className="relative">
+                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-orange-500 font-black">₦</span>
+                                                <input
+                                                    type="number"
+                                                    name="newPrice"
+                                                    value={formData.newPrice}
+                                                    onChange={handleChange}
+                                                    min="0"
+                                                    step="0.01"
+                                                    placeholder="Optional"
+                                                    className="w-full pl-10 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            )}
 
-                            {/* Draft - Only for Edit Mode */}
-                            {mode === 'edit' && (
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="checkbox"
-                                        name="draft"
-                                        id="draft"
-                                        checked={formData.draft}
+                                {/* Section: Narrative */}
+                                <div className="space-y-4">
+                                    <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Details & Narrative</label>
+                                    <textarea
+                                        name="description"
+                                        value={formData.description}
                                         onChange={handleChange}
-                                        disabled={submitting}
-                                        className="w-4 h-4 text-emerald-600 border-gray-300 dark:border-slate-600 rounded focus:ring-emerald-500 dark:focus:ring-emerald-400 dark:ring-offset-slate-900 disabled:opacity-50"
+                                        rows="5"
+                                        placeholder="Communicate the quality, origin, and characteristics of your product..."
+                                        className="w-full px-6 py-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-[2rem] text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-medium leading-relaxed resize-none shadow-inner"
                                     />
-                                    <label htmlFor="draft" className="text-sm font-medium text-gray-700 dark:text-slate-300">
-                                        Save as draft (not published)
-                                    </label>
                                 </div>
-                            )}
-                        </div>
 
-                        {/* Actions */}
-                        <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
+                                {/* Section: Control */}
+                                <div className="space-y-4 pt-4">
+                                    <div className="flex items-center gap-4 px-2">
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                                type="checkbox"
+                                                id="draft-checkbox"
+                                                name="draft"
+                                                checked={formData.draft}
+                                                onChange={handleChange}
+                                                className="w-5 h-5 rounded-lg border-slate-300 text-emerald-600 focus:ring-emerald-500 transition-all"
+                                            />
+                                            <label htmlFor="draft-checkbox" className="text-sm font-bold text-slate-600 dark:text-slate-400 cursor-pointer">
+                                                Save as Draft
+                                            </label>
+                                        </div>
+                                        <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-2" />
+                                        <p className="text-[10px] text-slate-400 font-medium italic">Draft products are only visible to management.</p>
+                                    </div>
+
+                                    {mode === 'edit' && (
+                                        <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center text-emerald-500 shadow-sm border border-slate-100 dark:border-slate-800">
+                                                    <MdVisibility size={18} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Public Status</p>
+                                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Currently {formData.status.toUpperCase()}</p>
+                                                </div>
+                                            </div>
+                                            <select
+                                                name="status"
+                                                value={formData.status}
+                                                onChange={handleChange}
+                                                className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase text-slate-600 dark:text-slate-400 outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
+                                            >
+                                                <option value="pending">Pending</option>
+                                                <option value="approved">Approved</option>
+                                                <option value="rejected">Rejected</option>
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+                        {/* Sticky Action Bar */}
+                        <div className="p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-end gap-4 shadow-[0_-1px_3px_rgba(0,0,0,0.02)]">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                disabled={submitting}
-                                className="flex-1 py-3 font-semibold text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all disabled:opacity-50"
+                                className="px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm active:scale-95"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-10 py-4 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 text-white rounded-2xl text-sm font-black shadow-xl shadow-emerald-500/10 transition-all disabled:opacity-50 disabled:scale-100 flex items-center gap-2 active:scale-95"
                             >
-                                {submitting ? 'Processing...' : mode === 'add' ? 'Add Product' : 'Update Product'}
+                                {submitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
+                                {mode === 'add' ? 'Publish Portfolio' : 'Synchronize Product'}
                             </button>
                         </div>
-                    </form>
-        </div>
-    );
-
-    if (!isModal) return content;
-
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-                onClick={onClose}
-            />
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto hide-scrollbar relative z-10 border border-gray-100 dark:border-slate-800/70"
-            >
-                {content}
-            </motion.div>
-        </div>
+                    </div>
+                </form>
+            </div>
+        </motion.div>
+    </div>
+        </AnimatePresence>
     );
 };
 

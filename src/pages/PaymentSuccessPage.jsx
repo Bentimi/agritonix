@@ -15,12 +15,9 @@ const PaymentSuccessPage = () => {
             
             if (reference) {
                 try {
-                    // Verify payment with backend
                     const response = await api.get(`/payment/verify?reference=${reference}`);
                     if (response.data.status === 'success') {
                         toast.success('Payment verified successfully!');
-                        // Clear cart after successful payment
-                        await api.delete('/product/clear-cart');
                     }
                 } catch (error) {
                     console.error('Payment verification error:', error);

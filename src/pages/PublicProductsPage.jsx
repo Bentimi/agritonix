@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
 import api from '../services/api';
 import { toast } from 'react-toastify';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MdSearch, MdFilterList, MdStore, MdCategory, MdAttachMoney, MdChevronLeft, MdChevronRight, MdStar, MdShoppingCart, MdClose, MdShoppingBasket } from 'react-icons/md';
 
 const PublicProductsPage = () => {
@@ -19,6 +19,8 @@ const PublicProductsPage = () => {
     const [cart, setCart] = useState([]);
     const [showCart, setShowCart] = useState(false);
     const cartRef = useRef(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
     // Load cart from database on mount
     useEffect(() => {
@@ -303,6 +305,7 @@ const PublicProductsPage = () => {
     };
 
     const getStock = (product) => {
+        if (!product) return 0;
         // Try different possible field names for stock/quantity
         return product.stock || 
                product.quantity || 
@@ -326,6 +329,7 @@ const PublicProductsPage = () => {
     }
 
     return (
+        <>
             <div className="p-4 sm:p-6 lg:p-10 page-enter max-w-7xl mx-auto">
                 {/* Header with Cart */}
                 <div className="flex justify-between items-center mb-8">
@@ -628,6 +632,16 @@ const PublicProductsPage = () => {
                                                 'Out of Stock'
                                             )}
                                         </button>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedProduct(product);
+                                                setIsDetailsOpen(true);
+                                            }}
+                                            className="w-full py-2 rounded-lg text-sm font-black text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all flex items-center justify-center gap-2 border border-emerald-100 dark:border-emerald-900/30"
+                                        >
+                                            <MdFilterList size={16} />
+                                            View Story
+                                        </button>
                                     </div>
                                 </div>
                             </motion.div>
@@ -684,6 +698,179 @@ const PublicProductsPage = () => {
                 )}
                 </div>
             </div>
+
+            {/* Product Details Modal (Narrative View) */}
+            <AnimatePresence>
+                {isDetailsOpen && selectedProduct && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-10 overflow-hidden">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => {
+                                setIsDetailsOpen(false);
+                                setSelectedProduct(null);
+                            }}
+                            className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 40 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-6xl max-h-[90vh] md:overflow-hidden overflow-y-auto hide-scrollbar flex flex-col md:flex-row shadow-2xl border border-white/20 dark:border-slate-800/50"
+                        >
+                            {/* Close Button */}
+                            <button
+                                onClick={() => {
+                                    setIsDetailsOpen(false);
+                                    setSelectedProduct(null);
+                                }}
+                                className="absolute top-6 right-6 z-[110] p-3 bg-white/10 hover:bg-white/20 dark:bg-slate-800/50 dark:hover:bg-slate-700/50 text-white md:text-slate-900 dark:md:text-white rounded-2xl transition-all border border-white/10 dark:border-slate-700/50 backdrop-blur-md shadow-lg"
+                            >
+                                <MdClose size={24} />
+                            </button>
+
+                            {/* Left Side: Product Showcase & Purchase Card */}
+                            <div className="w-full md:w-[40%] bg-slate-50 dark:bg-slate-950/40 md:border-r border-b md:border-b-0 border-slate-100 dark:border-slate-800 p-8 md:p-12 md:overflow-y-auto md:hide-scrollbar flex flex-col">
+                                <div className="space-y-8">
+                                    {/* Brand/Category Tag */}
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
+                                            <MdStore className="text-white text-xl" />
+                                        </div>
+                                        <div>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">Certified Product</span>
+                                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-widest">{selectedProduct.category?.category}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Main Image */}
+                                    <div className="aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800 bg-white dark:bg-slate-900 group">
+                                        {selectedProduct.photo ? (
+                                            <img src={selectedProduct.photo} alt={selectedProduct.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center opacity-20">
+                                                <MdShoppingBasket size={80} />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Title & Price */}
+                                    <div className="space-y-4">
+                                        <h2 className="text-3xl font-black text-slate-900 dark:text-white leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                            {selectedProduct.name}
+                                        </h2>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">₦{selectedProduct.price}</span>
+                                            {selectedProduct.newPrice && (
+                                                <span className="text-lg text-slate-400 line-through font-bold">₦{selectedProduct.newPrice}</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Summary Description */}
+                                    <div className="p-6 bg-white dark:bg-slate-800/40 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Quick Overview</h3>
+                                        <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-medium italic">
+                                            "{selectedProduct.description || 'No quick description available for this item.'}"
+                                        </p>
+                                    </div>
+
+                                    {/* Stock Indicator */}
+                                    <div className="flex items-center justify-between p-4 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-2xl border border-emerald-100/50 dark:border-emerald-900/20">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                                                <MdCategory size={18} />
+                                            </div>
+                                            <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">Inventory Status</span>
+                                        </div>
+                                        <span className={`text-sm font-black ${getStock(selectedProduct) > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                            {getStock(selectedProduct) > 0 ? `${getStock(selectedProduct)} Available` : 'Sold Out'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Side: Immersive Story (Narratives) */}
+                            <div className="flex-1 bg-white dark:bg-slate-900 md:overflow-y-auto md:hide-scrollbar">
+                                <div className="p-8 md:p-16 space-y-20">
+                                    {/* Section Header */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-0.5 w-12 bg-emerald-600 dark:bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                                            <h3 className="text-xs font-black text-emerald-600 dark:bg-emerald-500 uppercase tracking-[0.4em]">The Product Narrative</h3>
+                                        </div>
+                                        <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight">
+                                            Everything has <br /> a <span className="text-emerald-600 italic">story to tell.</span>
+                                        </h2>
+                                    </div>
+
+                                    {/* Narratives List */}
+                                    {!selectedProduct.descriptions || selectedProduct.descriptions.length === 0 ? (
+                                        <div className="py-20 text-center space-y-6">
+                                            <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mx-auto opacity-40">
+                                                <MdStar size={40} className="text-slate-300 dark:text-slate-600" />
+                                            </div>
+                                            <div className="max-w-xs mx-auto">
+                                                <p className="text-slate-400 dark:text-slate-500 text-sm font-medium italic">
+                                                    "A simple product, yet essential. No detailed stories have been added by our staff yet, but its quality speaks for itself."
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-24 pb-10">
+                                            {selectedProduct.descriptions.map((desc, idx) => (
+                                                <div key={desc.id || idx} className="space-y-10 group">
+                                                    {/* Narrative Image Gallery */}
+                                                    {desc.photo && desc.photo.length > 0 && (
+                                                        <div className={`grid gap-4 ${desc.photo.length === 1 ? 'grid-cols-1' : desc.photo.length === 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3'}`}>
+                                                            {desc.photo.map((img, i) => (
+                                                                <div 
+                                                                    key={i} 
+                                                                    className={`relative rounded-[2.5rem] overflow-hidden shadow-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${
+                                                                        desc.photo.length === 1 ? 'aspect-video' : 'aspect-square'
+                                                                    }`}
+                                                                >
+                                                                    <img src={img} alt={`Story visual ${i + 1}`} className="w-full h-full object-cover" />
+                                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Narrative Text */}
+                                                    <div className="relative pl-12">
+                                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-600 to-transparent rounded-full opacity-20" />
+                                                        <div className="absolute -left-3 top-0 w-7 h-7 bg-white dark:bg-slate-800 border-4 border-emerald-600 dark:border-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                                                            <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-500">{idx + 1}</span>
+                                                        </div>
+                                                        <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 font-medium leading-[1.8] first-letter:text-5xl first-letter:font-black first-letter:text-emerald-600 first-letter:mr-3 first-letter:float-left">
+                                                            {desc.description}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            {/* Satisfaction Guarantee */}
+                                            <div className="pt-10">
+                                                <div className="p-10 bg-gradient-to-br from-emerald-600/5 to-transparent dark:from-emerald-600/10 rounded-[3rem] border border-emerald-100 dark:border-emerald-900/30 space-y-6">
+                                                    <MdStar className="text-emerald-500 text-3xl" />
+                                                    <h3 className="text-2xl font-black text-slate-900 dark:text-white">Our Quality Guarantee</h3>
+                                                    <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                                                        Every product from our farm is harvested with care and undergoes rigorous quality checks. The stories you read above reflect the journey of this product from our soil to your table.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </>
     );
 };
 
