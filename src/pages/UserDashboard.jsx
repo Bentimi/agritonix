@@ -65,9 +65,9 @@ const UserDashboard = () => {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="p-4 sm:p-6 lg:p-10"
+                className="p-4 sm:p-6 lg:p-10 page-enter max-w-7xl mx-auto"
             >
-                <div className="max-w-4xl mx-auto">
+                <div>
                     {/* Welcome Header */}
                     <motion.div variants={itemVariants} className="mb-8">
                         <div className="flex items-center gap-2 mb-1">
@@ -141,7 +141,7 @@ const UserDashboard = () => {
                                 key={i}
                                 variants={itemVariants}
                                 onClick={action.action}
-                                className="group text-left bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-6 hover:border-emerald-200 dark:hover:border-emerald-900/40 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300"
+                                className="group text-left bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-6 hover:border-emerald-200 dark:hover:border-emerald-900/40 transition-all duration-300"
                             >
                                 <div className="flex items-start gap-4">
                                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl ${action.iconBg} group-hover:scale-110 transition-transform duration-300`}>

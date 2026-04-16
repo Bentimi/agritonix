@@ -16,7 +16,6 @@ const getCookie = (name) => {
 // Request interceptor to add CSRF token to headers
 api.interceptors.request.use(
     (config) => {
-        // Skip for GET requests
         if (config.method !== 'get') {
             const csrfToken = getCookie('x-csrf-token');
             if (csrfToken) {
@@ -32,10 +31,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        if (error.response?.status === 401) {
-            // Dispatch a custom event for AuthContext to handle
-            window.dispatchEvent(new Event('auth-unauthorized'));
-        }
+        // Disabled automatic logout on 401 to prevent unnecessary logouts
+        // if (error.response?.status === 401) {
+        //     window.dispatchEvent(new Event('auth-unauthorized'));
+        // }
         return Promise.reject(error);
     }
 );

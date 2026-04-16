@@ -32,7 +32,7 @@ const ProductsPage = () => {
     const [categoriesLoading, setCategoriesLoading] = useState(false);
     const [categorySearchTerm, setCategorySearchTerm] = useState('');
     const [categoryPage, setCategoryPage] = useState(1);
-    const categoryPageSize = 8;
+    const categoryPageSize = 4;
     const [descriptionModal, setDescriptionModal] = useState(false);
     const [selectedProductForDescription, setSelectedProductForDescription] = useState(null);
     const [descriptionForm, setDescriptionForm] = useState({
@@ -357,7 +357,7 @@ const ProductsPage = () => {
                 </div>
 
                 {/* Stat Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
                     {statCards.map((s, i) => (
                         <motion.div key={s.label}
                             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
@@ -417,139 +417,139 @@ const ProductsPage = () => {
                     </div>
 
                 {/* Table */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-[22rem] md:w-[55rem] lg:w-full">
+                    <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                        <table className="w-full text-left" style={{ minWidth: '800px' }}>
                             <thead>
-                                <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Product</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Category</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Price</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Stock</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th className="text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
-                                {loading ? (
-                                    [...Array(5)].map((_, i) => (
+                                <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
+                                    {loading ? (
+                                        [...Array(5)].map((_, i) => (
                                         <tr key={i}>
-                                            <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="skeleton w-10 h-10 rounded-xl" /><div><div className="skeleton h-3.5 w-32 mb-2" /><div className="skeleton h-2.5 w-20" /></div></div></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-4 w-24 rounded-md" /></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-4 w-20 rounded-md" /></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-4 w-12 rounded-md" /></td>
-                                            <td className="px-6 py-4"><div className="skeleton h-5 w-16 rounded-md" /></td>
-                                            <td className="px-6 py-4 text-right"><div className="skeleton h-7 w-16 rounded-lg ml-auto" /></td>
+                                            <td><div className="flex items-center gap-3"><div className="skeleton w-10 h-10 rounded-xl" /><div><div className="skeleton h-3.5 w-32 mb-2" /><div className="skeleton h-2.5 w-20" /></div></div></td>
+                                            <td><div className="skeleton h-4 w-24 rounded-md" /></td>
+                                            <td><div className="skeleton h-4 w-20 rounded-md" /></td>
+                                            <td><div className="skeleton h-4 w-12 rounded-md" /></td>
+                                            <td><div className="skeleton h-5 w-16 rounded-md" /></td>
+                                            <td className="text-right"><div className="skeleton h-7 w-16 rounded-lg ml-auto" /></td>
                                         </tr>
-                                    ))
-                                ) : paginated.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={6} className="px-6 py-16 text-center">
-                                            <div className="flex flex-col items-center">
-                                                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
-                                                    <MdInventory2 className="text-2xl text-gray-300 dark:text-slate-600" />
-                                                </div>
-                                                <p className="text-sm font-semibold text-gray-400 dark:text-slate-500">No products found</p>
-                                                <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">{searchTerm ? 'Try adjusting your search' : 'Add your first product'}</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ) : paginated.map((product) => {
-                                    const statusKey = (product.approved || 'pending').toLowerCase();
-                                    return (
-                                        <tr key={product.id} className="table-row-hover">
-                                            {/* Product */}
-                                            <td className="px-6 py-3.5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center">
-                                                        {product.photo
-                                                            ? <img src={product.photo} alt={product.name} className="w-full h-full object-cover" />
-                                                            : <MdInventory2 className="text-gray-300 dark:text-slate-600 text-lg" />
-                                                        }
+                                        ))
+                                    ) : paginated.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-16 text-center">
+                                                <div className="flex flex-col items-center">
+                                                    <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                                                        <MdInventory2 className="text-2xl text-gray-300 dark:text-slate-600" />
                                                     </div>
-                                                    <div className="min-w-0">
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{product.name || '—'}</p>
-                                                            {product.descriptions && product.descriptions.length > 0 && (
-                                                                <div className="w-2 h-2 bg-emerald-500 rounded-full" title="Has description" />
-                                                            )}
+                                                    <p className="text-sm font-semibold text-gray-400 dark:text-slate-500">No products found</p>
+                                                    <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">{searchTerm ? 'Try adjusting your search' : 'Add your first product'}</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ) : paginated.map((product) => {
+                                        const statusKey = (product.approved || 'pending').toLowerCase();
+                                        return (
+                                            <tr key={product.id}>
+                                                {/* Product */}
+                                                <td>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center">
+                                                            {product.photo
+                                                                ? <img src={product.photo} alt={product.name} className="w-full h-full object-cover" />
+                                                                : <MdInventory2 className="text-gray-300 dark:text-slate-600 text-lg" />
+                                                            }
                                                         </div>
-                                                        <p className="text-xs text-gray-400 dark:text-slate-500 truncate">
-                                                            {product.draft ? 'Draft' : 'Published'}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            {/* Category */}
-                                            <td className="px-6 py-3.5">
-                                                <span className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-slate-300">
-                                                    <MdCategory className="text-gray-400 text-xs" />
-                                                    {product.category?.category || '—'}
-                                                </span>
-                                            </td>
-                                            {/* Price */}
-                                            <td className="px-6 py-3.5">
-                                                {product.newPrice ? (
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <p className="text-[10px] text-gray-400 dark:text-slate-500 line-through">
-                                                            ₦{Number(product.price).toLocaleString()}
-                                                        </p>
-                                                        <div className="flex items-center gap-1.5">
-                                                            <p className="font-bold text-emerald-600 dark:text-emerald-500 text-sm">
-                                                                ₦{Number(product.newPrice).toLocaleString()}
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{product.name || '—'}</p>
+                                                                {product.descriptions && product.descriptions.length > 0 && (
+                                                                    <div className="w-2 h-2 bg-emerald-500 rounded-full" title="Has description" />
+                                                                )}
+                                                            </div>
+                                                            <p className="text-xs text-gray-400 dark:text-slate-500 truncate">
+                                                                {product.draft ? 'Draft' : 'Published'}
                                                             </p>
-                                                            {Number(product.price) > Number(product.newPrice) && (
-                                                                <span className="text-[9px] font-bold text-white bg-red-500 px-1 py-0.5 rounded">
-                                                                    -{Math.round(((product.price - product.newPrice) / product.price) * 100)}%
-                                                                </span>
-                                                            )}
                                                         </div>
                                                     </div>
-                                                ) : (
-                                                    <p className="font-semibold text-gray-900 dark:text-white text-sm">
-                                                        {product.price ? `₦${Number(product.price).toLocaleString()}` : '—'}
-                                                    </p>
-                                                )}
-                                            </td>
-                                            {/* Stock */}
-                                            <td className="px-6 py-3.5">
-                                                <span className={`font-semibold text-sm ${product.quantity === 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
-                                                    {product.quantity ?? '—'}
-                                                </span>
-                                            </td>
-                                            {/* Status */}
-                                            <td className="px-6 py-3.5">
-                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] uppercase font-bold tracking-wider ${STATUS_COLORS[statusKey] || STATUS_COLORS.pending}`}>
-                                                    {statusKey}
-                                                </span>
-                                            </td>
-                                            {/* Actions */}
-                                            <td className="px-6 py-3.5 text-right">
-                                                <div className="flex justify-end gap-1">
-                                                    <button
-                                                        onClick={() => setViewProduct(product)}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 border border-gray-200 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-emerald-900/40 rounded-lg transition-all"
-                                                    >
-                                                        <MdVisibility size={14} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => openDescriptionModal(product)}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 border border-gray-200 dark:border-slate-700 hover:border-amber-200 dark:hover:border-amber-900/40 rounded-lg transition-all"
-                                                    >
-                                                        <MdInventory2 size={14} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => openEditModal(product)}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 border border-gray-200 dark:border-slate-700 hover:border-sky-200 dark:hover:border-sky-900/40 rounded-lg transition-all"
-                                                    >
-                                                        <MdEdit size={14} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
+                                                </td>
+                                                {/* Category */}
+                                                <td>
+                                                    <span className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-slate-300">
+                                                        <MdCategory className="text-gray-400 text-xs" />
+                                                        {product.category?.category || '—'}
+                                                    </span>
+                                                </td>
+                                                {/* Price */}
+                                                <td>
+                                                    {product.newPrice ? (
+                                                        <div className="flex flex-col gap-0.5">
+                                                            <p className="text-[10px] text-gray-400 dark:text-slate-500 line-through">
+                                                                ₦{Number(product.price).toLocaleString()}
+                                                            </p>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <p className="font-bold text-emerald-600 dark:text-emerald-500 text-sm">
+                                                                    ₦{Number(product.newPrice).toLocaleString()}
+                                                                </p>
+                                                                {Number(product.price) > Number(product.newPrice) && (
+                                                                    <span className="text-[9px] font-bold text-white bg-red-500 px-1 py-0.5 rounded">
+                                                                        -{Math.round(((product.price - product.newPrice) / product.price) * 100)}%
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                                                            {product.price ? `₦${Number(product.price).toLocaleString()}` : '—'}
+                                                        </p>
+                                                    )}
+                                                </td>
+                                                {/* Stock */}
+                                                <td>
+                                                    <span className={`font-semibold text-sm ${product.quantity === 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                                                        {product.quantity ?? '—'}
+                                                    </span>
+                                                </td>
+                                                {/* Status */}
+                                                <td>
+                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] uppercase font-bold tracking-wider ${STATUS_COLORS[statusKey] || STATUS_COLORS.pending}`}>
+                                                        {statusKey}
+                                                    </span>
+                                                </td>
+                                                {/* Actions */}
+                                                <td className="text-right">
+                                                    <div className="flex justify-end gap-1">
+                                                        <button
+                                                            onClick={() => setViewProduct(product)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 border border-gray-200 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-emerald-900/40 rounded-lg transition-all"
+                                                        >
+                                                            <MdVisibility size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => openDescriptionModal(product)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 border border-gray-200 dark:border-slate-700 hover:border-amber-200 dark:hover:border-amber-900/40 rounded-lg transition-all"
+                                                        >
+                                                            <MdInventory2 size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => openEditModal(product)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 border border-gray-200 dark:border-slate-700 hover:border-sky-200 dark:hover:border-sky-900/40 rounded-lg transition-all"
+                                                        >
+                                                            <MdEdit size={14} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
                         </table>
                     </div>
 
@@ -763,10 +763,10 @@ const ProductsPage = () => {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 30 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-white/20 dark:border-slate-800/50"
+                            className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden border border-white/20 dark:border-slate-800/50"
                         >
                             {/* Minimalist Professional Header */}
-                            <div className="relative p-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                            <div className="relative p-6 sm:p-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
                                 <div className="relative flex items-center justify-between">
                                     <div className="flex items-center gap-5">
                                         <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
@@ -781,16 +781,16 @@ const ProductsPage = () => {
                                     </div>
                                     <button
                                         onClick={() => setCategoryModal(false)}
-                                        className="p-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
+                                        className="p-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-2xl transition-all border border-slate-200 dark:border-slate-700 shadow-sm group"
                                     >
-                                        <MdClose size={22} />
+                                        <MdClose size={22} className="group-hover:rotate-90 transition-transform duration-300" />
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="p-8 space-y-8">
+                            <div className="p-6 sm:p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
                                 {/* Action Form */}
-                                <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-slate-200/60 dark:border-slate-700/50 shadow-sm relative overflow-hidden group">
+                                <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 shadow-sm relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
                                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">
                                         {categoryForm.editingId ? 'Modify Category' : 'Create New Category'}
@@ -802,14 +802,15 @@ const ProductsPage = () => {
                                                 value={categoryForm.name}
                                                 onChange={(e) => setCategoryForm(prev => ({ ...prev, name: e.target.value }))}
                                                 placeholder="Enter category name..."
-                                                className="w-full px-5 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium"
+                                                disabled={categorySubmitting}
+                                                className="w-full px-5 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium disabled:opacity-50"
                                             />
                                         </div>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={handleCategorySubmit}
                                                 disabled={categorySubmitting || !categoryForm.name.trim()}
-                                                className="px-8 py-3.5 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 text-white rounded-2xl font-bold transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                                                className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all active:scale-95 disabled:opacity-50"
                                             >
                                                 {categorySubmitting ? '...' : categoryForm.editingId ? 'Update' : 'Add'}
                                             </button>
@@ -856,15 +857,15 @@ const ProductsPage = () => {
                                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Synchronizing Data</p>
                                         </div>
                                     ) : filteredCategories.length === 0 ? (
-                                        <div className="bg-slate-50 dark:bg-slate-800/30 rounded-[2rem] border border-dashed border-slate-200 dark:border-slate-700 p-12 text-center">
-                                            <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-3xl flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4 border border-slate-100 dark:border-slate-700/50 shadow-sm">
+                                        <div className="bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 p-12 text-center">
+                                            <div className="w-16 h-16 bg-white dark:bg-slate-900 rounded-2xl flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4 border border-slate-100 dark:border-slate-700/50">
                                                 <MdCategory size={32} />
                                             </div>
                                             <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Discovery Failed</p>
                                             <p className="text-xs text-slate-400 mt-1">Try a different search term or add a new category.</p>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 hide-scrollbar">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 hide-scrollbar">
                                             {paginatedCategories.map((category) => (
                                                 <motion.div
                                                     layout
@@ -958,13 +959,13 @@ const ProductsPage = () => {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 30 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-800/50 flex flex-col max-h-[90vh]"
+                            className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-800/50 flex flex-col max-h-[90vh]"
                         >
                             {/* Minimalist Professional Header */}
-                            <div className="relative p-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                            <div className="relative p-6 sm:p-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
                                 <div className="relative flex items-center justify-between">
                                     <div className="flex items-center gap-5">
-                                        <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
+                                        <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center border border-emerald-100 dark:border-emerald-800/50">
                                             <MdInventory2 className="text-emerald-600 dark:text-emerald-400 text-3xl" />
                                         </div>
                                         <div>
@@ -978,20 +979,20 @@ const ProductsPage = () => {
                                     </div>
                                     <button
                                         onClick={() => setDescriptionModal(false)}
-                                        className="p-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
+                                        className="p-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl transition-all border border-slate-200 dark:border-slate-700"
                                     >
                                         <MdClose size={22} />
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-8 space-y-8 hide-scrollbar">
+                            <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-8 hide-scrollbar">
                                 {/* Create/Edit Narrative Section */}
                                 {(existingDescriptions.length === 0 || editingDescriptionId) && (
                                     <motion.div 
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="space-y-6 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-slate-200/60 dark:border-slate-700/50"
+                                        className="space-y-6 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200/60 dark:border-slate-700/50"
                                     >
                                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] px-1">
                                             {editingDescriptionId ? 'Modify Narrative' : 'New Narrative'}
@@ -1004,7 +1005,8 @@ const ProductsPage = () => {
                                                     value={descriptionForm.description}
                                                     onChange={(e) => setDescriptionForm(prev => ({ ...prev, description: e.target.value }))}
                                                     rows={5}
-                                                    className="w-full px-5 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium resize-none shadow-sm"
+                                                    disabled={descriptionSubmitting}
+                                                    className="w-full px-5 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium resize-none disabled:opacity-50"
                                                     placeholder="Enter product description and details..."
                                                 />
                                             </div>
@@ -1021,6 +1023,7 @@ const ProductsPage = () => {
                                                             multiple
                                                             onChange={handleDescriptionImagesChange}
                                                             className="hidden"
+                                                            disabled={descriptionSubmitting}
                                                         />
                                                         <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-emerald-500 group-hover:scale-110 transition-all mb-1">
                                                             <MdAdd size={24} />
@@ -1039,7 +1042,8 @@ const ProductsPage = () => {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeRetainedImage(imageUrl)}
-                                                                className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg scale-90 group-hover:scale-100"
+                                                                disabled={descriptionSubmitting}
+                                                                className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 disabled:opacity-50"
                                                             >
                                                                 <MdClose size={14} />
                                                             </button>
@@ -1057,7 +1061,8 @@ const ProductsPage = () => {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeDescriptionImage(index)}
-                                                                className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg scale-90 group-hover:scale-100"
+                                                                disabled={descriptionSubmitting}
+                                                                className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 disabled:opacity-50"
                                                             >
                                                                 <MdClose size={14} />
                                                             </button>
@@ -1072,15 +1077,16 @@ const ProductsPage = () => {
                                             <button
                                                 onClick={handleDescriptionSubmit}
                                                 disabled={descriptionSubmitting || !descriptionForm.description.trim()}
-                                                className="flex-1 py-4 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 text-white rounded-2xl font-bold text-sm shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 flex items-center justify-center gap-2"
+                                                className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 flex items-center justify-center gap-2"
                                             >
                                                 {descriptionSubmitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
                                                 {editingDescriptionId ? 'Save Changes' : 'Confirm Narrative'}
                                             </button>
                                             {editingDescriptionId && (
-                                                <button
+                                            <button
                                                     onClick={cancelEditDescription}
-                                                    className="px-6 py-4 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-300 transition-all"
+                                                    disabled={descriptionSubmitting}
+                                                    className="px-6 py-4 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-300 transition-all disabled:opacity-50"
                                                 >
                                                     Discard
                                                 </button>
@@ -1102,7 +1108,7 @@ const ProductsPage = () => {
                                                 <motion.div 
                                                     layout
                                                     key={desc.id} 
-                                                    className="bg-white dark:bg-slate-800/40 rounded-[2rem] border border-slate-200/60 dark:border-slate-700 shadow-sm overflow-hidden hover:border-emerald-500/40 transition-all group"
+                                                    className="bg-white dark:bg-slate-800/40 rounded-2xl border border-slate-200/60 dark:border-slate-700 overflow-hidden hover:border-emerald-500/40 transition-all group"
                                                 >
                                                     <div className="p-6">
                                                         <div className="flex items-start justify-between gap-6 mb-4">
@@ -1123,7 +1129,7 @@ const ProductsPage = () => {
                                                         {desc.photo && desc.photo.length > 0 && (
                                                             <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50 dark:border-slate-700/50">
                                                                 {desc.photo.map((imgUrl, imgIndex) => (
-                                                                    <div key={imgIndex} className="w-14 h-14 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm">
+                                                                    <div key={imgIndex} className="w-14 h-14 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700">
                                                                         <img
                                                                             src={imgUrl}
                                                                             alt={`${imgIndex + 1}`}
@@ -1144,10 +1150,10 @@ const ProductsPage = () => {
 
                             {/* Modal Footer */}
                             {!editingDescriptionId && (
-                                <div className="p-8 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex justify-end">
+                                <div className="p-6 sm:p-8 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex justify-end">
                                     <button
                                         onClick={() => setDescriptionModal(false)}
-                                        className="px-8 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 transition-all shadow-sm"
+                                        className="px-8 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 transition-all"
                                     >
                                         Close Portal
                                     </button>
@@ -1282,23 +1288,23 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 40 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                    className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden border border-slate-200 dark:border-slate-800/50 flex flex-col lg:flex-row min-h-[600px] max-h-[90vh]"
+                    className="relative bg-white dark:bg-slate-900 rounded-2xl w-full max-w-5xl overflow-y-auto lg:overflow-hidden border border-slate-200 dark:border-slate-800/50 flex flex-col lg:flex-row lg:min-h-[600px] max-h-[95vh] sm:max-h-[90vh] custom-scrollbar"
                 >
                     {/* Professional Header - Absolute on Top */}
                     <div className="absolute top-6 right-6 z-20">
                         <button
                             onClick={onClose}
-                            className="p-3 bg-white/10 hover:bg-white/20 dark:bg-slate-800/50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-white rounded-2xl transition-all backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-lg"
+                            className="p-3 bg-white/10 hover:bg-white/20 dark:bg-slate-800/50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-white rounded-2xl transition-all backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50"
                         >
                             <MdClose size={22} />
                         </button>
                     </div>
 
                     {/* Left Panel: Visual Experience & Context (col-span-5) */}
-                    <div className="lg:w-5/12 relative bg-slate-50 dark:bg-slate-800/30 overflow-hidden flex flex-col border-r border-slate-100 dark:border-slate-800">
+                    <div className="lg:w-5/12 relative bg-slate-50 dark:bg-slate-800/30 overflow-hidden flex flex-col border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800 shrink-0 lg:shrink">
                         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-blue-500/5" />
                         
-                        <div className="p-10 relative z-10 flex-1 flex flex-col">
+                        <div className="p-5 sm:p-8 relative z-10 flex-1 flex flex-col">
                             <div className="mb-10">
                                 <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-full mb-3 inline-block border border-emerald-500/20">
                                     Catalog Manager
@@ -1313,7 +1319,7 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
 
                             {/* Image Showcase */}
                             <div className="relative group flex-1 flex flex-col">
-                                <div className={`flex-1 min-h-[300px] rounded-[2rem] border-2 border-dashed flex flex-col items-center justify-center transition-all relative overflow-hidden bg-white dark:bg-slate-900 ${imagePreview ? 'border-emerald-500/50 shadow-2xl' : 'border-slate-200 dark:border-slate-700 hover:border-emerald-400 group-hover:bg-emerald-50/10'}`}>
+                                <div className={`lg:flex-1 aspect-video lg:aspect-auto min-h-[200px] lg:min-h-[300px] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all relative overflow-hidden bg-white dark:bg-slate-900 ${imagePreview ? 'border-emerald-500/50' : 'border-slate-200 dark:border-slate-700 hover:border-emerald-400 group-hover:bg-emerald-50/10'}`}>
                                     {imagePreview ? (
                                         <>
                                             <img src={imagePreview} className="w-full h-full object-cover" alt="Product" />
@@ -1322,12 +1328,13 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                                     <label className="px-5 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-xl cursor-pointer backdrop-blur-md transition-all border border-white/20 text-xs font-black uppercase flex items-center gap-2">
                                                         <MdEdit size={16} />
                                                         Update
-                                                        <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                                        <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" disabled={submitting} />
                                                     </label>
                                                     <button
                                                         type="button"
                                                         onClick={removeImage}
-                                                        className="px-5 py-2.5 bg-red-500/20 hover:bg-red-500/40 text-red-200 rounded-xl backdrop-blur-md transition-all border border-red-500/30 text-xs font-black uppercase flex items-center gap-2"
+                                                        disabled={submitting}
+                                                        className="px-5 py-2.5 bg-red-500/20 hover:bg-red-500/40 text-red-200 rounded-xl backdrop-blur-md transition-all border border-red-500/30 text-xs font-black uppercase flex items-center gap-2 disabled:opacity-50"
                                                     >
                                                         <MdClose size={16} />
                                                         Remove
@@ -1337,12 +1344,12 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                         </>
                                     ) : (
                                         <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer transition-all">
-                                            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-3xl shadow-sm flex items-center justify-center text-slate-400 mb-4 border border-slate-100 dark:border-slate-700 group-hover:scale-110 group-hover:text-emerald-500 transition-all">
+                                            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 mb-4 border border-slate-100 dark:border-slate-700 group-hover:scale-110 group-hover:text-emerald-500 transition-all">
                                                 <MdAdd size={32} />
                                             </div>
                                             <span className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">Showcase Image</span>
                                             <span className="text-xs text-slate-400 mt-2">Tap to select professional file</span>
-                                            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" disabled={submitting} />
                                         </label>
                                     )}
                                 </div>
@@ -1352,8 +1359,8 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
 
                     {/* Right Panel: Structured Form (col-span-7) */}
                     <div className="lg:w-7/12 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
-                        <form onSubmit={handleSubmit} id="product-form" className="flex-1 flex flex-col overflow-hidden">
-                            <div className="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-10">
+                        <form onSubmit={handleSubmit} id="product-form" className="flex-1 flex flex-col lg:overflow-hidden">
+                            <div className="flex-1 lg:overflow-y-auto p-5 sm:p-8 custom-scrollbar space-y-8">
                                 {/* Section: Attributes */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4">
@@ -1372,11 +1379,12 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                                 onChange={handleChange}
                                                 required
                                                 placeholder="e.g. Organic Highland Wheat"
-                                                className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold"
+                                                disabled={submitting}
+                                                className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold disabled:opacity-50"
                                             />
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Classification</label>
                                                 <div className="relative">
@@ -1385,7 +1393,8 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                                         value={formData.categoryId}
                                                         onChange={handleChange}
                                                         required
-                                                        className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold appearance-none"
+                                                        disabled={submitting}
+                                                        className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold appearance-none disabled:opacity-50"
                                                     >
                                                         <option value="">Choose Category</option>
                                                         {categories.map(cat => (
@@ -1403,7 +1412,8 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                                     onChange={handleChange}
                                                     required
                                                     min="0"
-                                                    className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold"
+                                                    disabled={submitting}
+                                                    className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold disabled:opacity-50"
                                                 />
                                             </div>
                                         </div>
@@ -1418,7 +1428,7 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                         <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-800" />
                                     </div>
                                     
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Standard Price</label>
                                             <div className="relative">
@@ -1431,7 +1441,8 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                                     required
                                                     min="0"
                                                     step="0.01"
-                                                    className="w-full pl-10 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold"
+                                                    disabled={submitting}
+                                                    className="w-full pl-10 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold disabled:opacity-50"
                                                 />
                                             </div>
                                         </div>
@@ -1447,7 +1458,8 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                                     min="0"
                                                     step="0.01"
                                                     placeholder="Optional"
-                                                    className="w-full pl-10 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold"
+                                                    disabled={submitting}
+                                                    className="w-full pl-10 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold disabled:opacity-50"
                                                 />
                                             </div>
                                         </div>
@@ -1463,7 +1475,8 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                         onChange={handleChange}
                                         rows="5"
                                         placeholder="Communicate the quality, origin, and characteristics of your product..."
-                                        className="w-full px-6 py-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-[2rem] text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-medium leading-relaxed resize-none shadow-inner"
+                                        disabled={submitting}
+                                        className="w-full px-6 py-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-medium leading-relaxed resize-none disabled:opacity-50"
                                     />
                                 </div>
 
@@ -1477,7 +1490,8 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                                 name="draft"
                                                 checked={formData.draft}
                                                 onChange={handleChange}
-                                                className="w-5 h-5 rounded-lg border-slate-300 text-emerald-600 focus:ring-emerald-500 transition-all"
+                                                disabled={submitting}
+                                                className="w-5 h-5 rounded-lg border-slate-300 text-emerald-600 focus:ring-emerald-500 transition-all disabled:opacity-50"
                                             />
                                             <label htmlFor="draft-checkbox" className="text-sm font-bold text-slate-600 dark:text-slate-400 cursor-pointer">
                                                 Save as Draft
@@ -1490,7 +1504,7 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                     {mode === 'edit' && (
                                         <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center text-emerald-500 shadow-sm border border-slate-100 dark:border-slate-800">
+                                                <div className="w-9 h-9 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center text-emerald-500 border border-slate-100 dark:border-slate-800">
                                                     <MdVisibility size={18} />
                                                 </div>
                                                 <div>
@@ -1502,7 +1516,8 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                                 name="status"
                                                 value={formData.status}
                                                 onChange={handleChange}
-                                                className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase text-slate-600 dark:text-slate-400 outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
+                                                disabled={submitting}
+                                                className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase text-slate-600 dark:text-slate-400 outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 <option value="pending">Pending</option>
                                                 <option value="approved">Approved</option>
@@ -1512,18 +1527,19 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                     )}
                                 </div>
                         {/* Sticky Action Bar */}
-                        <div className="p-6 sm:p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4 shadow-[0_-1px_3px_rgba(0,0,0,0.02)]">
+                        <div className="p-5 sm:p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm active:scale-95"
+                                disabled={submitting}
+                                className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="w-full sm:w-auto px-10 py-4 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 text-white rounded-2xl text-sm font-black shadow-xl shadow-emerald-500/10 transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 active:scale-95"
+                                className="w-full sm:w-auto px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 active:scale-95"
                             >
                                 {submitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
                                 {mode === 'add' ? 'Publish Portfolio' : 'Synchronize Product'}

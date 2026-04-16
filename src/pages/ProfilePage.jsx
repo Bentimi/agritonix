@@ -119,9 +119,8 @@ const ProfilePage = () => {
 
     return (
         <DashboardLayout activeNav="profile">
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="p-4 sm:p-6 lg:p-10">
-                <div className="max-w-4xl mx-auto">
-                    {/* Header */}
+            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="p-4 sm:p-6 lg:p-10 page-enter max-w-7xl mx-auto">
+                {/* Header */}
                     <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-8">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
@@ -129,12 +128,6 @@ const ProfilePage = () => {
                             </h1>
                             <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Manage your personal information and account security</p>
                         </div>
-                        <button
-                            onClick={openEditModal}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all w-full sm:w-auto justify-center"
-                        >
-                            <MdEdit size={16} /> Edit Profile
-                        </button>
                     </motion.div>
 
                     {/* Profile Hero Card */}
@@ -155,14 +148,24 @@ const ProfilePage = () => {
                             </div>
 
                             {/* Info */}
-                            <div className="flex-1 text-center sm:text-left">
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                                    {user?.first_name} {user?.last_name}
-                                </h2>
-                                <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
-                                    {user?.username} · Joined {user?.date_joined ? new Date(user.date_joined).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}
-                                </p>
-                                <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                            <div className="flex-1 text-center sm:text-left min-w-0">
+                                <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
+                                    <div className="min-w-0">
+                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                            {user?.first_name} {user?.last_name}
+                                        </h2>
+                                        <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
+                                            {user?.username} · Joined {user?.date_joined ? new Date(user.date_joined).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={openEditModal}
+                                        className="shrink-0 flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all"
+                                    >
+                                        <MdEdit size={12} /> Edit Account
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-4 sm:mt-3">
                                     <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${roleStyle.bg}`}>
                                         {roleStyle.label}
                                     </span>
@@ -239,31 +242,30 @@ const ProfilePage = () => {
                                 <p className="text-xs text-gray-500 dark:text-slate-400 mb-3">Deactivating removes your access immediately.</p>
                                 <button
                                     onClick={() => setIsDeactivating(true)}
-                                    className="flex items-center gap-2 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-bold transition-all shadow-sm"
+                                    className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all"
                                 >
                                     <MdBlock size={14} /> Deactivate Account
                                 </button>
                             </div>
                         </motion.div>
                     </div>
-                </div>
-            </motion.div>
+                </motion.div>
 
-            {/* ── Edit Profile Modal ── */}
+                {/* ── Edit Profile Modal ── */}
             <AnimatePresence>
                 {isEditing && (
                     <ModalWrapper onClose={() => setIsEditing(false)}>
                         <ModalHeader title="Edit Profile" subtitle={`${user?.first_name} ${user?.last_name}`} onClose={() => setIsEditing(false)} />
                         <form onSubmit={handleSaveProfile} className="p-7 space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <FormField label="First Name" value={editData.first_name} onChange={(v) => setEditData({ ...editData, first_name: v })} required />
-                                <FormField label="Last Name" value={editData.last_name} onChange={(v) => setEditData({ ...editData, last_name: v })} required />
+                                <FormField label="First Name" value={editData.first_name} onChange={(v) => setEditData({ ...editData, first_name: v })} required disabled={isSaving} />
+                                <FormField label="Last Name" value={editData.last_name} onChange={(v) => setEditData({ ...editData, last_name: v })} required disabled={isSaving} />
                             </div>
-                            <FormField label="Email Address" type="email" value={editData.email} onChange={(v) => setEditData({ ...editData, email: v })} required />
-                            <FormField label="Phone Number" value={editData.phone_number} onChange={(v) => setEditData({ ...editData, phone_number: v })} />
+                            <FormField label="Email Address" type="email" value={editData.email} onChange={(v) => setEditData({ ...editData, email: v })} required disabled={isSaving} />
+                            <FormField label="Phone Number" value={editData.phone_number} onChange={(v) => setEditData({ ...editData, phone_number: v })} disabled={isSaving} />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <FormSelect label="Gender" value={editData.gender} onChange={(v) => setEditData({ ...editData, gender: v })} options={[{ v: '', l: 'Select' }, { v: 'male', l: 'Male' }, { v: 'female', l: 'Female' }, { v: 'other', l: 'Other' }]} />
-                                <FormSelect label="Marital Status" value={editData.marital_status} onChange={(v) => setEditData({ ...editData, marital_status: v })} options={[{ v: 'single', l: 'Single' }, { v: 'married', l: 'Married' }, { v: 'divorced', l: 'Divorced' }, { v: 'other', l: 'Other' }]} />
+                                <FormSelect label="Gender" value={editData.gender} onChange={(v) => setEditData({ ...editData, gender: v })} options={[{ v: '', l: 'Select' }, { v: 'male', l: 'Male' }, { v: 'female', l: 'Female' }, { v: 'other', l: 'Other' }]} disabled={isSaving} />
+                                <FormSelect label="Marital Status" value={editData.marital_status} onChange={(v) => setEditData({ ...editData, marital_status: v })} options={[{ v: 'single', l: 'Single' }, { v: 'married', l: 'Married' }, { v: 'divorced', l: 'Divorced' }, { v: 'other', l: 'Other' }]} disabled={isSaving} />
                             </div>
                             <div className="pt-3 flex gap-3">
                                 <button type="button" onClick={() => setIsEditing(false)} className="flex-1 py-3 text-gray-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-wider hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all">Cancel</button>
@@ -289,6 +291,7 @@ const ProfilePage = () => {
                                 onChange={(v) => setPasswordData({ ...passwordData, current_password: v })}
                                 show={showPasswords.current}
                                 onToggle={() => setShowPasswords(s => ({ ...s, current: !s.current }))}
+                                disabled={isPasswordSaving}
                             />
                             <PasswordField
                                 label="New Password"
@@ -296,6 +299,7 @@ const ProfilePage = () => {
                                 onChange={(v) => setPasswordData({ ...passwordData, new_password: v })}
                                 show={showPasswords.new}
                                 onToggle={() => setShowPasswords(s => ({ ...s, new: !s.new }))}
+                                disabled={isPasswordSaving}
                             />
                             {passwordData.new_password && (
                                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="grid grid-cols-2 gap-y-1.5 gap-x-4 px-1 py-1">
@@ -312,15 +316,16 @@ const ProfilePage = () => {
                                 onChange={(v) => setPasswordData({ ...passwordData, confirm_password: v })}
                                 show={showPasswords.confirm}
                                 onToggle={() => setShowPasswords(s => ({ ...s, confirm: !s.confirm }))}
+                                disabled={isPasswordSaving}
                             />
                             {passwordData.new_password && passwordData.confirm_password && passwordData.new_password !== passwordData.confirm_password && (
                                 <p className="text-xs text-red-500 font-medium flex items-center gap-1"><MdWarning size={12} /> Passwords do not match</p>
                             )}
-                            <div className="pt-3 flex gap-3">
-                                <button type="button" onClick={() => setIsChangingPassword(false)} className="flex-1 py-3 text-gray-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all">Cancel</button>
-                                <button type="submit" disabled={isPasswordSaving} className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-all disabled:opacity-50">
+                            <div className="pt-3 flex gap-4">
+                                <button type="button" onClick={() => setIsChangingPassword(false)} disabled={isPasswordSaving} className="flex-1 py-4 text-gray-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-slate-800 rounded-2xl transition-all border border-transparent hover:border-gray-200 dark:hover:border-slate-700 disabled:opacity-50">Cancel</button>
+                                <button type="submit" disabled={isPasswordSaving} className="flex-[1.5] flex items-center justify-center gap-2 py-4 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all disabled:opacity-50">
                                     {isPasswordSaving ? <SpinIcon /> : <MdLock size={14} />}
-                                    {isPasswordSaving ? 'Saving...' : 'Update Password'}
+                                    {isPasswordSaving ? 'Processing...' : 'Update Password'}
                                 </button>
                             </div>
                         </form>
@@ -381,7 +386,7 @@ const ModalWrapper = ({ children, onClose }) => (
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10 border border-gray-100 dark:border-slate-800/70"
+            className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md overflow-hidden relative z-10 border border-gray-100 dark:border-slate-800/70"
         >
             {children}
         </motion.div>
@@ -394,8 +399,8 @@ const ModalHeader = ({ title, subtitle, onClose }) => (
             <h2 className="font-bold text-gray-900 dark:text-white text-base" style={{ fontFamily: "'Outfit', sans-serif" }}>{title}</h2>
             {subtitle && <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{subtitle}</p>}
         </div>
-        <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all">
-            <MdClose size={18} />
+        <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all group">
+            <MdClose size={18} className="group-hover:rotate-90 transition-transform duration-300" />
         </button>
     </div>
 );
@@ -434,37 +439,39 @@ const TimelineItem = ({ label, date, dotColor, hasLine }) => (
     </div>
 );
 
-const FormField = ({ label, type = 'text', value, onChange, required = false, placeholder = '' }) => (
+const FormField = ({ label, type = 'text', value, onChange, required = false, placeholder = '', disabled = false }) => (
     <div>
         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
         <input
             type={type} required={required} value={value} placeholder={placeholder}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
+            disabled={disabled}
+            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         />
     </div>
 );
 
-const FormSelect = ({ label, value, onChange, options }) => (
+const FormSelect = ({ label, value, onChange, options, disabled = false }) => (
     <div>
         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
-        <select value={value} onChange={(e) => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all">
+        <select value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled}
+            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {options.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
         </select>
     </div>
 );
 
-const PasswordField = ({ label, value, onChange, show, onToggle }) => (
+const PasswordField = ({ label, value, onChange, show, onToggle, disabled = false }) => (
     <div>
         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
         <div className="relative">
             <input
                 type={show ? 'text' : 'password'} required value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
+                disabled={disabled}
+                className="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
-            <button type="button" onClick={onToggle} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+            <button type="button" onClick={onToggle} disabled={disabled} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50">
                 {show ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
             </button>
         </div>

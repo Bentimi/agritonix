@@ -52,7 +52,7 @@ const SignIn = () => {
                 className="max-w-[420px] w-full relative z-10"
             >
                 {/* Card */}
-                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-slate-900/50 p-8 sm:p-10 border border-gray-100 dark:border-slate-800">
+                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-2xl p-8 sm:p-10 border border-gray-100 dark:border-slate-800">
                     {/* Header */}
                     <motion.div variants={itemVariants} className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-14 h-14 bg-emerald-600 rounded-2xl mb-5">

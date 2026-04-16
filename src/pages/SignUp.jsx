@@ -122,7 +122,7 @@ const SignUp = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, ease: 'easeOut' }}
-                    className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-slate-900/50 p-10 text-center border border-gray-100 dark:border-slate-800"
+                    className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl p-10 text-center border border-gray-100 dark:border-slate-800"
                 >
                     <motion.div
                         initial={{ scale: 0 }}
@@ -157,7 +157,7 @@ const SignUp = () => {
                 animate="visible"
                 className="max-w-[440px] w-full relative z-10"
             >
-                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-slate-900/50 p-8 sm:p-10 border border-gray-100 dark:border-slate-800">
+                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-2xl p-8 sm:p-10 border border-gray-100 dark:border-slate-800">
                     {/* Header */}
                     <motion.div variants={itemVariants} className="text-center mb-7">
                         <div className="inline-flex items-center justify-center w-14 h-14 bg-emerald-600 rounded-2xl mb-5">

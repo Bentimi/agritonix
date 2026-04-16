@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import {
-    MdSearch, MdEdit, MdVisibility, MdClose, MdSave, MdLock, MdWarning, MdPerson, MdEmail, MdPhone, MdBadge, MdSecurity, MdCalendarMonth, MdVerified, MdKey, MdBlock, MdToggleOn, MdToggleOff, MdAdminPanelSettings, MdPeople, MdInventory2, MdChevronLeft, MdChevronRight
+    MdSearch, MdEdit, MdVisibility, MdClose, MdSave, MdLock, MdWarning, MdPerson, MdEmail, MdPhone, MdBadge, MdSecurity, MdCalendarMonth, MdVerified, MdKey, MdBlock, MdToggleOn, MdToggleOff, MdAdminPanelSettings, MdPeople, MdInventory2, MdChevronLeft, MdChevronRight, MdArrowForward, MdAnalytics, MdSettings
 } from 'react-icons/md';
 import { useNavigate, Link } from 'react-router';
 import { toast } from 'react-toastify';
@@ -126,7 +126,6 @@ const AdminDashboard = () => {
         }
         setStatusLoading(false);
     };
-
     // Time-based greeting
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -134,6 +133,46 @@ const AdminDashboard = () => {
         if (hour < 17) return 'Good afternoon';
         return 'Good evening';
     };
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } }
+    };
+    const itemVariants = {
+        hidden: { opacity: 0, y: 16 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
+    };
+
+    const quickActions = [
+        {
+            icon: <MdPeople />,
+            iconBg: 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600',
+            title: 'Manage Users',
+            description: 'Check members and update roles',
+            action: () => navigate('/admin/users'),
+        },
+        {
+            icon: <MdInventory2 />,
+            iconBg: 'bg-amber-100 dark:bg-amber-900/20 text-amber-600',
+            title: 'Inventory Control',
+            description: 'Update products and prices',
+            action: () => navigate('/admin/products'),
+        },
+        {
+            icon: <MdSettings />,
+            iconBg: 'bg-sky-100 dark:bg-sky-900/20 text-sky-600',
+            title: 'System Settings',
+            description: 'Adjust platform preferences',
+            action: () => navigate('/settings'),
+        },
+        {
+            icon: <MdAnalytics />,
+            iconBg: 'bg-violet-100 dark:bg-violet-900/20 text-violet-600',
+            title: 'Store Front',
+            description: 'View the live products page',
+            action: () => navigate('/products'),
+        },
+    ];
 
     if (authLoading) return <LoadingScreen />;
 
@@ -146,216 +185,297 @@ const AdminDashboard = () => {
 
     return (
         <DashboardLayout activeNav="dashboard">
-            <div className="p-4 sm:p-6 lg:p-10 page-enter max-w-7xl mx-auto">
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="p-4 sm:p-6 lg:p-10 page-enter max-w-7xl mx-auto"
+            >
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{fontFamily: "'Outfit', sans-serif"}}>
-                            {getGreeting()}, {user?.first_name}
-                        </h1>
-                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Here's what's happening with the farm today.</p>
+                        <div className="flex items-center gap-2 mb-1">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                {getGreeting()}, {user?.first_name}!
+                            </h1>
+                            <MdVerified className="text-emerald-500 text-xl" />
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Here's a snapshot of the Agritronix platform today.</p>
                     </div>
+                </motion.div>
+
+                {/* Hero Summary Card */}
+                <motion.div variants={itemVariants} className="relative bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-7 mb-8 overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-violet-600 rounded-t-2xl" />
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                        <div className="w-16 h-16 bg-violet-600 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shrink-0 shadow-lg shadow-violet-500/20">
+                            <MdAdminPanelSettings />
+                        </div>
+                        <div className="flex-1 text-center md:text-left">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                Administrator Control Center
+                            </h2>
+                            <p className="text-sm text-gray-500 dark:text-slate-400 mb-4 max-w-2xl">
+                                System status is healthy. You have full oversight of all members, staff permissions, and farm inventory. Use the tools below to manage your growing operation.
+                            </p>
+                            <div className="flex flex-wrap justify-center md:justify-start gap-4 text-[10px] font-bold uppercase tracking-widest">
+                                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/15 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    {stats.active} Active Members
+                                </span>
+                                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/15 text-sky-600 dark:text-sky-400 rounded-lg">
+                                    <MdBadge /> {stats.staff} Staff On Duty
+                                </span>
+                                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 dark:bg-violet-900/15 text-violet-600 dark:text-violet-400 rounded-lg">
+                                    <MdAdminPanelSettings /> System Roles Locked
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Section Title */}
+                <motion.div variants={itemVariants} className="mb-4 flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em] px-1">Quick Management</h3>
+                </motion.div>
+
+                {/* Quick Actions Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                    {quickActions.map((action, i) => (
+                        <motion.button
+                            key={i}
+                            variants={itemVariants}
+                            onClick={action.action}
+                            className="group text-left bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-5 hover:border-emerald-200 dark:hover:border-emerald-900/40 transition-all duration-300 shadow-sm hover:shadow-md"
+                        >
+                            <div className="flex items-start gap-3">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${action.iconBg} group-hover:scale-110 transition-transform duration-300`}>
+                                    {action.icon}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-bold text-gray-900 dark:text-white text-xs mb-0.5 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                        {action.title}
+                                    </h4>
+                                    <p className="text-[10px] leading-tight text-gray-400 dark:text-slate-500">
+                                        {action.description}
+                                    </p>
+                                </div>
+                                <MdArrowForward className="text-gray-300 dark:text-slate-600 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all mt-1" />
+                            </div>
+                        </motion.button>
+                    ))}
                 </div>
-                {!loading && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-xs font-semibold text-gray-600 dark:text-slate-300 mb-6">
-                        <MdPeople className="text-emerald-500" />
-                        {filteredUsers.length} of {users.length} members
-                    </span>
-                )}
+
+                {/* Section Title */}
+                <motion.div variants={itemVariants} className="mb-4">
+                    <h3 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em] px-1">Platform Vital Stats</h3>
+                </motion.div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
                     {statCards.map((s, i) => (
                         <motion.div key={s.label}
-                            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.07, duration: 0.35, ease: 'easeOut' }}
-                            className={`stat-accent ${s.accent} stat-card bg-white dark:bg-slate-900 px-3 sm:px-4 py-3 sm:py-4 rounded-xl border border-gray-100 dark:border-slate-800/70 relative`}>
-                            <div className="flex justify-between items-start mb-2">
-                                <span className="stat-label">{s.label}</span>
-                                <div className="stat-icon" style={{ opacity: 0.8 }}>{s.icon}</div>
+                            variants={itemVariants}
+                            className={`stat-accent ${s.accent} stat-card bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800/70 relative overflow-hidden group hover:shadow-lg transition-all duration-300`}>
+                            <div className="flex justify-between items-start mb-3">
+                                <span className="stat-label text-gray-400 dark:text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px]">{s.label}</span>
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${s.iconBg} group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
+                                    {s.icon}
+                                </div>
                             </div>
-                            <span className="stat-value">{s.value}</span>
+                            <div className="flex items-baseline gap-2">
+                                <span className="stat-value text-3xl font-black text-slate-800 dark:text-white leading-none">{s.value}</span>
+                                <span className="text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/10 px-1.5 py-0.5 rounded uppercase">Live</span>
+                            </div>
                         </motion.div>
                     ))}
                 </div>
-                {/* Controls */}
-                <div className="flex flex-col lg:flex-row gap-3 mb-5">
-                    <div className="flex-1 flex gap-2">
+
+                {/* User Management Section */}
+                <motion.div variants={itemVariants} className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h3 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em] px-1">User Management</h3>
+                    <div className="flex gap-2">
+                        {searchTerm && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-900/15 border border-emerald-100 dark:border-emerald-800 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                <MdPeople /> {filteredUsers.length} matches
+                            </span>
+                        )}
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-800 text-[10px] font-bold text-gray-400 dark:text-slate-500">
+                            Total: {users.length}
+                        </span>
+                    </div>
+                </motion.div>
+
+                {/* Table Controls Container */}
+                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-t-2xl border-x border-t border-gray-100 dark:border-slate-800/70 p-4">
+                    <div className="flex flex-col lg:flex-row gap-4">
                         <div className="relative group flex-1">
                             <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
-                            <input type="text" placeholder="Search by name or email..."
+                            <input type="text" placeholder="Filter members by name, email or username..."
                                 value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm w-full dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-400"
+                                className="pl-10 pr-4 py-2.5 bg-gray-50/50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-700 rounded-xl text-sm w-full dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-400"
                             />
-                            {searchTerm && (
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                                    {filteredUsers.length} results
-                                </span>
-                            )}
                         </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-2">View</span>
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Rows per page</span>
                             <select 
                                 value={pageSize} 
                                 onChange={(e) => setPageSize(Number(e.target.value))}
-                                className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-xs font-bold text-gray-600 dark:text-slate-300 outline-none focus:border-emerald-500 transition-all"
+                                className="px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold text-gray-600 dark:text-slate-300 outline-none focus:border-emerald-500 transition-all"
                             >
+                                <option value={5}>5 Items</option>
                                 <option value={10}>10 Items</option>
                                 <option value={25}>25 Items</option>
                                 <option value={50}>50 Items</option>
-                                <option value={100}>100 Items</option>
                             </select>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
-                {/* Table */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-full">
-                    <div className="table-wrapper">
-                        <table className="w-full text-left min-w-[700px]">
-                            <thead>
-                                <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Member</th>
-                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Role</th>
-                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
-                                </tr>
-                            </thead>
+                {/* Table Wrapper */}
+                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-b-2xl border border-gray-100 dark:border-slate-800/70 shadow-lg overflow-hidden flex flex-col mb-10 w-[22rem] md:w-[55rem] lg:w-full">
+                    <div className="overflow-x-auto overflow-y-auto max-h-[600px] custom-scrollbar">
+                        <table className="w-full text-left border-separate border-spacing-0" style={{ minWidth: '700px' }}>
+            <thead>
+                <tr className="bg-gray-50/80 dark:bg-slate-800/50 backdrop-blur-md">
+                    {/* 'sticky top-0' keeps the header visible while scrolling data */}
+                    <th className="sticky top-0 z-10 px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500 border-b border-gray-100 dark:border-slate-800 bg-inherit">
+                        Member
+                    </th>
+                    <th className="sticky top-0 z-10 px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500 border-b border-gray-100 dark:border-slate-800 bg-inherit w-1">
+                        Role
+                    </th>
+                    <th className="sticky top-0 z-10 px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500 border-b border-gray-100 dark:border-slate-800 bg-inherit w-1">
+                        Status
+                    </th>
+                    <th className="sticky top-0 z-10 px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500 border-b border-gray-100 dark:border-slate-800 text-right bg-inherit w-1">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
 
-                            <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
-                                {loading ? (
-                                    [...Array(5)].map((_, i) => (
-                                        <tr key={i}>
-                                            <td className="px-2 sm:px-4 py-3"><div className="flex items-center gap-2"><div className="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gray-200 dark:bg-slate-700 animate-pulse shrink-0" /><div className="min-w-0"><div className="h-2.5 w-16 sm:w-32 bg-gray-200 dark:bg-slate-700 rounded animate-pulse mb-1" /><div className="h-2 w-12 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></div></div></td>
-                                            <td className="px-2 sm:px-3 py-3"><div className="h-3 w-12 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
-                                            <td className="px-2 sm:px-3 py-3"><div className="h-3 w-10 sm:w-14 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
-                                            <td className="px-2 sm:px-4 py-3 text-right"><div className="h-5 w-8 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded-lg ml-auto animate-pulse" /></td>
-                                        </tr>
-                                    ))
-                                ) : filteredUsers.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={4} className="px-2 sm:px-4 py-8 sm:py-12 text-center">
-                                            <div className="flex flex-col items-center">
-                                                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
-                                                    <MdSearch className="text-2xl text-gray-300 dark:text-slate-600" />
-                                                </div>
-                                                <p className="text-sm font-semibold text-gray-400 dark:text-slate-500">No members found</p>
-                                                <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Try adjusting your search term</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ) : paginatedUsers.map((u, i) => (
-                                    <tr key={u.id} className="table-row-hover group">
-                                        {/* Member */}
-                                        <td className="px-2 sm:px-4 py-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center font-bold text-[9px] sm:text-[11px] uppercase shrink-0 ${
-                                                    u.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
-                                                    : u.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
-                                                    : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
-                                                }`}>
-                                                    {u.first_name?.[0]}{u.last_name?.[0]}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm truncate">{u.first_name} {u.last_name}</p>
-                                                    <p className="text-[10px] sm:text-xs text-gray-400 dark:text-slate-500 truncate hidden sm:block">{u.email}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-2 sm:px-3 py-2">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] uppercase font-bold tracking-wider ${
-                                                u.role === 'admin'
-                                                    ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/15 dark:text-violet-400'
-                                                    : u.role === 'staff'
-                                                        ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/15 dark:text-sky-400'
-                                                        : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/15 dark:text-emerald-400'
-                                            }`}>
-                                                {u.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-2 sm:px-3 py-2">
-                                            <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${u.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${u.active ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                                                {u.active ? 'Active' : 'Locked'}
-                                            </span>
-                                        </td>
-                                        {/* Actions */}
-                                        <td className="px-2 sm:px-3 py-2 text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <Link to={`/admin/users/${u.id}`} className="p-1 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded transition-all border border-gray-200 dark:border-slate-700" title="View">
-                                                    <MdVisibility size={10} />
-                                                </Link>
-                                                {(!user || user.role === 'admin' || (user.role === 'staff' && u.role === 'user')) ? (
-                                                    <>
-                                                        <button onClick={() => handleEditClick(u)}
-                                                            className="p-1 text-gray-500 dark:text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/15 rounded transition-all border border-gray-200 dark:border-slate-700" title="Edit">
-                                                            <MdEdit size={10} />
-                                                        </button>
-                                                        <button onClick={() => setConfirmStatusUser(u)}
-                                                            className={`p-1 rounded transition-all border ${
-                                                                u.active
-                                                                ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
-                                                                : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
-                                                            }`}
-                                                            title={u.active ? 'Deactivate' : 'Activate'}>
-                                                            {u.active ? <MdToggleOn size={12} /> : <MdToggleOff size={12} />}
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <div className="p-1 text-gray-300 dark:text-slate-600 border border-transparent" title="No permission"><MdEdit size={10} /></div>
-                                                        <div className="p-1 text-gray-300 dark:text-slate-600 border border-transparent" title="No permission">{u.active ? <MdToggleOn size={12} /> : <MdToggleOff size={12} />}</div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    {/* Pagination */}
-                    {!loading && filteredUsers.length > pageSize && (
-                        <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest hidden sm:block">
-                                Showing <span className="text-gray-900 dark:text-white">{(currentPage - 1) * pageSize + 1}</span> to <span className="text-gray-900 dark:text-white">{Math.min(currentPage * pageSize, filteredUsers.length)}</span> of <span className="text-gray-900 dark:text-white">{filteredUsers.length}</span> members
-                            </p>
-                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest sm:hidden">
-                                <span className="text-gray-900 dark:text-white">{filteredUsers.length} Members Total</span>
-                            </p>
-
-                            <div className="flex items-center gap-1.5 self-center sm:self-auto">
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    disabled={currentPage === 1}
-                                    className="p-1.5 text-gray-400 hover:text-emerald-600 disabled:opacity-30 transition-all font-bold"
-                                >
-                                    <MdChevronLeft size={20} />
-                                </button>
-                                <div className="flex gap-1">
-                                    {getPageNumbers().map(page => (
-                                        <button
-                                            key={page}
-                                            onClick={() => setCurrentPage(page)}
-                                            className={`w-8 h-8 rounded-xl text-[10px] font-black transition-all ${currentPage === page ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-gray-50 dark:bg-slate-800/60 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
-                                        >
-                                            {page}
-                                        </button>
-                                    ))}
+            <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
+                {loading ? (
+                    [...Array(6)].map((_, i) => (
+                        <tr key={i} className="animate-pulse">
+                            <td className="px-6 py-4"><div className="flex gap-3 items-center"><div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800" /><div className="space-y-2"><div className="h-2 w-24 bg-gray-100 dark:bg-slate-800 rounded" /><div className="h-2 w-32 bg-gray-50 dark:bg-slate-800/50 rounded" /></div></div></td>
+                            <td className="px-4 py-4"><div className="h-4 w-12 bg-gray-100 dark:bg-slate-800 rounded" /></td>
+                            <td className="px-4 py-4"><div className="h-4 w-12 bg-gray-100 dark:bg-slate-800 rounded" /></td>
+                            <td className="px-6 py-4"><div className="h-4 w-16 bg-gray-100 dark:bg-slate-800 rounded ml-auto" /></td>
+                        </tr>
+                    ))
+                ) : filteredUsers.length === 0 ? (
+                    <tr>
+                        <td colSpan={4} className="px-6 py-20 text-center">
+                            <div className="flex flex-col items-center justify-center">
+                                <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-slate-800 flex items-center justify-center mb-4">
+                                    <MdSearch className="text-2xl text-gray-300 dark:text-slate-600" />
                                 </div>
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={currentPage === totalPages || totalPages === 0}
-                                    className="p-1.5 text-gray-400 hover:text-emerald-600 disabled:opacity-30 transition-all font-bold"
-                                >
-                                    <MdChevronRight size={20} />
-                                </button>
+                                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">No members found</h3>
                             </div>
-                        </div>
-                    )}
+                        </td>
+                    </tr>
+                ) : (
+                    paginatedUsers.map((u) => (
+                        <tr key={u.id} className="group hover:bg-gray-50/50 dark:hover:bg-slate-800/20 transition-all">
+                            <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-inset ${
+                                        u.role === 'admin' 
+                                            ? 'bg-violet-50 text-violet-600 ring-violet-100 dark:bg-violet-500/10 dark:text-violet-400 dark:ring-violet-500/20' 
+                                            : 'bg-gray-50 text-gray-600 ring-gray-100 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700'
+                                    }`}>
+                                        {u.first_name?.[0]}{u.last_name?.[0]}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate tracking-tight leading-none mb-1">
+                                            {u.first_name} {u.last_name}
+                                        </p>
+                                        <p className="text-[11px] text-gray-400 dark:text-slate-500 truncate leading-none">
+                                            {u.email}
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td className="px-4 py-4 whitespace-nowrap w-1">
+                                <span className="px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800 text-gray-600 dark:text-slate-400">
+                                    {u.role}
+                                </span>
+                            </td>
+
+                            <td className="px-4 py-4 whitespace-nowrap w-1">
+                                <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider ${
+                                    u.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'
+                                }`}>
+                                    <span className={`h-2 w-2 rounded-full ${u.active ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                                    {u.active ? 'Active' : 'Locked'}
+                                </div>
+                            </td>
+
+                            <td className="px-6 py-4 text-right w-1">
+                                <div className="flex justify-end items-center gap-1 sm:group-hover:opacity-100 transition-opacity">
+                                    <Link to={`/admin/users/${u.id}`} className="p-2 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors">
+                                        <MdVisibility size={18} />
+                                    </Link>
+                                    <button onClick={() => handleEditClick(u)} className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors">
+                                        <MdEdit size={18} />
+                                    </button>
+                                    <button onClick={() => setConfirmStatusUser(u)} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                                        {u.active ? <MdToggleOn size={22} className="text-emerald-500" /> : <MdToggleOff size={22} />}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))
+                )}
+            </tbody>
+        </table>
+    </div>
+
+    {/* Footer / Pagination: Sticky to bottom of the card */}
+    {!loading && filteredUsers.length > pageSize && (
+        <div className="px-6 py-4 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-[11px] font-medium text-gray-500 dark:text-slate-400">
+                Showing <span className="font-bold text-gray-900 dark:text-white">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-bold text-gray-900 dark:text-white">{Math.min(currentPage * pageSize, filteredUsers.length)}</span> of <span className="font-bold text-gray-900 dark:text-white">{filteredUsers.length}</span>
+            </div>
+
+            <div className="flex items-center gap-1">
+                <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 text-gray-400 hover:text-gray-900 disabled:opacity-20"
+                >
+                    <MdChevronLeft size={20} />
+                </button>
+                
+                <div className="flex items-center gap-1">
+                    {getPageNumbers().map(page => (
+                        <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`min-w-[32px] h-8 rounded-lg text-[11px] font-bold transition-all ${
+                                currentPage === page 
+                                ? 'bg-gray-900 text-white dark:bg-white dark:text-slate-900 shadow-lg shadow-gray-200 dark:shadow-none' 
+                                : 'text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            {page}
+                        </button>
+                    ))}
                 </div>
 
+                <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    className="p-2 text-gray-400 hover:text-gray-900 disabled:opacity-20"
+                >
+                    <MdChevronRight size={20} />
+                </button>
             </div>
+        </div>
+    )}
+            </motion.div>
 
             {/* Edit Modal */}
             <AnimatePresence>
@@ -364,14 +484,14 @@ const AdminDashboard = () => {
                         <ModalHeader title="Edit Member" subtitle={`${selectedUser?.first_name} ${selectedUser?.last_name}`} onClose={() => setIsEditModalOpen(false)} />
                         <form onSubmit={handleUpdate} className="p-7 space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <FormField label="First Name" value={editData.first_name} onChange={(v) => setEditData({...editData, first_name: v})} required />
-                                <FormField label="Last Name" value={editData.last_name} onChange={(v) => setEditData({...editData, last_name: v})} required />
+                                <FormField label="First Name" value={editData.first_name} onChange={(v) => setEditData({...editData, first_name: v})} required disabled={isUpdating} />
+                                <FormField label="Last Name" value={editData.last_name} onChange={(v) => setEditData({...editData, last_name: v})} required disabled={isUpdating} />
                             </div>
-                            <FormField label="Email Address" type="email" value={editData.email} onChange={(v) => setEditData({...editData, email: v})} required />
-                            <FormField label="Phone Number" value={editData.phone_number} onChange={(v) => setEditData({...editData, phone_number: v})} />
+                            <FormField label="Email Address" type="email" value={editData.email} onChange={(v) => setEditData({...editData, email: v})} required disabled={isUpdating} />
+                            <FormField label="Phone Number" value={editData.phone_number} onChange={(v) => setEditData({...editData, phone_number: v})} disabled={isUpdating} />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <FormSelect label="Gender" value={editData.gender} onChange={(v) => setEditData({...editData, gender: v})} options={[{ v: '', l: 'Select' }, { v: 'male', l: 'Male' }, { v: 'female', l: 'Female' }, { v: 'other', l: 'Other' }]} />
-                                <FormSelect label="Marital Status" value={editData.marital_status} onChange={(v) => setEditData({...editData, marital_status: v})} options={[{ v: 'single', l: 'Single' }, { v: 'married', l: 'Married' }, { v: 'divorced', l: 'Divorced' }, { v: 'other', l: 'Other' }]} />
+                                <FormSelect label="Gender" value={editData.gender} onChange={(v) => setEditData({...editData, gender: v})} options={[{ v: '', l: 'Select' }, { v: 'male', l: 'Male' }, { v: 'female', l: 'Female' }, { v: 'other', l: 'Other' }]} disabled={isUpdating} />
+                                <FormSelect label="Marital Status" value={editData.marital_status} onChange={(v) => setEditData({...editData, marital_status: v})} options={[{ v: 'single', l: 'Single' }, { v: 'married', l: 'Married' }, { v: 'divorced', l: 'Divorced' }, { v: 'other', l: 'Other' }]} disabled={isUpdating} />
                             </div>
 
                             <div className="pt-3 flex gap-3">
@@ -436,8 +556,29 @@ const AdminDashboard = () => {
                     </ModalWrapper>
                 )}
             </AnimatePresence>
-        </DashboardLayout>
-    );
+
+            {/* Account Info Footer */}
+            <motion.div variants={itemVariants} className="mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
+                        </svg>
+                    </div>
+                    <div className="flex-1">
+                        <p className="font-bold text-gray-900 dark:text-white text-sm" style={{ fontFamily: "'Outfit', sans-serif" }}>Agritronix Control</p>
+                        <p className="text-xs text-gray-400 dark:text-slate-500">
+                            Administrator Management Interface · Farm Management System v1.0.0
+                        </p>
+                    </div>
+                    {/* <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/15 px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                        Active Oversight
+                    </span> */}
+                </div>
+            </motion.div>
+        </motion.div>
+    </DashboardLayout>
+);
 };
 
 // ─── Shared Sub-components ──────────────────────────────────────────
@@ -467,28 +608,29 @@ const ModalHeader = ({ title, subtitle, onClose }) => (
             <h2 className="font-bold text-gray-900 dark:text-white text-base" style={{ fontFamily: "'Outfit', sans-serif" }}>{title}</h2>
             {subtitle && <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{subtitle}</p>}
         </div>
-        <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all">
-            <MdClose size={18} />
+        <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all group">
+            <MdClose size={18} className="group-hover:rotate-90 transition-transform duration-300" />
         </button>
     </div>
 );
 
-const FormField = ({ label, type = 'text', value, onChange, required = false, placeholder = '' }) => (
+const FormField = ({ label, type = 'text', value, onChange, required = false, placeholder = '', disabled = false }) => (
     <div>
         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
         <input
             type={type} required={required} value={value} placeholder={placeholder}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
+            disabled={disabled}
+            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         />
     </div>
 );
 
-const FormSelect = ({ label, value, onChange, options }) => (
+const FormSelect = ({ label, value, onChange, options, disabled = false }) => (
     <div>
         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
-        <select value={value} onChange={(e) => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all">
+        <select value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled}
+            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {options.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
         </select>
     </div>

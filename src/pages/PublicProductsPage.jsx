@@ -361,7 +361,7 @@ const PublicProductsPage = () => {
                         
                         {/* Cart Dropdown */}
                         {showCart && (
-                            <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-800 z-[60] overflow-hidden">
+                            <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 z-[60] overflow-hidden">
                                 <div className="p-4 border-b border-gray-200 dark:border-slate-800">
                                     <h3 className="font-semibold text-gray-900 dark:text-white">Shopping Cart</h3>
                                 </div>
@@ -539,7 +539,7 @@ const PublicProductsPage = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05, duration: 0.3 }}
-                                className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                                className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden transition-all duration-300"
                             >
                                 {/* Product Image */}
                                 <div className="aspect-square bg-gray-100 dark:bg-slate-800 relative overflow-hidden">
@@ -742,7 +742,7 @@ const PublicProductsPage = () => {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 40 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-6xl max-h-[90vh] md:overflow-hidden overflow-y-auto hide-scrollbar flex flex-col md:flex-row shadow-2xl border border-white/20 dark:border-slate-800/50"
+                            className="relative bg-white dark:bg-slate-900 rounded-2xl w-full max-w-6xl max-h-[90vh] md:overflow-hidden overflow-y-auto hide-scrollbar flex flex-col md:flex-row border border-white/20 dark:border-slate-800/50"
                         >
                             {/* Close Button */}
                             <button
@@ -750,9 +750,9 @@ const PublicProductsPage = () => {
                                     setIsDetailsOpen(false);
                                     setSelectedProduct(null);
                                 }}
-                                className="absolute top-6 right-6 z-[110] p-3 bg-white/10 hover:bg-white/20 dark:bg-slate-800/50 dark:hover:bg-slate-700/50 text-white md:text-slate-900 dark:md:text-white rounded-2xl transition-all border border-white/10 dark:border-slate-700/50 backdrop-blur-md shadow-lg"
+                                className="absolute top-6 right-6 z-[110] p-3 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-2xl transition-all border border-gray-200 dark:border-slate-700 hover:scale-110 active:scale-95 flex items-center justify-center group"
                             >
-                                <MdClose size={24} />
+                                <MdClose size={24} className="group-hover:rotate-90 transition-transform duration-300" />
                             </button>
 
                             {/* Left Side: Product Showcase & Purchase Card */}
@@ -760,7 +760,7 @@ const PublicProductsPage = () => {
                                 <div className="space-y-8">
                                     {/* Brand/Category Tag */}
                                     <div className="flex items-center gap-2">
-                                        <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
+                                        <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center">
                                             <MdStore className="text-white text-xl" />
                                         </div>
                                         <div>
@@ -770,7 +770,7 @@ const PublicProductsPage = () => {
                                     </div>
 
                                     {/* Main Image */}
-                                    <div className="aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800 bg-white dark:bg-slate-900 group">
+                                    <div className="aspect-[4/3] rounded-2xl overflow-hidden border-4 border-white dark:border-slate-800 bg-white dark:bg-slate-900 group">
                                         {selectedProduct.photo ? (
                                             <img src={selectedProduct.photo} alt={selectedProduct.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                         ) : (
@@ -791,7 +791,7 @@ const PublicProductsPage = () => {
                                                     <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">₦{selectedProduct.newPrice}</span>
                                                     <span className="text-lg text-slate-400 line-through font-bold">₦{selectedProduct.price}</span>
                                                     {Number(selectedProduct.price) > Number(selectedProduct.newPrice) && (
-                                                        <span className="ml-2 text-sm font-bold text-white bg-red-500 px-2 py-1 rounded-lg shadow-sm">
+                                                        <span className="ml-2 text-sm font-bold text-white bg-red-500 px-2 py-1 rounded-lg">
                                                             -{Math.round(((selectedProduct.price - selectedProduct.newPrice) / selectedProduct.price) * 100)}%
                                                         </span>
                                                     )}
@@ -803,7 +803,7 @@ const PublicProductsPage = () => {
                                     </div>
 
                                     {/* Summary Description */}
-                                    <div className="p-6 bg-white dark:bg-slate-800/40 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                    <div className="p-6 bg-white dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
                                         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Quick Overview</h3>
                                         <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-medium italic">
                                             "{selectedProduct.description || 'No quick description available for this item.'}"
@@ -831,7 +831,7 @@ const PublicProductsPage = () => {
                                     {/* Section Header */}
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-0.5 w-12 bg-emerald-600 dark:bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                                            <div className="h-0.5 w-12 bg-emerald-600 dark:bg-emerald-500" />
                                             <h3 className="text-xs font-black text-emerald-600 dark:bg-emerald-500 uppercase tracking-[0.4em]">The Product Narrative</h3>
                                         </div>
                                         <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight">
@@ -861,7 +861,7 @@ const PublicProductsPage = () => {
                                                             {desc.photo.map((img, i) => (
                                                                 <div 
                                                                     key={i} 
-                                                                    className={`relative rounded-[2.5rem] overflow-hidden shadow-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${
+                                                                    className={`relative rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 transition-all duration-500 hover:-translate-y-2 ${
                                                                         desc.photo.length === 1 ? 'aspect-video' : 'aspect-square'
                                                                     }`}
                                                                 >
@@ -875,7 +875,7 @@ const PublicProductsPage = () => {
                                                     {/* Narrative Text */}
                                                     <div className="relative pl-12">
                                                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-600 to-transparent rounded-full opacity-20" />
-                                                        <div className="absolute -left-3 top-0 w-7 h-7 bg-white dark:bg-slate-800 border-4 border-emerald-600 dark:border-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                                                        <div className="absolute -left-3 top-0 w-7 h-7 bg-white dark:bg-slate-800 border-4 border-emerald-600 dark:border-emerald-500 rounded-full flex items-center justify-center">
                                                             <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-500">{idx + 1}</span>
                                                         </div>
                                                         <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 font-medium leading-[1.8] first-letter:text-5xl first-letter:font-black first-letter:text-emerald-600 first-letter:mr-3 first-letter:float-left">
@@ -887,7 +887,7 @@ const PublicProductsPage = () => {
 
                                             {/* Satisfaction Guarantee */}
                                             <div className="pt-10">
-                                                <div className="p-10 bg-gradient-to-br from-emerald-600/5 to-transparent dark:from-emerald-600/10 rounded-[3rem] border border-emerald-100 dark:border-emerald-900/30 space-y-6">
+                                                <div className="p-10 bg-gradient-to-br from-emerald-600/5 to-transparent dark:from-emerald-600/10 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 space-y-6">
                                                     <MdStar className="text-emerald-500 text-3xl" />
                                                     <h3 className="text-2xl font-black text-slate-900 dark:text-white">Our Quality Guarantee</h3>
                                                     <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">

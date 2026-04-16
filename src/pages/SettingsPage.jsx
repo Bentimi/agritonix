@@ -71,9 +71,9 @@ const SettingsPage = () => {
             <motion.div
                 initial="hidden" animate="visible"
                 variants={{ visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } } }}
-                className="p-4 sm:p-6 lg:p-10"
+                className="p-4 sm:p-6 lg:p-10 page-enter max-w-7xl mx-auto"
             >
-                <div className="max-w-3xl mx-auto">
+                <div>
                     {/* Header */}
                     <motion.div variants={itemVariants} className="mb-8">
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>Settings</h1>

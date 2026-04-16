@@ -167,7 +167,7 @@ const UsersPage = () => {
                     </span>
                 )}
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
                     {statCards.filter(s => authUser?.role === 'admin' || s.label !== 'Admin').map((s, i) => (
                         <motion.div key={s.label}
                             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
@@ -183,21 +183,20 @@ const UsersPage = () => {
                 </div>
                 {/* Controls */}
                 <div className="flex flex-col lg:flex-row gap-3 mb-5">
-                    <div className="flex-1 flex gap-2">
-                        <div className="relative group flex-1">
-                            <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
-                            <input type="text" placeholder="Search by name or email..."
-                                value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm w-full dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-400"
-                            />
-                            {searchTerm && (
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                                    {filteredUsers.length} results
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-4">
-                            <div className="flex items-center gap-2">
+                    <div className="relative group flex-1">
+                        <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                        <input type="text" placeholder="Search by name or email..."
+                            value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                            className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm w-full dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-400"
+                        />
+                        {searchTerm && (
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                {filteredUsers.length} results
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-2">
                                 <MdFilterList className="text-gray-400" />
                                 <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
                                     className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 outline-none focus:border-emerald-500 transition-all">
@@ -222,32 +221,31 @@ const UsersPage = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-full">
-                    <div className="table-wrapper">
-                        <table className="w-full text-left min-w-[700px]">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-full sm:w-[22rem] md:w-[50rem] lg:w-full">
+                    <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                        <table className="w-full text-left" style={{ minWidth: '700px' }}>
                             <thead>
-                                <tr className="bg-gray-50/60 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/70">
-                                    <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Member</th>
-                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Role</th>
-                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
                                     {authUser?.role === 'admin' && (
-                                        <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Manage</th>
+                                        <th>Manage</th>
                                     )}
-                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                                    <th className="text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
                                 {loading ? (
                                     [...Array(5)].map((_, i) => (
-                                        <tr key={i}>
-                                            <td className="px-2 sm:px-4 py-3"><div className="flex items-center gap-2"><div className="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gray-200 dark:bg-slate-700 animate-pulse shrink-0" /><div className="min-w-0"><div className="h-2.5 w-16 sm:w-32 bg-gray-200 dark:bg-slate-700 rounded animate-pulse mb-1" /><div className="h-2 w-12 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></div></div></td>
-                                            <td className="px-2 sm:px-3 py-3"><div className="h-3 w-12 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
-                                            <td className="px-2 sm:px-3 py-3"><div className="h-3 w-10 sm:w-14 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                        <tr>
+                                            <td><div className="flex items-center gap-2"><div className="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gray-200 dark:bg-slate-700 animate-pulse shrink-0" /><div className="min-w-0"><div className="h-2.5 w-16 sm:w-32 bg-gray-200 dark:bg-slate-700 rounded animate-pulse mb-1" /><div className="h-2 w-12 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></div></div></td>
+                                            <td><div className="h-3 w-12 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                            <td><div className="h-3 w-10 sm:w-14 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
                                             {authUser?.role === 'admin' && (
-                                                <td className="px-2 sm:px-3 py-3"><div className="h-3 w-16 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                                <td><div className="h-3 w-16 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
                                             )}
-                                            <td className="px-2 sm:px-4 py-3 text-right"><div className="h-5 w-8 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded-lg ml-auto animate-pulse" /></td>
+                                            <td className="text-right"><div className="h-5 w-8 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded-lg ml-auto animate-pulse" /></td>
                                         </tr>
                                     ))
                                 ) : paginatedUsers.length === 0 ? (
@@ -263,9 +261,9 @@ const UsersPage = () => {
                                         </td>
                                     </tr>
                                 ) : paginatedUsers.map((u) => (
-                                    <tr key={u.id} className="table-row-hover group">
+                                    <tr key={u.id}>
                                         {/* Member */}
-                                        <td className="px-2 sm:px-4 py-2">
+                                        <td>
                                             <div className="flex items-center gap-2">
                                                 <div className={`w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center font-bold text-[9px] sm:text-[11px] uppercase shrink-0 ${u.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
                                                         : u.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
@@ -273,21 +271,22 @@ const UsersPage = () => {
                                                     }`}>
                                                     {u.first_name?.[0]}{u.last_name?.[0]}
                                                 </div>
-                                                <div>
-                                                    <p className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm whitespace-nowrap">{u.first_name} {u.last_name}</p>
-                                                    <p className="text-[10px] sm:text-xs text-gray-400 dark:text-slate-500 whitespace-nowrap hidden sm:block">{u.email}</p>
+                                                <div className="min-w-0">
+                                                    <p className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm truncate">{u.first_name} {u.last_name}</p>
+                                                    <p className="text-[10px] sm:text-xs text-gray-400 dark:text-slate-500 truncate hidden sm:block">{u.email}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-2 sm:px-3 py-2"><RoleBadge role={u.role} /></td>
-                                        <td className="px-2 sm:px-3 py-2"><StatusBadge active={u.active} /></td>
+                                        <td><RoleBadge role={u.role} /></td>
+                                        <td><StatusBadge active={u.active} /></td>
                                         {/* Role Management */}
                                         {authUser?.role === 'admin' && (
-                                            <td className="px-2 sm:px-3 py-2 whitespace-nowrap">
+                                            <td>
                                                 {roleEditing === u.id ? (
                                                     <div className="flex items-center gap-1">
                                                         <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}
-                                                            className="px-1.5 py-1 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded text-[9px] font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
+                                                            disabled={roleLoading}
+                                                            className="px-1.5 py-1 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded text-[9px] font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all disabled:opacity-50">
                                                             <option value="">Select</option>
                                                             <option value="user">Customer</option>
                                                             <option value="staff">Staff</option>
@@ -301,21 +300,21 @@ const UsersPage = () => {
                                                     </div>
                                                 ) : (
                                                     <button onClick={() => { setRoleEditing(u.id); setSelectedRole(u.role); }}
-                                                        className="flex items-center gap-1 px-1.5 py-1 text-[9px] font-semibold text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded transition-all border border-gray-200 dark:border-slate-700">
+                                                        className="flex items-center gap-1 px-1.5 py-1 text-[9px] font-semibold text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded-lg transition-all border border-gray-200 dark:border-slate-700">
                                                         <MdAdminPanelSettings size={10} /> Role
                                                     </button>
                                                 )}
                                             </td>
                                         )}
                                         {/* Actions */}
-                                        <td className="px-2 sm:px-3 py-2 text-right">
+                                        <td className="text-right">
                                             <div className="flex justify-end gap-1">
-                                                <Link to={`/admin/users/${u.id}`} className="p-1 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded transition-all border border-gray-200 dark:border-slate-700" title="View">
+                                                <Link to={`/admin/users/${u.id}`} className="p-1 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded-lg transition-all border border-gray-200 dark:border-slate-700" title="View">
                                                     <MdVisibility size={14} />
                                                 </Link>
                                                 {(authUser?.role === 'admin' || authUser?.role === 'staff') && (
                                                     <button onClick={() => setConfirmUser(u)}
-                                                        className={`p-1 rounded transition-all border ${u.active
+                                                        className={`p-1 rounded-lg transition-all border ${u.active
                                                                 ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
                                                                 : 'text-emerald-600 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
                                                             }`}
@@ -354,7 +353,7 @@ const UsersPage = () => {
                                         <button
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
-                                            className={`min-w-[32px] h-8 rounded-lg text-[10px] font-black transition-all ${currentPage === page ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+                                            className={`min-w-[32px] h-8 rounded-lg text-[10px] font-black transition-all ${currentPage === page ? 'bg-emerald-600 text-white' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
                                         >
                                             {page}
                                         </button>
@@ -392,7 +391,7 @@ const UsersPage = () => {
                             </h2>
                             {/* User info */}
                             <div className="flex items-center gap-3 bg-gray-50 dark:bg-slate-800/60 rounded-xl p-3 mb-4">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] uppercase ${confirmUser.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] uppercase ${confirmUser.role === 'admin' ? 'bg-violet-100 dark:bg-violet-900/20 text-violet-600'
                                         : confirmUser.role === 'staff' ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-600'
                                             : 'bg-gray-200 dark:bg-slate-700 text-gray-500'
                                     }`}>

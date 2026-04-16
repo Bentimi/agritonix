@@ -31,12 +31,23 @@
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(255, 255, 255, 0.25);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-}
 
-.dark {
+  /* Table Specific Variables */
+  --radius-lg: 0.75rem;
+  --border: rgba(229, 231, 235, 1);
+  --text-muted: #64748b;
+  --text-secondary: #475569;
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* } */
+
   --glass-bg: rgba(15, 23, 42, 0.65);
   --glass-border: rgba(51, 65, 85, 0.35);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  /* Table Specific Variables */
+  --border: rgba(30, 41, 59, 1);
+  --text-muted: #94a3b8;
+  --text-secondary: #cbd5e1;
 }
 
 /* ─── Base Typography ─── */
@@ -54,6 +65,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
   @apply bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-slate-100;
   min-height: 100vh;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+    border-radius: 20px;
 }
 
 /* Global cursor pointer for interactive elements */
@@ -255,10 +275,10 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 0 0 4px 4px;
 }
 
-.stat-accent-emerald::before { background: linear-gradient(90deg, #059669, #34d399); }
-.stat-accent-violet::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
-.stat-accent-amber::before { background: linear-gradient(90deg, #d97706, #fbbf24); }
-.stat-accent-sky::before { background: linear-gradient(90deg, #0284c7, #38bdf8); }
+.stat-accent-emerald::before { background: #059669; }
+.stat-accent-violet::before { background: #7c3aed; }
+.stat-accent-amber::before { background: #d97706; }
+.stat-accent-sky::before { background: #0284c7; }
 
 /* ─── Stat Card Pattern (Title and icon justify-between, number centered) ─── */
 .stat-card {
@@ -316,9 +336,12 @@ h1, h2, h3, h4, h5, h6 {
 .dark .stat-accent-amber .stat-icon { color: #fbbf24; }
 .dark .stat-accent-sky .stat-icon { color: #38bdf8; }
 
-/* ─── Table Wrapper for Horizontal Overflow ─── */
+/* ─── Table Wrapper & Styles ─── */
 .table-wrapper {
+  width: 100%;
   overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: var(--color-gray-300, #d1d5db) transparent;
@@ -339,6 +362,62 @@ h1, h2, h3, h4, h5, h6 {
 
 .dark .table-wrapper::-webkit-scrollbar-thumb {
   background-color: var(--color-slate-600, #475569);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+thead {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dark thead {
+  background: rgba(15, 23, 42, 0.2);
+}
+
+th {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+td {
+  padding: 0.9rem 1rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+td.wrap {
+  white-space: normal;
+  min-width: 200px;
+}
+
+tbody tr {
+  transition: var(--transition);
+}
+
+tbody tr:hover {
+  background: rgba(16, 185, 129, 0.05); /* Emerald themed hover */
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-compact th,
+.table-compact td {
+  padding: 0.35rem 0.5rem;
 }
 
 /* ─── Smooth page transitions ─── */
