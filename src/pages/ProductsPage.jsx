@@ -43,7 +43,7 @@ const ProductsPage = () => {
     const [descriptionSubmitting, setDescriptionSubmitting] = useState(false);
     const [existingDescriptions, setExistingDescriptions] = useState([]);
     const [editingDescriptionId, setEditingDescriptionId] = useState(null);
-    const pageSize = 10;
+    const [pageSize, setPageSize] = useState(10);
     const categorySearchDebounceRef = useRef(null);
 
     useEffect(() => {
@@ -345,9 +345,11 @@ const ProductsPage = () => {
                         <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Manage farm inventory and product listings</p>
                     </div>
                     <div className="flex gap-3">
-                        <button onClick={() => openCategoryModal()} className="flex items-center gap-2 px-4 py-2.5 bg-sky-600 text-white rounded-xl text-sm font-semibold hover:bg-sky-700 transition-all">
-                            <MdCategory size={18} /> Manage Categories
-                        </button>
+                        {user?.role === 'admin' && (
+                            <button onClick={() => openCategoryModal()} className="flex items-center gap-2 px-4 py-2.5 bg-sky-600 text-white rounded-xl text-sm font-semibold hover:bg-sky-700 transition-all">
+                                <MdCategory size={18} /> Manage Categories
+                            </button>
+                        )}
                         <button onClick={() => setAddProductModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all">
                             <MdAdd size={18} /> Add Product
                         </button>
@@ -384,18 +386,35 @@ const ProductsPage = () => {
                             </span>
                         )}
                     </div>
-                    <div className="flex items-center gap-2">
-                        <MdFilterList className="text-gray-400" />
-                        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                            className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
-                            <option value="all">All Status</option>
-                            <option value="approved">Approved</option>
-                            <option value="pending">Pending</option>
-                            <option value="rejected">Rejected</option>
-                            <option value="review">Under Review</option>
-                        </select>
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <MdFilterList className="text-gray-400" />
+                                <select 
+                                    value={filterStatus} 
+                                    onChange={e => setFilterStatus(e.target.value)}
+                                    className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 outline-none focus:border-emerald-500 transition-all font-medium"
+                                >
+                                    <option value="all">All Status</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="review">Review</option>
+                                </select>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">View</span>
+                                <select 
+                                    value={pageSize} 
+                                    onChange={(e) => setPageSize(Number(e.target.value))}
+                                    className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 outline-none focus:border-emerald-500 transition-all"
+                                >
+                                    <option value={10}>10 Items</option>
+                                    <option value={20}>20 Items</option>
+                                    <option value={50}>50 Items</option>
+                                    <option value={100}>100 Items</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
                 {/* Table */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 overflow-hidden">
@@ -470,12 +489,25 @@ const ProductsPage = () => {
                                             </td>
                                             {/* Price */}
                                             <td className="px-6 py-3.5">
-                                                <p className="font-semibold text-gray-900 dark:text-white text-sm">
-                                                    {product.price ? `₦${Number(product.price).toLocaleString()}` : '—'}
-                                                </p>
-                                                {product.newPrice && (
-                                                    <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                                                        Sale: ₦{Number(product.newPrice).toLocaleString()}
+                                                {product.newPrice ? (
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <p className="text-[10px] text-gray-400 dark:text-slate-500 line-through">
+                                                            ₦{Number(product.price).toLocaleString()}
+                                                        </p>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <p className="font-bold text-emerald-600 dark:text-emerald-500 text-sm">
+                                                                ₦{Number(product.newPrice).toLocaleString()}
+                                                            </p>
+                                                            {Number(product.price) > Number(product.newPrice) && (
+                                                                <span className="text-[9px] font-bold text-white bg-red-500 px-1 py-0.5 rounded">
+                                                                    -{Math.round(((product.price - product.newPrice) / product.price) * 100)}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                                                        {product.price ? `₦${Number(product.price).toLocaleString()}` : '—'}
                                                     </p>
                                                 )}
                                             </td>
@@ -523,25 +555,44 @@ const ProductsPage = () => {
 
                     {/* Pagination */}
                     {!loading && filtered.length > pageSize && (
-                        <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-3">
-                            <p className="text-xs text-gray-400 dark:text-slate-500">
-                                Showing <span className="font-semibold text-gray-600 dark:text-slate-300">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-semibold text-gray-600 dark:text-slate-300">{Math.min(currentPage * pageSize, filtered.length)}</span> of <span className="font-semibold text-gray-600 dark:text-slate-300">{filtered.length}</span> products
+                        <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest hidden sm:block">
+                                Showing <span className="text-gray-900 dark:text-white">{(currentPage - 1) * pageSize + 1}</span> to <span className="text-gray-900 dark:text-white">{Math.min(currentPage * pageSize, filtered.length)}</span> of <span className="text-gray-900 dark:text-white">{filtered.length}</span> products
                             </p>
-                            <div className="flex items-center gap-1">
-                                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-                                    className="p-1.5 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                                    <MdChevronLeft size={18} />
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest sm:hidden">
+                                <span className="text-gray-900 dark:text-white">{filtered.length} Total</span>
+                            </p>
+
+                            <div className="flex items-center gap-1.5 self-center sm:self-auto">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-1.5 text-gray-400 hover:text-emerald-600 disabled:opacity-30 transition-all font-bold"
+                                >
+                                    <MdChevronLeft size={20} />
                                 </button>
-                                {getPageNumbers().map(page => (
-                                    <button key={page} onClick={() => setCurrentPage(page)}
-                                        className={`min-w-[32px] h-8 rounded-lg text-xs font-bold transition-all ${currentPage === page ? 'bg-emerald-600 text-white' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`}>
-                                        {page}
-                                    </button>
-                                ))}
+                                <div className="flex gap-1">
+                                    {getPageNumbers().map(page => (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            className={`min-w-[32px] h-8 rounded-lg text-[10px] font-black transition-all ${currentPage === page ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+                                        >
+                                            {page}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                    className="p-1.5 text-gray-400 hover:text-emerald-600 disabled:opacity-30 transition-all font-bold"
+                                >
+                                    <MdChevronRight size={20} />
+                                </button>
                             </div>
-                    </div>
-                )}
-            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Product Detail Modal */}
@@ -714,28 +765,25 @@ const ProductsPage = () => {
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                             className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-white/20 dark:border-slate-800/50"
                         >
-                            {/* Header with Pattern */}
-                            <div className="relative h-28 bg-emerald-600 dark:bg-emerald-900/40 overflow-hidden">
-                                <div className="absolute inset-0 opacity-10">
-                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_35%,#fff_0,transparent_40%),radial-gradient(circle_at_75%_65%,#fff_0,transparent_45%)]" />
-                                </div>
-                                <div className="absolute inset-0 p-8 flex items-center justify-between backdrop-blur-sm">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
-                                            <MdCategory className="text-white text-2xl" />
+                            {/* Minimalist Professional Header */}
+                            <div className="relative p-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                                <div className="relative flex items-center justify-between">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
+                                            <MdCategory className="text-emerald-600 dark:text-white text-3xl" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl font-bold text-white uppercase tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                            <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
                                                 Categories
                                             </h2>
-                                            <p className="text-emerald-50/80 text-xs font-bold tracking-widest uppercase">Management System</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Inventory Management</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setCategoryModal(false)}
-                                        className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-all border border-white/10"
+                                        className="p-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
                                     >
-                                        <MdClose size={20} />
+                                        <MdClose size={22} />
                                     </button>
                                 </div>
                             </div>
@@ -1464,18 +1512,18 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                     )}
                                 </div>
                         {/* Sticky Action Bar */}
-                        <div className="p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-end gap-4 shadow-[0_-1px_3px_rgba(0,0,0,0.02)]">
+                        <div className="p-6 sm:p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4 shadow-[0_-1px_3px_rgba(0,0,0,0.02)]">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm active:scale-95"
+                                className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm active:scale-95"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="px-10 py-4 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 text-white rounded-2xl text-sm font-black shadow-xl shadow-emerald-500/10 transition-all disabled:opacity-50 disabled:scale-100 flex items-center gap-2 active:scale-95"
+                                className="w-full sm:w-auto px-10 py-4 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 text-white rounded-2xl text-sm font-black shadow-xl shadow-emerald-500/10 transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 active:scale-95"
                             >
                                 {submitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
                                 {mode === 'add' ? 'Publish Portfolio' : 'Synchronize Product'}

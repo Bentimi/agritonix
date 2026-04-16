@@ -63,8 +63,15 @@ const UsersPage = () => {
         fetchUsers();
     }, [authUser]);
 
+    const baseUsers = useMemo(() => {
+        if (authUser?.role === 'staff') {
+            return users.filter(u => u.role !== 'admin');
+        }
+        return users;
+    }, [users, authUser]);
+
     const filteredUsers = useMemo(() => {
-        let filtered = users.filter(u =>
+        let filtered = baseUsers.filter(u =>
             `${u.first_name} ${u.last_name}`.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
             u.email?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
             u.username?.toLowerCase().includes(debouncedSearch.toLowerCase())
@@ -73,7 +80,7 @@ const UsersPage = () => {
             filtered = filtered.filter(u => u.role === filterRole);
         }
         return filtered;
-    }, [users, debouncedSearch, filterRole]);
+    }, [baseUsers, debouncedSearch, filterRole]);
 
     const totalPages = Math.ceil(filteredUsers.length / pageSize);
     const paginatedUsers = useMemo(() => {
@@ -127,13 +134,13 @@ const UsersPage = () => {
     };
 
     const stats = useMemo(() => ({
-        total: users.length,
-        admin: users.filter(u => u.role === 'admin').length,
-        staff: users.filter(u => u.role === 'staff').length,
-        customer: users.filter(u => u.role === 'user').length,
-        active: users.filter(u => u.active).length,
-        locked: users.filter(u => !u.active).length,
-    }), [users]);
+        total: baseUsers.length,
+        admin: baseUsers.filter(u => u.role === 'admin').length,
+        staff: baseUsers.filter(u => u.role === 'staff').length,
+        customer: baseUsers.filter(u => u.role === 'user').length,
+        active: baseUsers.filter(u => u.active).length,
+        locked: baseUsers.filter(u => !u.active).length,
+    }), [baseUsers]);
 
     const statCards = [
         { label: 'Total', value: stats.total, iconBg: 'bg-gray-100 dark:bg-gray-900/20 text-gray-600', icon: <MdGroup />, accent: 'stat-accent-gray' },
@@ -156,21 +163,21 @@ const UsersPage = () => {
                 {!loading && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-xs font-semibold text-gray-600 dark:text-slate-300 mb-6">
                         <MdPeople className="text-emerald-500" />
-                        {filteredUsers.length} of {users.length} members
+                        {filteredUsers.length} of {baseUsers.length} members
                     </span>
                 )}
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
-                    {statCards.map((s, i) => (
+                    {statCards.filter(s => authUser?.role === 'admin' || s.label !== 'Admin').map((s, i) => (
                         <motion.div key={s.label}
                             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.07, duration: 0.35, ease: 'easeOut' }}
                             className={`stat-accent ${s.accent} stat-card bg-white dark:bg-slate-900 px-3 sm:px-4 py-3 sm:py-4 rounded-xl border border-gray-100 dark:border-slate-800/70 relative`}>
                             <div className="flex justify-between items-start mb-2">
-                                <span className="stat-label">{s.label}</span>
-                                <div className="stat-icon" style={{ opacity: 0.8 }}>{s.icon}</div>
+                                <span className="stat-label text-gray-400 dark:text-slate-500 font-bold uppercase tracking-[0.2em] text-[8px] sm:text-[9px]">{s.label}</span>
+                                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-sm sm:text-base ${s.iconBg}`}>{s.icon}</div>
                             </div>
-                            <span className="stat-value">{s.value}</span>
+                            <span className="stat-value text-lg sm:text-2xl font-black text-slate-800 dark:text-white leading-none">{s.value}</span>
                         </motion.div>
                     ))}
                 </div>
@@ -189,19 +196,33 @@ const UsersPage = () => {
                                 </span>
                             )}
                         </div>
-                        <div className="flex items-center gap-2">
-                            <MdFilterList className="text-gray-400" />
-                            <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
-                                className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
-                                <option value="all">All Roles</option>
-                                <option value="admin">Admin</option>
-                                <option value="staff">Staff</option>
-                                <option value="user">Customer</option>
-                            </select>
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <MdFilterList className="text-gray-400" />
+                                <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
+                                    className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 outline-none focus:border-emerald-500 transition-all">
+                                    <option value="all">All Roles</option>
+                                    {authUser?.role === 'admin' && <option value="admin">Admin</option>}
+                                    <option value="staff">Staff</option>
+                                    <option value="user">Customer</option>
+                                </select>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">View</span>
+                                <select 
+                                    value={pageSize} 
+                                    onChange={(e) => setPageSize(Number(e.target.value))}
+                                    className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 outline-none focus:border-emerald-500 transition-all"
+                                >
+                                    <option value={10}>10 Items</option>
+                                    <option value={25}>25 Items</option>
+                                    <option value={50}>50 Items</option>
+                                    <option value={100}>100 Items</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
-                {/* Table */}
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-full">
                     <div className="table-wrapper">
                         <table className="w-full text-left min-w-[700px]">
@@ -210,7 +231,9 @@ const UsersPage = () => {
                                     <th className="px-2 sm:px-4 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Member</th>
                                     <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Role</th>
                                     <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                                    <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Manage</th>
+                                    {authUser?.role === 'admin' && (
+                                        <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Manage</th>
+                                    )}
                                     <th className="px-2 sm:px-3 py-2 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -221,13 +244,15 @@ const UsersPage = () => {
                                             <td className="px-2 sm:px-4 py-3"><div className="flex items-center gap-2"><div className="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gray-200 dark:bg-slate-700 animate-pulse shrink-0" /><div className="min-w-0"><div className="h-2.5 w-16 sm:w-32 bg-gray-200 dark:bg-slate-700 rounded animate-pulse mb-1" /><div className="h-2 w-12 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></div></div></td>
                                             <td className="px-2 sm:px-3 py-3"><div className="h-3 w-12 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
                                             <td className="px-2 sm:px-3 py-3"><div className="h-3 w-10 sm:w-14 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
-                                            <td className="px-2 sm:px-3 py-3"><div className="h-3 w-16 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                            {authUser?.role === 'admin' && (
+                                                <td className="px-2 sm:px-3 py-3"><div className="h-3 w-16 sm:w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" /></td>
+                                            )}
                                             <td className="px-2 sm:px-4 py-3 text-right"><div className="h-5 w-8 sm:w-16 bg-gray-200 dark:bg-slate-700 rounded-lg ml-auto animate-pulse" /></td>
                                         </tr>
                                     ))
                                 ) : paginatedUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-2 sm:px-4 py-8 sm:py-12 text-center">
+                                        <td colSpan={authUser?.role === 'admin' ? 5 : 4} className="px-2 sm:px-4 py-8 sm:py-12 text-center">
                                             <div className="flex flex-col items-center">
                                                 <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
                                                     <MdSearch className="text-2xl text-gray-300 dark:text-slate-600" />
@@ -257,38 +282,38 @@ const UsersPage = () => {
                                         <td className="px-2 sm:px-3 py-2"><RoleBadge role={u.role} /></td>
                                         <td className="px-2 sm:px-3 py-2"><StatusBadge active={u.active} /></td>
                                         {/* Role Management */}
-                                        <td className="px-2 sm:px-3 py-2 whitespace-nowrap">
-                                            {authUser?.role !== 'admin' ? (
-                                                <span className="text-gray-400 dark:text-slate-600 text-xs">—</span>
-                                            ) : roleEditing === u.id ? (
-                                                <div className="flex items-center gap-1">
-                                                    <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}
-                                                        className="px-1.5 py-1 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded text-[9px] font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
-                                                        <option value="">Select</option>
-                                                        <option value="user">Customer</option>
-                                                        <option value="staff">Staff</option>
-                                                        <option value="admin">Admin</option>
-                                                    </select>
-                                                    <button onClick={() => handleRoleAssign(u.id)} disabled={!selectedRole || roleLoading}
-                                                        className="p-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-all disabled:opacity-40">
-                                                        {roleLoading ? <SpinIcon /> : <MdCheck size={10} />}
+                                        {authUser?.role === 'admin' && (
+                                            <td className="px-2 sm:px-3 py-2 whitespace-nowrap">
+                                                {roleEditing === u.id ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}
+                                                            className="px-1.5 py-1 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded text-[9px] font-semibold text-gray-900 dark:text-white outline-none focus:border-emerald-500 transition-all">
+                                                            <option value="">Select</option>
+                                                            <option value="user">Customer</option>
+                                                            <option value="staff">Staff</option>
+                                                            <option value="admin">Admin</option>
+                                                        </select>
+                                                        <button onClick={() => handleRoleAssign(u.id)} disabled={!selectedRole || roleLoading}
+                                                            className="p-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-all disabled:opacity-40">
+                                                            {roleLoading ? <SpinIcon /> : <MdCheck size={10} />}
+                                                        </button>
+                                                        <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-[9px] text-red-500 hover:text-red-700 font-medium">✕</button>
+                                                    </div>
+                                                ) : (
+                                                    <button onClick={() => { setRoleEditing(u.id); setSelectedRole(u.role); }}
+                                                        className="flex items-center gap-1 px-1.5 py-1 text-[9px] font-semibold text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded transition-all border border-gray-200 dark:border-slate-700">
+                                                        <MdAdminPanelSettings size={10} /> Role
                                                     </button>
-                                                    <button onClick={() => { setRoleEditing(null); setSelectedRole(''); }} className="text-[9px] text-red-500 hover:text-red-700 font-medium">✕</button>
-                                                </div>
-                                            ) : (
-                                                <button onClick={() => { setRoleEditing(u.id); setSelectedRole(u.role); }}
-                                                    className="flex items-center gap-1 px-1.5 py-1 text-[9px] font-semibold text-gray-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 rounded transition-all border border-gray-200 dark:border-slate-700">
-                                                    <MdAdminPanelSettings size={10} /> Role
-                                                </button>
-                                            )}
-                                        </td>
+                                                )}
+                                            </td>
+                                        )}
                                         {/* Actions */}
                                         <td className="px-2 sm:px-3 py-2 text-right">
                                             <div className="flex justify-end gap-1">
                                                 <Link to={`/admin/users/${u.id}`} className="p-1 text-gray-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 rounded transition-all border border-gray-200 dark:border-slate-700" title="View">
-                                                    <MdVisibility size={10} />
+                                                    <MdVisibility size={14} />
                                                 </Link>
-                                                {(!authUser || authUser.role === 'admin' || (authUser.role === 'staff' && u.role === 'user')) ? (
+                                                {(authUser?.role === 'admin' || authUser?.role === 'staff') && (
                                                     <button onClick={() => setConfirmUser(u)}
                                                         className={`p-1 rounded transition-all border ${u.active
                                                                 ? 'text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/10'
@@ -297,10 +322,6 @@ const UsersPage = () => {
                                                         title={u.active ? 'Deactivate' : 'Activate'}>
                                                         {u.active ? <MdToggleOn size={12} /> : <MdToggleOff size={12} />}
                                                     </button>
-                                                ) : (
-                                                    <div className="p-1 text-gray-300 dark:text-slate-600 border border-transparent" title="No permission">
-                                                        {u.active ? <MdToggleOn size={12} /> : <MdToggleOff size={12} />}
-                                                    </div>
                                                 )}
                                             </div>
                                         </td>
@@ -312,24 +333,39 @@ const UsersPage = () => {
 
                     {/* Pagination */}
                     {!loading && filteredUsers.length > pageSize && (
-                        <div className="px-2 sm:px-4 py-2 sm:py-3 border-t border-gray-100 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-2">
-                            <p className="text-xs text-gray-400 dark:text-slate-500">
-                                Showing <span className="font-semibold text-gray-600 dark:text-slate-300">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-semibold text-gray-600 dark:text-slate-300">{Math.min(currentPage * pageSize, filteredUsers.length)}</span> of <span className="font-semibold text-gray-600 dark:text-slate-300">{filteredUsers.length}</span> members
+                        <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest hidden sm:block">
+                                Showing <span className="text-gray-900 dark:text-white">{(currentPage - 1) * pageSize + 1}</span> to <span className="text-gray-900 dark:text-white">{Math.min(currentPage * pageSize, filteredUsers.length)}</span> of <span className="text-gray-900 dark:text-white">{filteredUsers.length}</span> members
                             </p>
-                            <div className="flex items-center gap-1">
-                                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-                                    className="p-1.5 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                                    <MdChevronLeft size={18} />
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest sm:hidden">
+                                <span className="text-gray-900 dark:text-white">{filteredUsers.length} Members Total</span>
+                            </p>
+
+                            <div className="flex items-center gap-1.5 self-center sm:self-auto">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-1.5 text-gray-400 hover:text-emerald-600 disabled:opacity-30 transition-all font-bold"
+                                >
+                                    <MdChevronLeft size={20} />
                                 </button>
-                                {getPageNumbers().map(page => (
-                                    <button key={page} onClick={() => setCurrentPage(page)}
-                                        className={`min-w-[32px] h-8 rounded-lg text-xs font-bold transition-all ${currentPage === page ? 'bg-emerald-600 text-white' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`}>
-                                        {page}
-                                    </button>
-                                ))}
-                                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0}
-                                    className="p-1.5 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                                    <MdChevronRight size={18} />
+                                <div className="flex gap-1">
+                                    {getPageNumbers().map(page => (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            className={`min-w-[32px] h-8 rounded-lg text-[10px] font-black transition-all ${currentPage === page ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+                                        >
+                                            {page}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                    className="p-1.5 text-gray-400 hover:text-emerald-600 disabled:opacity-30 transition-all font-bold"
+                                >
+                                    <MdChevronRight size={20} />
                                 </button>
                             </div>
                         </div>

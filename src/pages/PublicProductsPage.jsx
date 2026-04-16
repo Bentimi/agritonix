@@ -232,10 +232,10 @@ const PublicProductsPage = () => {
         }
     };
 
-    const removeFromCart = async (productId) => {
+    const removeFromCart = async (cartItemId) => {
         try {
             // Use the correct backend endpoint with /product prefix
-            const response = await api.delete(`/product/delete-cart-item/${productId}`);
+            const response = await api.delete(`/product/delete-cart-item/${cartItemId}`);
             
             if (response.data.status === 'success') {
                 // Refresh cart from database
@@ -258,15 +258,15 @@ const PublicProductsPage = () => {
         }
     };
 
-    const updateQuantity = async (productId, newQuantity) => {
+    const updateQuantity = async (cartItemId, newQuantity) => {
         if (newQuantity <= 0) {
-            await removeFromCart(productId);
+            await removeFromCart(cartItemId);
             return;
         }
         
         try {
             // Use the correct backend endpoint with /product prefix
-            const response = await api.put(`/product/edit-cart-item/${productId}`, {
+            const response = await api.put(`/product/edit-cart-item/${cartItemId}`, {
                 quantity: newQuantity
             });
 
@@ -379,7 +379,7 @@ const PublicProductsPage = () => {
                                                     <div className="flex items-center gap-3">
                                                         <div className="flex-1">
                                                             <h4 className="font-medium text-gray-900 dark:text-white text-sm">{item.product?.name || item.name}</h4>
-                                                            <p className="text-gray-500 dark:text-slate-400 text-xs">₦{item.price} each</p>
+                                                            <p className="text-gray-500 dark:text-slate-400 text-xs">₦{(item.product?.newPrice || item.newPrice || item.product?.price || item.price)} each</p>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <button
@@ -581,10 +581,34 @@ const PublicProductsPage = () => {
 
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-1">
-                                            <span className="text-emerald-600 font-bold" style={{ fontSize: '18px' }}>₦</span>
-                                            <span className="text-lg font-bold text-gray-900 dark:text-white">
-                                                {product.price}
-                                            </span>
+                                            {product.newPrice ? (
+                                                <div className="flex flex-col">
+                                                    <div className="flex items-center gap-1 text-gray-400 dark:text-slate-500 line-through text-xs">
+                                                        <span className="font-bold">₦</span>
+                                                        <span className="font-bold">{product.price}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="flex items-center gap-0.5">
+                                                            <span className="text-emerald-600 font-bold" style={{ fontSize: '18px' }}>₦</span>
+                                                            <span className="text-lg font-bold text-gray-900 dark:text-white">
+                                                                {product.newPrice}
+                                                            </span>
+                                                        </div>
+                                                        {Number(product.price) > Number(product.newPrice) && (
+                                                            <span className="text-[10px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded">
+                                                                -{Math.round(((product.price - product.newPrice) / product.price) * 100)}%
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <span className="text-emerald-600 font-bold" style={{ fontSize: '18px' }}>₦</span>
+                                                    <span className="text-lg font-bold text-gray-900 dark:text-white">
+                                                        {product.price}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
                                             <span>Stock:</span>
@@ -762,9 +786,18 @@ const PublicProductsPage = () => {
                                             {selectedProduct.name}
                                         </h2>
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">₦{selectedProduct.price}</span>
-                                            {selectedProduct.newPrice && (
-                                                <span className="text-lg text-slate-400 line-through font-bold">₦{selectedProduct.newPrice}</span>
+                                            {selectedProduct.newPrice ? (
+                                                <>
+                                                    <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">₦{selectedProduct.newPrice}</span>
+                                                    <span className="text-lg text-slate-400 line-through font-bold">₦{selectedProduct.price}</span>
+                                                    {Number(selectedProduct.price) > Number(selectedProduct.newPrice) && (
+                                                        <span className="ml-2 text-sm font-bold text-white bg-red-500 px-2 py-1 rounded-lg shadow-sm">
+                                                            -{Math.round(((selectedProduct.price - selectedProduct.newPrice) / selectedProduct.price) * 100)}%
+                                                        </span>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">₦{selectedProduct.price}</span>
                                             )}
                                         </div>
                                     </div>

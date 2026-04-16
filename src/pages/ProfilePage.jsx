@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MdEdit, MdClose, MdSave, MdLock, MdWarning, MdPerson, MdEmail, MdPhone, MdBadge, MdSecurity, MdCalendarMonth, MdVerified, MdKey, MdBlock, MdVisibilityOff, MdVisibility } from 'react-icons/md';
+import { MdEdit, MdClose, MdSave, MdLock, MdWarning, MdPerson, MdEmail, MdPhone, MdBadge, MdSecurity, MdCalendarMonth, MdVerified, MdKey, MdBlock, MdVisibilityOff, MdVisibility, MdCheck } from 'react-icons/md';
 import DashboardLayout from '../components/DashboardLayout';
 import api from '../services/api';
 
@@ -57,8 +57,13 @@ const ProfilePage = () => {
             toast.error('New passwords do not match');
             return;
         }
-        if (passwordData.new_password.length < 6) {
-            toast.error('New password must be at least 6 characters');
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])/;
+        if (passwordData.new_password.length < 8) {
+            toast.error('New password must be at least 8 characters');
+            return;
+        }
+        if (!passwordRegex.test(passwordData.new_password)) {
+            toast.error('New password must include uppercase, lowercase, number, and a special character (!@#$%^&*)');
             return;
         }
         setIsPasswordSaving(true);
@@ -292,6 +297,15 @@ const ProfilePage = () => {
                                 show={showPasswords.new}
                                 onToggle={() => setShowPasswords(s => ({ ...s, new: !s.new }))}
                             />
+                            {passwordData.new_password && (
+                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="grid grid-cols-2 gap-y-1.5 gap-x-4 px-1 py-1">
+                                    <ValidationItem label="8+ Characters" isValid={passwordData.new_password.length >= 8} />
+                                    <ValidationItem label="Uppercase" isValid={/[A-Z]/.test(passwordData.new_password)} />
+                                    <ValidationItem label="Lowercase" isValid={/[a-z]/.test(passwordData.new_password)} />
+                                    <ValidationItem label="Number" isValid={/[0-9]/.test(passwordData.new_password)} />
+                                    <ValidationItem label="Special Symbol" isValid={/[!@#\$%\^&\*]/.test(passwordData.new_password)} />
+                                </motion.div>
+                            )}
                             <PasswordField
                                 label="Confirm New Password"
                                 value={passwordData.confirm_password}
@@ -462,6 +476,13 @@ const SpinIcon = () => (
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
     </svg>
+);
+
+const ValidationItem = ({ label, isValid }) => (
+    <div className={`flex items-center gap-1.5 transition-colors duration-300 ${isValid ? 'text-emerald-500' : 'text-gray-400 dark:text-slate-500'}`}>
+        {isValid ? <MdCheck size={12} className="shrink-0" /> : <div className="w-1.5 h-1.5 rounded-full border border-current shrink-0" />}
+        <span className="text-[10px] font-bold uppercase tracking-tight leading-none">{label}</span>
+    </div>
 );
 
 export default ProfilePage;

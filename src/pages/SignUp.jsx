@@ -1,9 +1,42 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
-import { MdEmail, MdLock, MdPerson, MdVisibility, MdVisibilityOff, MdCheckCircle } from 'react-icons/md';
+import { MdEmail, MdLock, MdPerson, MdVisibility, MdVisibilityOff, MdCheckCircle, MdWarning, MdCheck, MdRadioButtonUnchecked } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
+
+const InputField = ({ name, label, type = 'text', icon: Icon, placeholder, value, onChange, focused, setFocused, showPassword, setShowPassword, disabled }) => (
+    <div>
+        <label className="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">{label}</label>
+        <div className={`relative rounded-xl bg-gray-50 dark:bg-slate-800/60 border transition-all duration-200 ${focused === name ? 'border-emerald-500 ring-4 ring-emerald-500/10' : 'border-gray-200 dark:border-slate-700'}`}>
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Icon className={`text-lg transition-colors duration-200 ${focused === name ? 'text-emerald-500' : 'text-gray-400'}`} />
+            </div>
+            <input
+                type={type === 'password' ? (showPassword ? 'text' : 'password') : type}
+                name={name}
+                required
+                disabled={disabled}
+                className="block w-full pl-10 pr-4 py-2.5 bg-transparent text-gray-900 dark:text-white text-sm rounded-xl outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500 disabled:opacity-50"
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+                onFocus={() => setFocused(name)}
+                onBlur={() => setFocused('')}
+            />
+            {type === 'password' && name === 'password' && (
+                <button
+                    type="button"
+                    disabled={disabled}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors disabled:opacity-50"
+                    onClick={() => setShowPassword(!showPassword)}
+                >
+                    {showPassword ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
+                </button>
+            )}
+        </div>
+    </div>
+);
 
 const SignUp = () => {
     const [formData, setFormData] = useState({
@@ -29,11 +62,11 @@ const SignUp = () => {
         const p = formData.password;
         if (!p) return { score: 0, label: '', color: '' };
         let score = 0;
-        if (p.length >= 6) score++;
-        if (p.length >= 10) score++;
+        if (p.length >= 8) score++;
+        if (p.length >= 12) score++;
         if (/[A-Z]/.test(p)) score++;
         if (/[0-9]/.test(p)) score++;
-        if (/[^A-Za-z0-9]/.test(p)) score++;
+        if (/[!@#\$%\^&\*]/.test(p)) score++;
         if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-red-500' };
         if (score <= 2) return { score: 2, label: 'Fair', color: 'bg-amber-500' };
         if (score <= 3) return { score: 3, label: 'Good', color: 'bg-emerald-400' };
@@ -42,6 +75,19 @@ const SignUp = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])/;
+        
+        if (formData.password.length < 8) {
+            toast.error('Password must be at least 8 characters');
+            return;
+        }
+        
+        if (!passwordRegex.test(formData.password)) {
+            toast.error('Password must include uppercase, lowercase, number, and a special character (!@#$%^&*)');
+            return;
+        }
+
         if (formData.password !== formData.confirm_password) {
             toast.error('Passwords do not match');
             return;
@@ -101,36 +147,7 @@ const SignUp = () => {
         );
     }
 
-    const InputField = ({ name, label, type = 'text', icon: Icon, placeholder }) => (
-        <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">{label}</label>
-            <div className={`relative rounded-xl bg-gray-50 dark:bg-slate-800/60 border transition-all duration-200 ${focused === name ? 'border-emerald-500 ring-4 ring-emerald-500/10' : 'border-gray-200 dark:border-slate-700'}`}>
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Icon className={`text-lg transition-colors duration-200 ${focused === name ? 'text-emerald-500' : 'text-gray-400'}`} />
-                </div>
-                <input
-                    type={type === 'password' ? (showPassword ? 'text' : 'password') : type}
-                    name={name}
-                    required
-                    className="block w-full pl-10 pr-4 py-2.5 bg-transparent text-gray-900 dark:text-white text-sm rounded-xl outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                    placeholder={placeholder}
-                    value={formData[name]}
-                    onChange={handleChange}
-                    onFocus={() => setFocused(name)}
-                    onBlur={() => setFocused('')}
-                />
-                {type === 'password' && name === 'password' && (
-                    <button
-                        type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
-                        onClick={() => setShowPassword(!showPassword)}
-                    >
-                        {showPassword ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
-                    </button>
-                )}
-            </div>
-        </div>
-    );
+
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950 px-4 py-12 transition-colors duration-300">
@@ -155,33 +172,48 @@ const SignUp = () => {
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3">
-                            <InputField name="first_name" label="First Name" icon={MdPerson} placeholder="Enter first name" />
-                            <InputField name="last_name" label="Last Name" icon={MdPerson} placeholder="Enter last name" />
+                            <InputField name="first_name" label="First Name" icon={MdPerson} placeholder="Enter first name" value={formData.first_name} onChange={handleChange} focused={focused} setFocused={setFocused} disabled={loading} />
+                            <InputField name="last_name" label="Last Name" icon={MdPerson} placeholder="Enter last name" value={formData.last_name} onChange={handleChange} focused={focused} setFocused={setFocused} disabled={loading} />
                         </motion.div>
 
                         <motion.div variants={itemVariants}>
-                            <InputField name="email" label="Email Address" type="email" icon={MdEmail} placeholder="Enter email address" />
+                            <InputField name="email" label="Email Address" type="email" icon={MdEmail} placeholder="Enter email address" value={formData.email} onChange={handleChange} focused={focused} setFocused={setFocused} disabled={loading} />
                         </motion.div>
                         <motion.div variants={itemVariants}>
-                            <InputField name="password" label="Password" type="password" icon={MdLock} placeholder="Enter password" />
+                            <InputField name="password" label="Password" type="password" icon={MdLock} placeholder="Enter password" value={formData.password} onChange={handleChange} focused={focused} setFocused={setFocused} showPassword={showPassword} setShowPassword={setShowPassword} disabled={loading} />
                         </motion.div>
 
-                        {/* Password Strength */}
+                        {/* Password Strength & Requirements */}
                         {formData.password && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-1.5">
-                                <div className="flex gap-1">
-                                    {[1, 2, 3, 4].map(i => (
-                                        <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200 dark:bg-slate-700'}`} />
-                                    ))}
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-3 py-1">
+                                <div className="space-y-1.5">
+                                    <div className="flex gap-1">
+                                        {[1, 2, 3, 4].map(i => (
+                                            <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200 dark:bg-slate-700'}`} />
+                                        ))}
+                                    </div>
+                                    <p className={`text-[10px] font-bold uppercase tracking-wider ${passwordStrength.score <= 1 ? 'text-red-500' : passwordStrength.score <= 2 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                        Security Level: {passwordStrength.label}
+                                    </p>
                                 </div>
-                                <p className={`text-[10px] font-semibold uppercase tracking-wider ${passwordStrength.score <= 1 ? 'text-red-500' : passwordStrength.score <= 2 ? 'text-amber-500' : 'text-emerald-500'}`}>
-                                    {passwordStrength.label}
-                                </p>
+
+                                <div className="grid grid-cols-2 gap-y-1.5 gap-x-4 px-1">
+                                    <ValidationItem label="8+ Characters" isValid={formData.password.length >= 8} />
+                                    <ValidationItem label="Uppercase" isValid={/[A-Z]/.test(formData.password)} />
+                                    <ValidationItem label="Lowercase" isValid={/[a-z]/.test(formData.password)} />
+                                    <ValidationItem label="Number" isValid={/[0-9]/.test(formData.password)} />
+                                    <ValidationItem label="Special Symbol" isValid={/[!@#\$%\^&\*]/.test(formData.password)} />
+                                </div>
                             </motion.div>
                         )}
 
                         <motion.div variants={itemVariants}>
-                            <InputField name="confirm_password" label="Confirm Password" type="password" icon={MdLock} placeholder="Enter confirm password" />
+                            <InputField name="confirm_password" label="Confirm Password" type="password" icon={MdLock} placeholder="Enter confirm password" value={formData.confirm_password} onChange={handleChange} focused={focused} setFocused={setFocused} showPassword={showPassword} disabled={loading} />
+                            {formData.confirm_password && formData.password !== formData.confirm_password && (
+                                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-500 font-medium flex items-center gap-1 mt-1.5 px-1">
+                                    <MdWarning size={12} /> Passwords do not match
+                                </motion.p>
+                            )}
                         </motion.div>
 
                         <motion.div variants={itemVariants} className="pt-2">
@@ -216,5 +248,12 @@ const SignUp = () => {
         </div>
     );
 };
+
+const ValidationItem = ({ label, isValid }) => (
+    <div className={`flex items-center gap-1.5 transition-colors duration-300 ${isValid ? 'text-emerald-500' : 'text-gray-400 dark:text-slate-500'}`}>
+        {isValid ? <MdCheck size={12} className="shrink-0" /> : <div className="w-1.5 h-1.5 rounded-full border border-current shrink-0" />}
+        <span className="text-[10px] font-bold uppercase tracking-tight leading-none">{label}</span>
+    </div>
+);
 
 export default SignUp;

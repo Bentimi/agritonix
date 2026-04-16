@@ -30,6 +30,17 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    const logout = useCallback(async () => {
+        try {
+            await api.post('/user/logout');
+        } catch (error) {
+            console.error('Logout failed on server:', error);
+        } finally {
+            setUser(null);
+            localStorage.removeItem('userId');
+        }
+    }, []);
+
     useEffect(() => {
         // Use localStorage to persist identity through reloads
         const savedId = localStorage.getItem('userId');
@@ -38,7 +49,16 @@ export const AuthProvider = ({ children }) => {
         } else {
             setLoading(false);
         }
-    }, [fetchUserProfile]);
+
+        // Listen for unauthorized events from API interceptor
+        const handleUnauthorized = () => {
+            console.warn('Session expired or unauthorized. Logging out...');
+            logout();
+        };
+
+        window.addEventListener('auth-unauthorized', handleUnauthorized);
+        return () => window.removeEventListener('auth-unauthorized', handleUnauthorized);
+    }, [fetchUserProfile, logout]);
 
     const login = async (credentials) => {
         try {
@@ -90,16 +110,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = async () => {
-        try {
-            await api.post('/user/logout');
-        } catch (error) {
-            console.error('Logout failed on server:', error);
-        } finally {
-            setUser(null);
-            localStorage.removeItem('userId');
-        }
-    };
+
 
     const value = {
         user,

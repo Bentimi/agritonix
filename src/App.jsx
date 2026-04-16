@@ -12,6 +12,7 @@ import SettingsPage from './pages/SettingsPage';
 import UserDashboard from './pages/UserDashboard';
 import PublicProductsPage from './pages/PublicProductsPage';
 import CartPage from './pages/CartPage';
+import OrdersPage from './pages/OrdersPage';
 import CheckoutPage from './pages/CheckoutPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import PaymentPendingPage from './pages/PaymentPendingPage';
@@ -45,6 +46,11 @@ const App = () => {
                 <Route path="/cart" element={
                     <DashboardLayout activeNav="cart">
                         <CartPage />
+                    </DashboardLayout>
+                } />
+                <Route path="/orders" element={
+                    <DashboardLayout activeNav="orders">
+                        <OrdersPage />
                     </DashboardLayout>
                 } />
                 <Route path="/checkout" element={

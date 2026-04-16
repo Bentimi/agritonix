@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import {
-    MdSearch, MdEdit, MdVisibility, MdClose, MdSave, MdLock, MdWarning, MdPerson, MdEmail, MdPhone, MdBadge, MdSecurity, MdCalendarMonth, MdVerified, MdKey, MdBlock, MdToggleOn, MdToggleOff, MdAdminPanelSettings, MdPeople, MdInventory2
+    MdSearch, MdEdit, MdVisibility, MdClose, MdSave, MdLock, MdWarning, MdPerson, MdEmail, MdPhone, MdBadge, MdSecurity, MdCalendarMonth, MdVerified, MdKey, MdBlock, MdToggleOn, MdToggleOff, MdAdminPanelSettings, MdPeople, MdInventory2, MdChevronLeft, MdChevronRight
 } from 'react-icons/md';
 import { useNavigate, Link } from 'react-router';
 import { toast } from 'react-toastify';
@@ -15,6 +15,8 @@ const AdminDashboard = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const navigate = useNavigate();
 
     // Modal State
@@ -54,6 +56,23 @@ const AdminDashboard = () => {
             u.username?.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [users, searchTerm]);
+
+    const totalPages = Math.ceil(filteredUsers.length / pageSize);
+    const paginatedUsers = useMemo(() => {
+        return filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    }, [filteredUsers, currentPage, pageSize]);
+
+    useEffect(() => { setCurrentPage(1); }, [searchTerm, pageSize]);
+
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisible = 5;
+        let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let end = Math.min(totalPages, start + maxVisible - 1);
+        if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
+        for (let i = start; i <= end; i++) pages.push(i);
+        return pages;
+    };
 
     const stats = useMemo(() => ({
         total: users.length,
@@ -174,6 +193,19 @@ const AdminDashboard = () => {
                                 </span>
                             )}
                         </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-2">View</span>
+                            <select 
+                                value={pageSize} 
+                                onChange={(e) => setPageSize(Number(e.target.value))}
+                                className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-xs font-bold text-gray-600 dark:text-slate-300 outline-none focus:border-emerald-500 transition-all"
+                            >
+                                <option value={10}>10 Items</option>
+                                <option value={25}>25 Items</option>
+                                <option value={50}>50 Items</option>
+                                <option value={100}>100 Items</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -212,7 +244,7 @@ const AdminDashboard = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                ) : filteredUsers.map((u, i) => (
+                                ) : paginatedUsers.map((u, i) => (
                                     <tr key={u.id} className="table-row-hover group">
                                         {/* Member */}
                                         <td className="px-2 sm:px-4 py-2">
@@ -282,6 +314,45 @@ const AdminDashboard = () => {
                             </tbody>
                         </table>
                     </div>
+                    {/* Pagination */}
+                    {!loading && filteredUsers.length > pageSize && (
+                        <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest hidden sm:block">
+                                Showing <span className="text-gray-900 dark:text-white">{(currentPage - 1) * pageSize + 1}</span> to <span className="text-gray-900 dark:text-white">{Math.min(currentPage * pageSize, filteredUsers.length)}</span> of <span className="text-gray-900 dark:text-white">{filteredUsers.length}</span> members
+                            </p>
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest sm:hidden">
+                                <span className="text-gray-900 dark:text-white">{filteredUsers.length} Members Total</span>
+                            </p>
+
+                            <div className="flex items-center gap-1.5 self-center sm:self-auto">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-1.5 text-gray-400 hover:text-emerald-600 disabled:opacity-30 transition-all font-bold"
+                                >
+                                    <MdChevronLeft size={20} />
+                                </button>
+                                <div className="flex gap-1">
+                                    {getPageNumbers().map(page => (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            className={`w-8 h-8 rounded-xl text-[10px] font-black transition-all ${currentPage === page ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-gray-50 dark:bg-slate-800/60 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+                                        >
+                                            {page}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                    className="p-1.5 text-gray-400 hover:text-emerald-600 disabled:opacity-30 transition-all font-bold"
+                                >
+                                    <MdChevronRight size={20} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
             </div>

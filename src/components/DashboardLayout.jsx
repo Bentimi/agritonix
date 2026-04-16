@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     MdDashboard, MdPeople, MdInventory, MdSettings, MdLogout,
     MdMenu, MdClose, MdDarkMode, MdLightMode, MdKeyboardArrowRight,
-    MdPerson, MdShoppingCart
+    MdPerson, MdShoppingCart, MdReceipt
 } from 'react-icons/md';
 
 const DashboardLayout = ({ children, activeNav }) => {
@@ -15,8 +15,10 @@ const DashboardLayout = ({ children, activeNav }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [productsExpanded, setProductsExpanded] = useState(location.pathname.includes('/products'));
 
     const isAdmin = user?.role === 'admin';
+    const isStaff = user?.role === 'staff';
 
     const isNavActive = (key) => {
         if (activeNav) return key === activeNav;
@@ -84,16 +86,49 @@ const DashboardLayout = ({ children, activeNav }) => {
                         {/* Dashboard */}
                         <NavLink to={dashboardLink} icon={<MdDashboard />} label="Dashboard" active={isNavActive('dashboard')} onClick={() => setSidebarOpen(false)} />
 
-                        {/* Users — only for admins */}
-                        {isAdmin && (
+                        {/* Users — for admins and staff */}
+                        {(isAdmin || isStaff) && (
                             <NavLink to="/admin/users" icon={<MdPeople />} label="Users" active={isNavActive('users') || isNavActive('roles') || isNavActive('status')} onClick={() => setSidebarOpen(false)} />
                         )}
 
-                        {/* Products — for all users */}
-                        <NavLink to={isAdmin ? "/admin/products" : "/products"} icon={<MdInventory />} label="Products" active={isNavActive('products')} onClick={() => setSidebarOpen(false)} />
+                        {/* Products — Accordion for Admin/Staff, Normal for Users */}
+                        {(isAdmin || isStaff) ? (
+                            <div className="space-y-1">
+                                <button
+                                    onClick={() => setProductsExpanded(!productsExpanded)}
+                                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 group ${
+                                        (!productsExpanded && (location.pathname === '/products' || location.pathname === '/admin/products')) ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/60 hover:text-gray-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className={`text-lg ${(location.pathname === '/products' || location.pathname === '/admin/products') ? 'text-emerald-500' : 'text-gray-400 dark:text-slate-500 group-hover:text-emerald-500'} transition-colors`}><MdInventory /></span>
+                                        Products
+                                    </div>
+                                    <MdKeyboardArrowRight className={`transition-transform duration-200 ${productsExpanded ? 'rotate-90' : ''}`} />
+                                </button>
+                                <AnimatePresence>
+                                    {productsExpanded && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="overflow-hidden pl-11 space-y-1 mt-1 pr-2"
+                                        >
+                                            <SubNavLink to="/admin/products" label="Manage Products" active={location.pathname === '/admin/products'} onClick={() => setSidebarOpen(false)} />
+                                            <SubNavLink to="/products" label="Shop Products" active={location.pathname === '/products'} onClick={() => setSidebarOpen(false)} />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        ) : (
+                            <NavLink to="/products" icon={<MdInventory />} label="Products" active={isNavActive('products')} onClick={() => setSidebarOpen(false)} />
+                        )}
 
                         {/* Cart — for all users */}
-                        <NavLink to="/cart" icon={<MdShoppingCart />} label="My Cart" active={location.pathname === '/cart'} onClick={() => setSidebarOpen(false)} />
+                        <NavLink to="/cart" icon={<MdShoppingCart />} label="My Cart" active={isNavActive('cart')} onClick={() => setSidebarOpen(false)} />
+
+                        {/* Orders — for all users */}
+                        <NavLink to="/orders" icon={<MdReceipt />} label="My Orders" active={isNavActive('orders')} onClick={() => setSidebarOpen(false)} />
 
                         {/* My Profile — for all users */}
                         <NavLink to="/profile" icon={<MdPerson />} label="My Profile" active={isNavActive('profile')} onClick={() => setSidebarOpen(false)} />
@@ -177,7 +212,7 @@ const NavLink = ({ to, icon, label, active, onClick }) => (
     </Link>
 );
 
-const SubNavLink = ({ to, icon, label, active, onClick }) => (
+const SubNavLink = ({ to, label, active, onClick }) => (
     <Link to={to} onClick={onClick}
         className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 ${
             active
@@ -185,7 +220,6 @@ const SubNavLink = ({ to, icon, label, active, onClick }) => (
                 : 'text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800/40'
         }`}
     >
-        <span className="text-base">{icon}</span>
         {label}
     </Link>
 );

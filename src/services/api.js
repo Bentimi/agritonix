@@ -32,10 +32,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-            return Promise.reject(error);
+        if (error.response?.status === 401) {
+            // Dispatch a custom event for AuthContext to handle
+            window.dispatchEvent(new Event('auth-unauthorized'));
         }
         return Promise.reject(error);
     }

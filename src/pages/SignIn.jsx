@@ -82,6 +82,7 @@ const SignIn = () => {
                                     onChange={handleChange}
                                     onFocus={() => setFocused('credential')}
                                     onBlur={() => setFocused('')}
+                                    disabled={loading}
                                 />
                             </div>
                         </motion.div>
@@ -104,6 +105,7 @@ const SignIn = () => {
                                     onChange={handleChange}
                                     onFocus={() => setFocused('password')}
                                     onBlur={() => setFocused('')}
+                                    disabled={loading}
                                 />
                                 <button
                                     type="button"

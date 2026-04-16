@@ -157,7 +157,7 @@ const UserView = () => {
                                     {user?.active && <MdVerified className="text-emerald-500 text-lg" />}
                                 </div>
                                 <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
-                                    @{user?.username} • Joined {new Date(user?.date_joined).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                    {user?.username} • Joined {new Date(user?.date_joined).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                                 </p>
 
                                 {/* Badges */}
@@ -200,7 +200,7 @@ const UserView = () => {
                             </div>
                             <div className="space-y-5">
                                 <InfoRow label="Full Name" value={`${user?.first_name} ${user?.last_name}`} />
-                                <InfoRow label="Username" value={`@${user?.username}`} />
+                                <InfoRow label="Username" value={user?.username} />
                                 <InfoRow label="Gender" value={user?.gender || 'Not specified'} capitalize />
                                 <InfoRow label="Marital Status" value={user?.marital_status || 'Not specified'} capitalize />
                             </div>
