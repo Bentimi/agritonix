@@ -70,7 +70,7 @@ const CheckoutPage = () => {
                 // amount: amount,
                 // currency: 'NGN',
                 // description: `Order for ${cart.length} item(s)`,
-                url: `http://localhost:5173/payment/pending`,
+                url: `${window.location.origin}/payment/pending`,
             });
             console.log(response.data)
             if (response.data.status === 'success' && response.data.data?.link) {
