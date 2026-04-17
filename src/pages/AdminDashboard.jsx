@@ -333,7 +333,7 @@ const AdminDashboard = () => {
                 </motion.div>
 
                 {/* Table Wrapper */}
-                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-b-2xl border border-gray-100 dark:border-slate-800/70 shadow-lg overflow-hidden flex flex-col mb-10 w-[26rem] md:w-[55rem] lg:w-full mt-3">
+                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-b-2xl border border-gray-100 dark:border-slate-800/70 shadow-lg overflow-hidden flex flex-col mb-10 w-[25rem] md:w-[55rem] lg:w-full mt-3">
                     <div className="overflow-x-auto overflow-y-auto max-h-[600px] custom-scrollbar">
                         <table className="w-full text-left border-separate border-spacing-0" style={{ minWidth: '700px' }}>
             <thead>
