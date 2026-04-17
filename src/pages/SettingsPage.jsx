@@ -31,7 +31,9 @@ const SettingsPage = () => {
     const handleChangePassword = async (e) => {
         e.preventDefault();
         if (pwData.new_password !== pwData.confirm_password) { toast.error('Passwords do not match'); return; }
-        if (pwData.new_password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])/;
+        if (pwData.new_password.length < 8) { toast.error('Password must be at least 8 characters'); return; }
+        if (!passwordRegex.test(pwData.new_password)) { toast.error('Password must include uppercase, lowercase, number, and a special character (!@#$%^&*)'); return; }
         setIsPwSaving(true);
         try {
             const res = await api.put('/user/change-password', { current_password: pwData.current_password, new_password: pwData.new_password });
@@ -220,14 +222,25 @@ const SettingsPage = () => {
                                     <div key={key}>
                                         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
                                         <div className="relative">
-                                            <input type={showPw[showKey] ? 'text' : 'password'} required value={pwData[key]}
+                                            <input type={showPw[showKey] && !isPwSaving ? 'text' : 'password'} required value={pwData[key]}
                                                 onChange={(e) => setPwData({ ...pwData, [key]: e.target.value })}
-                                                className="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all" />
+                                                disabled={isPwSaving}
+                                                className="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all disabled:opacity-50" />
                                             <button type="button" onClick={() => setShowPw(s => ({ ...s, [showKey]: !s[showKey] }))}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                                                {showPw[showKey] ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+                                                disabled={isPwSaving}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50">
+                                                {showPw[showKey] && !isPwSaving ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
                                             </button>
                                         </div>
+                                        {key === 'new_password' && pwData.new_password && (
+                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="grid grid-cols-2 gap-y-1.5 gap-x-4 px-1 py-2">
+                                                <ValidationItem label="8+ Characters" isValid={pwData.new_password.length >= 8} />
+                                                <ValidationItem label="Uppercase" isValid={/[A-Z]/.test(pwData.new_password)} />
+                                                <ValidationItem label="Lowercase" isValid={/[a-z]/.test(pwData.new_password)} />
+                                                <ValidationItem label="Number" isValid={/[0-9]/.test(pwData.new_password)} />
+                                                <ValidationItem label="Special Symbol" isValid={/[!@#\$%\^&\*]/.test(pwData.new_password)} />
+                                            </motion.div>
+                                        )}
                                     </div>
                                 ))}
                                 {pwData.new_password && pwData.confirm_password && pwData.new_password !== pwData.confirm_password && (
@@ -301,6 +314,13 @@ const ThemeOption = ({ label, icon, active, onClick, preview }) => (
             </div>
         )}
     </button>
+);
+
+const ValidationItem = ({ label, isValid }) => (
+    <div className={`flex items-center gap-1.5 transition-colors duration-300 ${isValid ? 'text-emerald-500' : 'text-gray-400 dark:text-slate-500'}`}>
+        {isValid ? <MdCheck size={12} className="shrink-0" /> : <div className="w-1.5 h-1.5 rounded-full border border-current shrink-0" />}
+        <span className="text-[10px] font-bold uppercase tracking-tight leading-none">{label}</span>
+    </div>
 );
 
 export default SettingsPage;

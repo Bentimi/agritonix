@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { toast } from 'react-toastify';
@@ -492,11 +492,11 @@ const ProductsPage = () => {
                                                     {product.newPrice ? (
                                                         <div className="flex flex-col gap-0.5">
                                                             <p className="text-[10px] text-gray-400 dark:text-slate-500 line-through">
-                                                                ₦{Number(product.price).toLocaleString()}
+                                                                NGN {Number(product.price).toLocaleString()}
                                                             </p>
                                                             <div className="flex items-center gap-1.5">
                                                                 <p className="font-bold text-emerald-600 dark:text-emerald-500 text-sm">
-                                                                    ₦{Number(product.newPrice).toLocaleString()}
+                                                                    NGN {Number(product.newPrice).toLocaleString()}
                                                                 </p>
                                                                 {Number(product.price) > Number(product.newPrice) && (
                                                                     <span className="text-[9px] font-bold text-white bg-red-500 px-1 py-0.5 rounded">
@@ -507,7 +507,7 @@ const ProductsPage = () => {
                                                         </div>
                                                     ) : (
                                                         <p className="font-semibold text-gray-900 dark:text-white text-sm">
-                                                            {product.price ? `₦${Number(product.price).toLocaleString()}` : '—'}
+                                                            {product.price ? `NGN ${Number(product.price).toLocaleString()}` : '—'}
                                                         </p>
                                                     )}
                                                 </td>
@@ -666,11 +666,11 @@ const ProductsPage = () => {
                                         <div className="absolute -right-4 -top-4 w-16 h-16 bg-emerald-100 dark:bg-emerald-900/20 rounded-full blur-2xl group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/40 transition-colors" />
                                         <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Price</p>
                                         <p className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                                            {viewProduct.price ? `₦${Number(viewProduct.price).toLocaleString()}` : '—'}
+                                            {viewProduct.price ? `NGN ${Number(viewProduct.price).toLocaleString()}` : '—'}
                                         </p>
                                         {viewProduct.newPrice && (
                                             <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-500 mt-1.5 flex items-center gap-1">
-                                                SALE: ₦{Number(viewProduct.newPrice).toLocaleString()}
+                                                SALE: NGN {Number(viewProduct.newPrice).toLocaleString()}
                                             </p>
                                         )}
                                     </div>
@@ -1358,8 +1358,8 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                     </div>
 
                     {/* Right Panel: Structured Form (col-span-7) */}
-                    <div className="lg:w-7/12 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
-                        <form onSubmit={handleSubmit} id="product-form" className="flex-1 flex flex-col lg:overflow-hidden">
+                    <div className="lg:w-7/12 bg-white dark:bg-slate-900 flex flex-col">
+                        <form onSubmit={handleSubmit} id="product-form" className="flex-1 flex flex-col">
                             <div className="flex-1 lg:overflow-y-auto p-5 sm:p-8 custom-scrollbar space-y-8">
                                 {/* Section: Attributes */}
                                 <div className="space-y-6">
@@ -1432,7 +1432,7 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                         <div className="space-y-2">
                                             <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Standard Price</label>
                                             <div className="relative">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-400 font-black">₦</span>
+                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-400 font-black">NGN </span>
                                                 <input
                                                     type="number"
                                                     name="price"
@@ -1449,7 +1449,7 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                         <div className="space-y-2">
                                             <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Promotional Rate</label>
                                             <div className="relative">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-orange-500 font-black">₦</span>
+                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-orange-500 font-black">NGN </span>
                                                 <input
                                                     type="number"
                                                     name="newPrice"

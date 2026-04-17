@@ -466,13 +466,13 @@ const PasswordField = ({ label, value, onChange, show, onToggle, disabled = fals
         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
         <div className="relative">
             <input
-                type={show ? 'text' : 'password'} required value={value}
+                type={show && !disabled ? 'text' : 'password'} required value={value}
                 onChange={(e) => onChange(e.target.value)}
                 disabled={disabled}
                 className="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <button type="button" onClick={onToggle} disabled={disabled} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50">
-                {show ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+                {show && !disabled ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
             </button>
         </div>
     </div>

@@ -476,3 +476,21 @@ tbody tr:last-child td {
 .dark .avatar-ring::after {
   border-color: #0f172a;
 }
+
+/* ─── Print Receipt ─── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-receipt-section, .print-receipt-section * {
+    visibility: visible;
+  }
+  .print-receipt-section {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}

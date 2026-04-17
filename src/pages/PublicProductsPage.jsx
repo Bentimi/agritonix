@@ -379,7 +379,7 @@ const PublicProductsPage = () => {
                                                     <div className="flex items-center gap-3">
                                                         <div className="flex-1">
                                                             <h4 className="font-medium text-gray-900 dark:text-white text-sm">{item.product?.name || item.name}</h4>
-                                                            <p className="text-gray-500 dark:text-slate-400 text-xs">₦{(item.product?.newPrice || item.newPrice || item.product?.price || item.price)} each</p>
+                                                            <p className="text-gray-500 dark:text-slate-400 text-xs">NGN {Number(item.product?.newPrice || item.newPrice || item.product?.price || item.price).toLocaleString()} each</p>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <button
@@ -388,7 +388,27 @@ const PublicProductsPage = () => {
                                                             >
                                                                 -
                                                             </button>
-                                                            <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                                                            <input 
+                                                                type="number"
+                                                                min="1"
+                                                                max={getStock(item.product || item)}
+                                                                value={item.quantity}
+                                                                onChange={(e) => {
+                                                                    const val = parseInt(e.target.value);
+                                                                    if (!isNaN(val) && val > 0 && val <= getStock(item.product || item)) {
+                                                                        updateQuantity(item.id, val);
+                                                                    }
+                                                                }}
+                                                                onBlur={(e) => {
+                                                                    const val = parseInt(e.target.value);
+                                                                    if (isNaN(val) || val <= 0) {
+                                                                        updateQuantity(item.id, 1);
+                                                                    } else if (val > getStock(item.product || item)) {
+                                                                        updateQuantity(item.id, getStock(item.product || item));
+                                                                    }
+                                                                }}
+                                                                className="w-12 text-center text-sm font-medium border border-gray-200 dark:border-slate-700 rounded bg-white dark:bg-slate-900 text-gray-900 dark:text-white pb-0.5 pt-0.5 outline-none focus:border-emerald-500 hide-arrow"
+                                                            />
                                                             <button
                                                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                                                 className="w-6 h-6 rounded bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-300 dark:hover:bg-slate-600"
@@ -409,7 +429,7 @@ const PublicProductsPage = () => {
                                         <div className="p-4 border-t border-gray-200 dark:border-slate-800">
                                             <div className="flex justify-between items-center mb-3">
                                                 <span className="font-semibold text-gray-900 dark:text-white">Total:</span>
-                                                <span className="font-bold text-lg text-emerald-600">₦{getCartTotal().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                                <span className="font-bold text-lg text-emerald-600">NGN {getCartTotal().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                                             </div>
                                             <button
                                                 onClick={() => navigate('/cart')}
@@ -417,7 +437,12 @@ const PublicProductsPage = () => {
                                             >
                                                 View Cart
                                             </button>
-                                            <button className="w-full py-2 bg-gray-200 dark:bg-slate-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors">
+                                            <button 
+                                                onClick={() => {
+                                                    setShowCart(false);
+                                                    navigate('/checkout');
+                                                }}
+                                                className="w-full py-2 bg-gray-200 dark:bg-slate-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors">
                                                 Checkout
                                             </button>
                                         </div>
@@ -584,14 +609,14 @@ const PublicProductsPage = () => {
                                             {product.newPrice ? (
                                                 <div className="flex flex-col">
                                                     <div className="flex items-center gap-1 text-gray-400 dark:text-slate-500 line-through text-xs">
-                                                        <span className="font-bold">₦</span>
-                                                        <span className="font-bold">{product.price}</span>
+                                                        <span className="font-bold">NGN </span>
+                                                        <span className="font-bold">{Number(product.price).toLocaleString()}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1.5">
                                                         <div className="flex items-center gap-0.5">
-                                                            <span className="text-emerald-600 font-bold" style={{ fontSize: '18px' }}>₦</span>
+                                                            <span className="text-emerald-600 font-bold" style={{ fontSize: '18px' }}>NGN </span>
                                                             <span className="text-lg font-bold text-gray-900 dark:text-white">
-                                                                {product.newPrice}
+                                                                {Number(product.newPrice).toLocaleString()}
                                                             </span>
                                                         </div>
                                                         {Number(product.price) > Number(product.newPrice) && (
@@ -603,9 +628,9 @@ const PublicProductsPage = () => {
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <span className="text-emerald-600 font-bold" style={{ fontSize: '18px' }}>₦</span>
+                                                    <span className="text-emerald-600 font-bold" style={{ fontSize: '18px' }}>NGN </span>
                                                     <span className="text-lg font-bold text-gray-900 dark:text-white">
-                                                        {product.price}
+                                                        {Number(product.price).toLocaleString()}
                                                     </span>
                                                 </>
                                             )}
@@ -634,28 +659,42 @@ const PublicProductsPage = () => {
                                                 (Max: {getStock(product)})
                                             </span>
                                         </div>
-                                        <button
-                                            onClick={() => {
-                                                const quantityInput = document.getElementById(`quantity-${product.id}`);
-                                                const quantity = parseInt(quantityInput.value) || 1;
-                                                addToCart(product, quantity);
-                                            }}
-                                            disabled={getStock(product) <= 0}
-                                            className={`w-full py-2 rounded-lg text-sm font-medium transition-all ${
-                                                getStock(product) > 0
-                                                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                                    : 'bg-gray-200 dark:bg-slate-700 text-gray-400 cursor-not-allowed'
-                                            }`}
-                                        >
-                                            {getStock(product) > 0 ? (
-                                                <>
-                                                    <MdShoppingCart size={16} className="inline mr-1" />
-                                                    Add to Cart
-                                                </>
-                                            ) : (
-                                                'Out of Stock'
-                                            )}
-                                        </button>
+                                        {(() => {
+                                            const isInCart = Array.isArray(cart) && cart.some(item => item.product?.id === product.id || item.productId === product.id);
+                                            const isOutOfStock = getStock(product) <= 0;
+                                            const isDisabled = isInCart || isOutOfStock;
+                                            
+                                            return (
+                                                <button
+                                                    onClick={() => {
+                                                        if (isDisabled) return;
+                                                        const quantityInput = document.getElementById(`quantity-${product.id}`);
+                                                        const quantity = parseInt(quantityInput.value) || 1;
+                                                        addToCart(product, quantity);
+                                                    }}
+                                                    disabled={isDisabled}
+                                                    className={`w-full py-2 rounded-lg text-sm font-medium transition-all ${
+                                                        !isDisabled
+                                                            ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                                            : 'bg-gray-200 dark:bg-slate-700 text-gray-400 cursor-not-allowed'
+                                                    }`}
+                                                >
+                                                    {isInCart ? (
+                                                        <>
+                                                            <MdShoppingCart size={16} className="inline mr-1" />
+                                                            Already in Cart
+                                                        </>
+                                                    ) : isOutOfStock ? (
+                                                        'Out of Stock'
+                                                    ) : (
+                                                        <>
+                                                            <MdShoppingCart size={16} className="inline mr-1" />
+                                                            Add to Cart
+                                                        </>
+                                                    )}
+                                                </button>
+                                            );
+                                        })()}
                                         <button
                                             onClick={() => {
                                                 setSelectedProduct(product);
@@ -788,8 +827,8 @@ const PublicProductsPage = () => {
                                         <div className="flex items-baseline gap-2">
                                             {selectedProduct.newPrice ? (
                                                 <>
-                                                    <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">₦{selectedProduct.newPrice}</span>
-                                                    <span className="text-lg text-slate-400 line-through font-bold">₦{selectedProduct.price}</span>
+                                                    <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">NGN {Number(selectedProduct.newPrice).toLocaleString()}</span>
+                                                    <span className="text-lg text-slate-400 line-through font-bold">NGN {Number(selectedProduct.price).toLocaleString()}</span>
                                                     {Number(selectedProduct.price) > Number(selectedProduct.newPrice) && (
                                                         <span className="ml-2 text-sm font-bold text-white bg-red-500 px-2 py-1 rounded-lg">
                                                             -{Math.round(((selectedProduct.price - selectedProduct.newPrice) / selectedProduct.price) * 100)}%
@@ -797,7 +836,7 @@ const PublicProductsPage = () => {
                                                     )}
                                                 </>
                                             ) : (
-                                                <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">₦{selectedProduct.price}</span>
+                                                <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">NGN {Number(selectedProduct.price).toLocaleString()}</span>
                                             )}
                                         </div>
                                     </div>

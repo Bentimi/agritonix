@@ -96,10 +96,10 @@ const SignIn = () => {
                                     <MdLock className={`text-lg transition-colors duration-200 ${focused === 'password' ? 'text-emerald-500' : 'text-gray-400'}`} />
                                 </div>
                                 <input
-                                    type={showPassword ? "text" : "password"}
+                                    type={showPassword && !loading ? "text" : "password"}
                                     name="password"
                                     required
-                                    className="block w-full pl-11 pr-12 py-3 bg-transparent text-gray-900 dark:text-white text-sm rounded-xl outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
+                                    className="block w-full pl-11 pr-12 py-3 bg-transparent text-gray-900 dark:text-white text-sm rounded-xl outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500 disabled:opacity-50"
                                     placeholder="Enter your password"
                                     value={credentials.password}
                                     onChange={handleChange}
@@ -109,10 +109,11 @@ const SignIn = () => {
                                 />
                                 <button
                                     type="button"
-                                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
+                                    disabled={loading}
+                                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors disabled:opacity-50"
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
-                                    {showPassword ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
+                                    {showPassword && !loading ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
                                 </button>
                             </div>
                         </motion.div>

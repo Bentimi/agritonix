@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import api from '../services/api';
 import { toast } from 'react-toastify';
@@ -178,11 +178,11 @@ const CheckoutPage = () => {
                                         {item.product?.name || item.name}
                                     </p>
                                     <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">
-                                        {item.quantity} × ₦{Number(item.price).toLocaleString()}
+                                        {item.quantity} × NGN {Number(item.price).toLocaleString()}
                                     </p>
                                 </div>
                                 <p className="text-sm font-bold">
-                                    ₦{(item.price * item.quantity).toLocaleString()}
+                                    NGN {(item.price * item.quantity).toLocaleString()}
                                 </p>
                             </div>
                         ))}
@@ -192,20 +192,20 @@ const CheckoutPage = () => {
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-600 dark:text-slate-400 font-medium">Subtotal</span>
                             <span className="font-bold text-gray-900 dark:text-white text-lg">
-                                ₦{getCartTotal().toLocaleString()}
+                                NGN {getCartTotal().toLocaleString()}
                             </span>
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-600 dark:text-slate-400 font-medium">Tax (7.5%)</span>
                             <span className="font-bold text-gray-900 dark:text-white text-lg">
-                                ₦{getTax().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                NGN {getTax().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                         </div>
                         <div className="border-t border-gray-200 dark:border-slate-700 pt-3">
                             <div className="flex justify-between">
                                 <span className="font-bold text-gray-900 dark:text-white text-lg">Total</span>
                                 <span className="font-black text-2xl text-emerald-600">
-                                    ₦{getOrderTotal().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    NGN {getOrderTotal().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </div>
                         </div>
@@ -224,7 +224,7 @@ const CheckoutPage = () => {
                         ) : (
                             <>
                                 <MdPayment size={22} />
-                                Pay Now ₦{getOrderTotal().toLocaleString()}
+                                Pay Now NGN {getOrderTotal().toLocaleString()}
                             </>
                         )}
                     </button>

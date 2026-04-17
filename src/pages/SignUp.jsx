@@ -13,7 +13,7 @@ const InputField = ({ name, label, type = 'text', icon: Icon, placeholder, value
                 <Icon className={`text-lg transition-colors duration-200 ${focused === name ? 'text-emerald-500' : 'text-gray-400'}`} />
             </div>
             <input
-                type={type === 'password' ? (showPassword ? 'text' : 'password') : type}
+                type={type === 'password' ? (showPassword && !disabled ? 'text' : 'password') : type}
                 name={name}
                 required
                 disabled={disabled}
@@ -24,14 +24,14 @@ const InputField = ({ name, label, type = 'text', icon: Icon, placeholder, value
                 onFocus={() => setFocused(name)}
                 onBlur={() => setFocused('')}
             />
-            {type === 'password' && name === 'password' && (
+            {type === 'password' && (name === 'password' || name === 'confirm_password') && (
                 <button
                     type="button"
                     disabled={disabled}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors disabled:opacity-50"
                     onClick={() => setShowPassword(!showPassword)}
                 >
-                    {showPassword ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
+                    {showPassword && !disabled ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
                 </button>
             )}
         </div>

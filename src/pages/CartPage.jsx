@@ -289,7 +289,7 @@ const CartPage = () => {
                                                                 {item.product?.name || item.name}
                                                             </h3>
                                                             <p className="text-sm text-gray-600 dark:text-slate-400">
-                                                                ₦{Number(item.price).toLocaleString()} each
+                                                                NGN {Number(item.price).toLocaleString()} each
                                                             </p>
                                                             <p className="text-xs text-gray-500 dark:text-slate-500">
                                                                 Stock available: {getStock(item.product || item)}
@@ -332,9 +332,27 @@ const CartPage = () => {
                                                             >
                                                                 <MdRemove size={16} />
                                                             </button>
-                                                            <span className="w-12 text-center font-medium">
-                                                                {item.quantity}
-                                                            </span>
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                max={getStock(item.product || item)}
+                                                                value={item.quantity}
+                                                                onChange={(e) => {
+                                                                    const val = parseInt(e.target.value);
+                                                                    if (!isNaN(val) && val > 0 && val <= getStock(item.product || item)) {
+                                                                        updateQuantity(item.id, val);
+                                                                    }
+                                                                }}
+                                                                onBlur={(e) => {
+                                                                    const val = parseInt(e.target.value);
+                                                                    if (isNaN(val) || val <= 0) {
+                                                                        updateQuantity(item.id, 1);
+                                                                    } else if (val > getStock(item.product || item)) {
+                                                                        updateQuantity(item.id, getStock(item.product || item));
+                                                                    }
+                                                                }}
+                                                                className="w-14 px-1 py-1 text-center font-medium border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                                            />
                                                             <button
                                                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                                                 className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-300 dark:hover:bg-slate-600 flex items-center justify-center"
@@ -346,7 +364,7 @@ const CartPage = () => {
                                                     <div className="text-right ml-auto sm:ml-0">
                                                         <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Subtotal</p>
                                                         <p className="font-bold text-lg text-emerald-600 dark:text-emerald-500">
-                                                            ₦{(item.price * item.quantity).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                            NGN {(item.price * item.quantity).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -390,7 +408,7 @@ const CartPage = () => {
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-600 dark:text-slate-400">Subtotal</span>
                                         <span className="font-medium text-gray-900 dark:text-white">
-                                            ₦{getCartTotal().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                            NGN {getCartTotal().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-sm">
@@ -403,7 +421,7 @@ const CartPage = () => {
                                         <div className="flex justify-between">
                                             <span className="font-semibold text-gray-900 dark:text-white">Total</span>
                                             <span className="font-bold text-lg text-emerald-600">
-                                                ₦{getCartTotal().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                NGN {getCartTotal().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                                             </span>
                                         </div>
                                     </div>
@@ -599,8 +617,8 @@ const CartPage = () => {
                                         <div className="flex items-baseline gap-2">
                                             {storyProduct.newPrice ? (
                                                 <>
-                                                    <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">₦{Number(storyProduct.newPrice).toLocaleString()}</span>
-                                                    <span className="text-lg text-slate-400 line-through font-bold">₦{Number(storyProduct.price).toLocaleString()}</span>
+                                                    <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">NGN {Number(storyProduct.newPrice).toLocaleString()}</span>
+                                                    <span className="text-lg text-slate-400 line-through font-bold">NGN {Number(storyProduct.price).toLocaleString()}</span>
                                                     {Number(storyProduct.price) > Number(storyProduct.newPrice) && (
                                                         <span className="ml-2 text-sm font-bold text-white bg-red-500 px-2 py-1 rounded-lg">
                                                             -{Math.round(((storyProduct.price - storyProduct.newPrice) / storyProduct.price) * 100)}%
@@ -608,7 +626,7 @@ const CartPage = () => {
                                                     )}
                                                 </>
                                             ) : (
-                                                <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">₦{Number(storyProduct.price).toLocaleString()}</span>
+                                                <span className="text-4xl font-black text-emerald-600 dark:text-emerald-500">NGN {Number(storyProduct.price).toLocaleString()}</span>
                                             )}
                                         </div>
                                     </div>

@@ -123,14 +123,14 @@ const OrdersPage = () => {
                                             Order #{order.txRef || order.id.slice(0, 8)}
                                         </h4>
                                         <p className="text-sm text-gray-600 dark:text-slate-400 line-clamp-1">
-                                            {itemCount} {itemCount === 1 ? 'item' : 'items'}: {itemsPreview} {itemCount > 3 && '...'}
+                                            {itemCount} {itemCount === 1 ? 'item' : 'items'}
                                         </p>
                                     </div>
                                     <div className="flex items-center justify-between md:flex-col md:items-end gap-2 border-t md:border-t-0 md:border-l border-gray-100 dark:border-slate-800 pt-3 md:pt-0 md:pl-6 text-right">
                                         <div>
                                             <p className="text-xs text-gray-500 dark:text-slate-500 uppercase font-semibold tracking-wider mb-0.5">Total Amount</p>
                                             <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                                                ₦{Number(order.total_price).toLocaleString()}
+                                                NGN {Number(order.total_price).toLocaleString()}
                                             </p>
                                         </div>
                                         <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-slate-800 text-gray-400 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/30 group-hover:text-emerald-500 flex items-center justify-center transition-colors">
@@ -175,72 +175,109 @@ const OrdersPage = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm print:hidden"
                             onClick={() => setIsDetailsModalOpen(false)}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh]"
+                            className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh] print-receipt-section"
                         >
-                            <div className="p-6 border-b border-gray-100 dark:border-slate-800/80 bg-gray-50/50 dark:bg-slate-800/30">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                                            Order Details
-                                        </h2>
-                                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-                                            Placed on {new Date(selectedOrder.orderedDate).toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
-                                        </p>
+                            <div className="p-8 bg-white dark:bg-slate-900 border-b-8 border-emerald-600">
+                                {/* Receipt Header */}
+                                <div className="text-center mb-6">
+                                    <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <MdStore size={32} />
                                     </div>
-                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold uppercase tracking-wider ${getStatusConfig(selectedOrder.status).bg} ${getStatusConfig(selectedOrder.status).color}`}>
-                                        {getStatusConfig(selectedOrder.status).icon}
-                                        {getStatusConfig(selectedOrder.status).label}
-                                    </span>
+                                    <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-widest uppercase mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                                        Agritronix
+                                    </h2>
+                                    <p className="text-xs text-gray-400 dark:text-slate-500 font-medium tracking-[0.2em] uppercase">
+                                        Purchase Receipt
+                                    </p>
                                 </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <div className="text-gray-600 dark:text-slate-400">
-                                        <span className="font-semibold block text-xs uppercase tracking-wider mb-0.5">Reference Number</span>
-                                        {selectedOrder.txRef || selectedOrder.id}
+
+                                {/* Order Meta */}
+                                <div className="grid grid-cols-2 gap-4 mb-6 text-sm border-y border-dashed border-gray-200 dark:border-slate-700 py-4">
+                                    <div>
+                                        <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-0.5">Receipt No.</p>
+                                        <p className="font-bold text-gray-900 dark:text-white">{selectedOrder.txRef || selectedOrder.id}</p>
                                     </div>
                                     <div className="text-right">
-                                        <span className="font-semibold block text-xs text-gray-500 dark:text-slate-500 uppercase tracking-wider mb-0.5">Total Paid</span>
-                                        <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">₦{Number(selectedOrder.total_price).toLocaleString()}</span>
+                                        <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-0.5">Date</p>
+                                        <p className="font-bold text-gray-900 dark:text-white">
+                                            {new Date(selectedOrder.orderedDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-0.5">Status</p>
+                                        <p className={`font-bold ${getStatusConfig(selectedOrder.status).color}`}>
+                                            {getStatusConfig(selectedOrder.status).label}
+                                        </p>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-                                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b border-gray-100 dark:border-slate-800 pb-2">Order Items</h3>
-                                <div className="space-y-4">
-                                    {selectedOrder.carts?.map((cartItem) => (
-                                        <div key={cartItem.id} className="flex gap-4 p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/30 dark:bg-slate-900/50">
-                                            <div className="w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-lg overflow-hidden flex-shrink-0">
-                                                {cartItem.product?.photo ? (
-                                                    <img src={cartItem.product.photo} alt={cartItem.product.name} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <MdStore className="text-xl text-gray-400" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="flex-1 flex flex-col justify-center">
-                                                <h4 className="font-bold text-gray-900 dark:text-white text-sm md:text-base">{cartItem.product?.name || 'Unknown Product'}</h4>
-                                                <div className="flex items-center gap-4 mt-1">
-                                                    <span className="text-sm text-gray-500 dark:text-slate-400">Qty: {cartItem.quantity}</span>
-                                                    <span className="text-sm text-gray-500 dark:text-slate-400">₦{Number(cartItem.price).toLocaleString()} each</span>
+
+                                {/* Items */}
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-100 dark:border-slate-800 pb-2">Items</h3>
+                                    <div className="space-y-3">
+                                        {selectedOrder.carts?.map((cartItem) => (
+                                            <div key={cartItem.id} className="flex justify-between items-start text-sm">
+                                                <div className="flex-1 pr-4">
+                                                    <p className="font-bold text-gray-900 dark:text-white">{cartItem.product?.name || 'Unknown Product'}</p>
+                                                    <p className="text-xs text-gray-500">{cartItem.quantity} x NGN {Number(cartItem.price).toLocaleString()}</p>
+                                                </div>
+                                                <div className="font-bold text-gray-900 dark:text-white">
+                                                    NGN {Number(cartItem.total_price).toLocaleString()}
                                                 </div>
                                             </div>
-                                            <div className="text-right flex flex-col justify-center">
-                                                <span className="font-bold text-gray-900 dark:text-white">₦{Number(cartItem.total_price).toLocaleString()}</span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
+
+                                {/* Totals Section */}
+                                <div className="border-t-2 border-dashed border-gray-200 dark:border-slate-700 pt-4 space-y-2 text-sm text-gray-600 dark:text-slate-400">
+                                    <div className="flex justify-between">
+                                        <span>Subtotal</span>
+                                        <span className="font-medium text-gray-900 dark:text-white">
+                                            NGN {Number((selectedOrder.total_price || 0) - (selectedOrder.taxFee || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+                                    {selectedOrder.taxFee != null && (
+                                        <div className="flex justify-between">
+                                            <span>Tax Fee</span>
+                                            <span className="font-medium text-gray-900 dark:text-white">
+                                                NGN {Number(selectedOrder.taxFee).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between font-black text-gray-900 dark:text-white text-lg pt-2 mt-2 border-t border-gray-100 dark:border-slate-800">
+                                        <span>Total Paid</span>
+                                        <span className="text-emerald-600">NGN {Number(selectedOrder.total_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </div>
+                                </div>
+
+                                {/* Verification Timestamp */}
+                                {selectedOrder.verified_at && (
+                                    <div className="mt-8 text-center text-xs text-gray-400 dark:text-slate-500">
+                                        <p className="flex items-center justify-center gap-1">
+                                            <MdCheckCircle className="text-emerald-500" />
+                                            Payment Verified
+                                        </p>
+                                        <p>{new Date(selectedOrder.verified_at).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="p-4 border-t border-gray-100 dark:border-slate-800/80 bg-gray-50/50 dark:bg-slate-800/30 flex justify-end">
+                            <div className="p-4 border-t border-gray-100 dark:border-slate-800/80 bg-gray-50/50 dark:bg-slate-800/30 flex justify-end gap-3 print:hidden">
+                                <button
+                                    onClick={() => window.print()}
+                                    className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors flex items-center gap-2"
+                                >
+                                    <MdReceipt size={18} />
+                                    Print Receipt
+                                </button>
                                 <button
                                     onClick={() => setIsDetailsModalOpen(false)}
                                     className="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 dark:text-slate-900 text-white font-semibold rounded-xl transition-colors"

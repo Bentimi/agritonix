@@ -167,7 +167,7 @@ const AdminDashboard = () => {
         },
         {
             icon: <MdAnalytics />,
-            iconBg: 'bg-violet-100 dark:bg-violet-900/20 text-violet-600',
+            iconBg: 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600',
             title: 'Store Front',
             description: 'View the live products page',
             action: () => navigate('/products'),
@@ -177,7 +177,7 @@ const AdminDashboard = () => {
     if (authLoading) return <LoadingScreen />;
 
     const statCards = [
-        { label: 'Admins', value: stats.admins, icon: <MdAdminPanelSettings />, accent: 'stat-accent-violet', iconBg: 'bg-violet-100 dark:bg-violet-900/20 text-violet-600' },
+        { label: 'Admins', value: stats.admins, icon: <MdAdminPanelSettings />, accent: 'stat-accent-amber', iconBg: 'bg-amber-100 dark:bg-amber-900/20 text-amber-600' },
         { label: 'Staff', value: stats.staff, icon: <MdBadge />, accent: 'stat-accent-sky', iconBg: 'bg-sky-100 dark:bg-sky-900/20 text-sky-600' },
         { label: 'Users', value: stats.customers, icon: <MdPeople />, accent: 'stat-accent-emerald', iconBg: 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600' },
         { label: 'Inventory', value: stats.inventory, icon: <MdInventory2 />, accent: 'stat-accent-amber', iconBg: 'bg-amber-100 dark:bg-amber-900/20 text-amber-600' },
@@ -206,9 +206,9 @@ const AdminDashboard = () => {
 
                 {/* Hero Summary Card */}
                 <motion.div variants={itemVariants} className="relative bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-7 mb-8 overflow-hidden">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-violet-600 rounded-t-2xl" />
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-600 rounded-t-2xl" />
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                        <div className="w-16 h-16 bg-violet-600 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shrink-0 shadow-lg shadow-violet-500/20">
+                        <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shrink-0 shadow-lg shadow-emerald-500/20">
                             <MdAdminPanelSettings />
                         </div>
                         <div className="flex-1 text-center md:text-left">
@@ -226,7 +226,7 @@ const AdminDashboard = () => {
                                 <span className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/15 text-sky-600 dark:text-sky-400 rounded-lg">
                                     <MdBadge /> {stats.staff} Staff On Duty
                                 </span>
-                                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 dark:bg-violet-900/15 text-violet-600 dark:text-violet-400 rounded-lg">
+                                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/15 text-emerald-600 dark:text-emerald-400 rounded-lg">
                                     <MdAdminPanelSettings /> System Roles Locked
                                 </span>
                             </div>
@@ -333,7 +333,7 @@ const AdminDashboard = () => {
                 </motion.div>
 
                 {/* Table Wrapper */}
-                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-b-2xl border border-gray-100 dark:border-slate-800/70 shadow-lg overflow-hidden flex flex-col mb-10 w-[25rem] md:w-[55rem] lg:w-full mt-3">
+                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-b-2xl border border-gray-100 dark:border-slate-800/70 shadow-lg overflow-hidden flex flex-col mb-10 w-[25rem] md:w-[55rem] lg:w-full mt-7">
                     <div className="overflow-x-auto overflow-y-auto max-h-[600px] custom-scrollbar">
                         <table className="w-full text-left border-separate border-spacing-0" style={{ minWidth: '700px' }}>
             <thead>
