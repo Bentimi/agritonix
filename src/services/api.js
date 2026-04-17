@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    // baseURL: 'https://agritonix.onrender.com',
-    baseURL: 'http://localhost:5000',
+    baseURL: 'https://agritonix.onrender.com',
+    // baseURL: 'http://localhost:5000',
     withCredentials: true,
 });
 
@@ -21,10 +21,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        // Disabled automatic logout on 401 to prevent unnecessary logouts
-        // if (error.response?.status === 401) {
-        //     window.dispatchEvent(new Event('auth-unauthorized'));
-        // }
+       
         return Promise.reject(error);
     }
 );

@@ -182,7 +182,7 @@ const OrdersPage = () => {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl print:shadow-none relative z-10 flex flex-col max-h-[90vh] print:max-h-none print-receipt-section"
+                            className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl overflow-hidden shadow-lg print:shadow-none relative z-10 flex flex-col max-h-[90vh] print:max-h-none print-receipt-section"
                         >
                             <div className="flex-1 overflow-y-auto print:overflow-visible custom-scrollbar p-8 border-b-8 border-emerald-600 print:border-none">
                                 {/* Receipt Header */}
@@ -289,7 +289,7 @@ const OrdersPage = () => {
                                 </button>
                                 <button
                                     onClick={() => setIsDetailsModalOpen(false)}
-                                    className="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 dark:text-slate-900 text-white font-semibold rounded-xl transition-colors"
+                                    className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 font-semibold rounded-xl transition-colors"
                                 >
                                     Close
                                 </button>
