@@ -6,21 +6,11 @@ const api = axios.create({
     withCredentials: true,
 });
 
-// Helper to get cookie by name
-const getCookie = (name) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-};
-
-// Request interceptor to add CSRF token to headers
+// Request interceptor to add CSRF custom header
 api.interceptors.request.use(
     (config) => {
         if (config.method !== 'get') {
-            const csrfToken = getCookie('x-csrf-token');
-            if (csrfToken) {
-                config.headers['x-csrf-token'] = csrfToken;
-            }
+            config.headers['X-Requested-With'] = 'XMLHttpRequest';
         }
         return config;
     },

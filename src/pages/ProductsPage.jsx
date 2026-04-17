@@ -417,7 +417,7 @@ const ProductsPage = () => {
                     </div>
 
                 {/* Table */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-[22rem] md:w-[55rem] lg:w-full">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-[32rem] md:w-[55rem] lg:w-full">
                     <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                         <table className="w-full text-left" style={{ minWidth: '800px' }}>
                             <thead>
