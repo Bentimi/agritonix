@@ -182,9 +182,9 @@ const OrdersPage = () => {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh] print-receipt-section"
+                            className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl print:shadow-none relative z-10 flex flex-col max-h-[90vh] print:max-h-none print-receipt-section"
                         >
-                            <div className="p-8 bg-white dark:bg-slate-900 border-b-8 border-emerald-600">
+                            <div className="flex-1 overflow-y-auto print:overflow-visible custom-scrollbar p-8 border-b-8 border-emerald-600 print:border-none">
                                 {/* Receipt Header */}
                                 <div className="text-center mb-6">
                                     <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -223,12 +223,21 @@ const OrdersPage = () => {
                                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-100 dark:border-slate-800 pb-2">Items</h3>
                                     <div className="space-y-3">
                                         {selectedOrder.carts?.map((cartItem) => (
-                                            <div key={cartItem.id} className="flex justify-between items-start text-sm">
-                                                <div className="flex-1 pr-4">
-                                                    <p className="font-bold text-gray-900 dark:text-white">{cartItem.product?.name || 'Unknown Product'}</p>
-                                                    <p className="text-xs text-gray-500">{cartItem.quantity} x NGN {Number(cartItem.price).toLocaleString()}</p>
+                                            <div key={cartItem.id} className="flex items-center gap-3 text-sm py-2">
+                                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 dark:bg-slate-800 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200 dark:border-slate-700 print:border-gray-300">
+                                                    {cartItem.product?.photo ? (
+                                                        <img src={cartItem.product.photo} alt={cartItem.product.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <MdStore className="text-xl text-gray-400 print:text-gray-500" />
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div className="font-bold text-gray-900 dark:text-white">
+                                                <div className="flex-1">
+                                                    <p className="font-bold text-gray-900 dark:text-white print:text-black line-clamp-1">{cartItem.product?.name || 'Unknown Product'}</p>
+                                                    <p className="text-xs text-gray-500 print:text-gray-600">{cartItem.quantity} x NGN {Number(cartItem.price).toLocaleString()}</p>
+                                                </div>
+                                                <div className="font-bold text-gray-900 dark:text-white print:text-black text-right pl-2">
                                                     NGN {Number(cartItem.total_price).toLocaleString()}
                                                 </div>
                                             </div>
@@ -241,31 +250,31 @@ const OrdersPage = () => {
                                     <div className="flex justify-between">
                                         <span>Subtotal</span>
                                         <span className="font-medium text-gray-900 dark:text-white">
-                                            NGN {Number((selectedOrder.total_price || 0) - (selectedOrder.taxFee || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            NGN {Number((selectedOrder.total_price || 0) - (selectedOrder.taxFee || selectedOrder.tax_fee || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
-                                    {selectedOrder.taxFee != null && (
+                                    {(selectedOrder.taxFee != null || selectedOrder.tax_fee != null) && (
                                         <div className="flex justify-between">
                                             <span>Tax Fee</span>
                                             <span className="font-medium text-gray-900 dark:text-white">
-                                                NGN {Number(selectedOrder.taxFee).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                NGN {Number(selectedOrder.taxFee || selectedOrder.tax_fee).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between font-black text-gray-900 dark:text-white text-lg pt-2 mt-2 border-t border-gray-100 dark:border-slate-800">
+                                    <div className="flex justify-between font-black text-gray-900 dark:text-white text-lg pt-2 mt-2 border-t border-gray-100 dark:border-slate-800 print:border-black">
                                         <span>Total Paid</span>
-                                        <span className="text-emerald-600">NGN {Number(selectedOrder.total_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span className="text-emerald-600 print:text-black">NGN {Number(selectedOrder.total_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 </div>
 
                                 {/* Verification Timestamp */}
-                                {selectedOrder.verified_at && (
+                                {(selectedOrder.verified_at || selectedOrder.verifiedAt) && (
                                     <div className="mt-8 text-center text-xs text-gray-400 dark:text-slate-500">
                                         <p className="flex items-center justify-center gap-1">
-                                            <MdCheckCircle className="text-emerald-500" />
+                                            <MdCheckCircle className="text-emerald-500 print:text-black" />
                                             Payment Verified
                                         </p>
-                                        <p>{new Date(selectedOrder.verified_at).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                                        <p>{new Date(selectedOrder.verified_at || selectedOrder.verifiedAt).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}</p>
                                     </div>
                                 )}
                             </div>
