@@ -479,6 +479,15 @@ tbody tr:last-child td {
 
 /* ─── Print Receipt ─── */
 @media print {
+  @page {
+    margin: 0;
+  }
+  html, body {
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;padding: 0;
+    background-color: white !important;
+  }
   body * {
     visibility: hidden;
   }
@@ -490,7 +499,9 @@ tbody tr:last-child td {
     left: 0;
     top: 0;
     width: 100%;
+    height: auto !important;
     max-height: none !important;
     overflow: visible !important;
+    padding: 20px;
   }
 }

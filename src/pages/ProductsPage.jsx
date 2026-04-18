@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { toast } from 'react-toastify';
@@ -336,7 +336,7 @@ const ProductsPage = () => {
 
     return (
         <DashboardLayout activeNav="products">
-            <div className="p-6 lg:p-10 page-enter">
+            <div className="p-6 lg:p-10 page-enter max-w-full overflow-x-hidden">
 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -417,7 +417,7 @@ const ProductsPage = () => {
                     </div>
 
                 {/* Table */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-[25rem] md:w-[55rem] lg:w-full">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800/70 overflow-hidden w-full">
                     <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                         <table className="w-full text-left" style={{ minWidth: '800px' }}>
                             <thead>

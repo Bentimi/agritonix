@@ -49,6 +49,8 @@ const CartPage = () => {
         fetchCart();
     }, []);
 
+    const [pendingUpdates, setPendingUpdates] = useState({});
+
     const getStock = (product) => {
         return product.stock || 
                product.quantity || 
@@ -59,34 +61,47 @@ const CartPage = () => {
                0;
     };
 
-    const updateQuantity = async (cartItemId, newQuantity) => {
-        if (newQuantity <= 0) {
-            await removeFromCart(cartItemId);
-            return;
-        }
+    const handleLocalQuantityChange = (cartItemId, newQuantity) => {
+        if (newQuantity !== '' && newQuantity <= 0) return;
         
-        try {
-            const response = await api.put(`/product/edit-cart-item/${cartItemId}`, {
-                quantity: newQuantity
-            });
+        // Instant visual update
+        setCart(prevCart => prevCart.map(item => 
+            item.id === cartItemId ? { ...item, quantity: newQuantity, total_price: (newQuantity === '' ? 0 : newQuantity) * item.price } : item
+        ));
+        
+        // Don't queue empty strings as valid API updates
+        if (newQuantity !== '') {
+            setPendingUpdates(prev => ({
+                ...prev,
+                [cartItemId]: newQuantity
+            }));
+        }
+    };
 
-            if (response.data.status === 'success') {
-                // Refresh cart from database
-                const cartResponse = await api.get('/product/cart');
-                if (cartResponse.data.status === 'success') {
-                    const cartData = cartResponse.data.data;
-                    if (cartData && cartData.cart && Array.isArray(cartData.cart)) {
-                        setCart(cartData.cart);
-                    } else {
-                        setCart([]);
-                    }
-                }
-            } else {
-                toast.error(response.data.message || 'Failed to update quantity');
+    const handleSaveUpdates = async () => {
+        setIsProcessing(true);
+        try {
+            const updates = Object.entries(pendingUpdates);
+            const promises = updates.map(([itemId, qty]) => 
+                api.put(`/product/edit-cart-item/${itemId}`, { quantity: qty })
+            );
+            
+            await Promise.all(promises);
+            setPendingUpdates({});
+            toast.success('Cart updated successfully');
+            
+            // Refresh cart from database to be absolutely sure
+            const cartResponse = await api.get('/product/cart');
+            if (cartResponse.data.status === 'success') {
+                const cartData = cartResponse.data.data;
+                setCart(cartData?.cart || []);
             }
         } catch (error) {
             console.error('Error updating cart quantity:', error);
-            toast.error('Failed to update quantity');
+            const errorMessage = error.response?.data?.message || 'Failed to update quantity';
+            toast.error(errorMessage);
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -322,10 +337,10 @@ const CartPage = () => {
                                                             <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Quantity</span>
                                                         <div className="flex items-center gap-2">
                                                             <button
-                                                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                                disabled={item.quantity <= 1}
+                                                                onClick={() => handleLocalQuantityChange(item.id, item.quantity - 1)}
+                                                                disabled={item.quantity <= 0 || item.quantity === ''}
                                                                 className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                                                    item.quantity <= 1 
+                                                                    item.quantity <= 0 || item.quantity === ''
                                                                     ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-600 cursor-not-allowed'
                                                                     : 'bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-300 dark:hover:bg-slate-600'
                                                                 }`}
@@ -333,28 +348,36 @@ const CartPage = () => {
                                                                 <MdRemove size={16} />
                                                             </button>
                                                             <input
-                                                                type="number"
-                                                                min="1"
-                                                                max={getStock(item.product || item)}
+                                                                type="text"
                                                                 value={item.quantity}
                                                                 onChange={(e) => {
-                                                                    const val = parseInt(e.target.value);
-                                                                    if (!isNaN(val) && val > 0 && val <= getStock(item.product || item)) {
-                                                                        updateQuantity(item.id, val);
+                                                                    const valStr = e.target.value;
+                                                                    if (valStr === '') {
+                                                                        handleLocalQuantityChange(item.id, '');
+                                                                        return;
+                                                                    }
+                                                                    const val = parseInt(valStr.replace(/\D/g, ''));
+                                                                    if (!isNaN(val)) {
+                                                                        handleLocalQuantityChange(item.id, val);
                                                                     }
                                                                 }}
                                                                 onBlur={(e) => {
-                                                                    const val = parseInt(e.target.value);
-                                                                    if (isNaN(val) || val <= 0) {
-                                                                        updateQuantity(item.id, 1);
-                                                                    } else if (val > getStock(item.product || item)) {
-                                                                        updateQuantity(item.id, getStock(item.product || item));
+                                                                    const valStr = String(e.target.value);
+                                                                    if (valStr === '') {
+                                                                        handleLocalQuantityChange(item.id, 1);
+                                                                        return;
+                                                                    }
+                                                                    const val = parseInt(valStr);
+                                                                    if (isNaN(val) || val < 0) {
+                                                                        handleLocalQuantityChange(item.id, 0);
+                                                                    } else {
+                                                                        handleLocalQuantityChange(item.id, val);
                                                                     }
                                                                 }}
-                                                                className="w-14 px-1 py-1 text-center font-medium border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                                                className="w-20 px-1 py-1 text-center font-medium border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                                                             />
                                                             <button
-                                                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                                onClick={() => handleLocalQuantityChange(item.id, item.quantity + 1)}
                                                                 className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-300 dark:hover:bg-slate-600 flex items-center justify-center"
                                                             >
                                                                 <MdAdd size={16} />
@@ -427,11 +450,22 @@ const CartPage = () => {
                                     </div>
                                 </div>
 
+                                {Object.keys(pendingUpdates).length > 0 && (
+                                    <button
+                                        onClick={handleSaveUpdates}
+                                        disabled={isProcessing}
+                                        className="w-full mb-3 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+                                    >
+                                        {isProcessing ? 'Saving...' : 'Update Cart'}
+                                    </button>
+                                )}
+
                                 <button
                                     onClick={handleCheckout}
-                                    className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
+                                    disabled={Object.keys(pendingUpdates).length > 0}
+                                    className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Proceed to Checkout
+                                    {Object.keys(pendingUpdates).length > 0 ? 'Save updates to proceed' : 'Proceed to Checkout'}
                                 </button>
 
                                 <button

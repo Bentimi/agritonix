@@ -8,7 +8,6 @@ const PaymentPendingPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [status, setStatus] = useState('processing');
-    const [attempts, setAttempts] = useState(0);
     const [error, setError] = useState(null);
     
     const reference = searchParams.get('reference') || searchParams.get('trxref') || searchParams.get('tx_ref') || searchParams.get('transaction_id');
@@ -32,9 +31,10 @@ const PaymentPendingPage = () => {
         }
 
         let checkInterval;
-        let timeout;
+        let currentAttempt = 0;
 
         const checkOrderStatus = async () => {
+            currentAttempt++;
             setStatus('checking');
             
             try {
@@ -45,32 +45,34 @@ const PaymentPendingPage = () => {
                     const orderStatus = response.data.data?.order_status || response.data.data?.status;
                     
                     if (orderStatus === 'successful' || orderStatus === 'success') {
+                        clearInterval(checkInterval);
                         navigate(`/payment/success?${queryParam}`);
                         return;
                     } else if (orderStatus === 'failed') {
+                        clearInterval(checkInterval);
                         navigate(`/payment/failed?${queryParam}`);
                         return;
                     }
                 }
             } catch (err) {
                 console.error('Error checking order status:', err);
-                setError('Unable to check payment status. Retrying...');
+                // Fail silently, retry on next interval unless maxed out
             }
 
-            setAttempts(prev => prev + 1);
-            setStatus('processing');
+            if (currentAttempt >= 10) {
+                clearInterval(checkInterval);
+                setError('Payment verification timed out. Please check your orders page.');
+                setStatus('timed_out');
+            } else {
+                setStatus('processing');
+            }
         };
 
         checkOrderStatus();
         checkInterval = setInterval(checkOrderStatus, 5000);
-        timeout = setTimeout(() => {
-            clearInterval(checkInterval);
-            setError('Payment verification timed out. Please check your orders page.');
-        }, 120000);
 
         return () => {
             clearInterval(checkInterval);
-            clearTimeout(timeout);
         };
     }, [reference, orderId, paymentStatus, searchParams, navigate]);
 
@@ -111,12 +113,9 @@ const PaymentPendingPage = () => {
                             ))}
                         </div>
                         <span className="text-sm text-gray-500 dark:text-slate-400 ml-2">
-                            {status === 'checking' ? 'Checking...' : 'Processing...'}
+                            {status === 'checking' ? 'Checking...' : status === 'timed_out' ? 'Timed Out' : 'Processing...'}
                         </span>
                     </div>
-                    <p className="text-xs text-gray-400 dark:text-slate-500">
-                        Check {attempts} of ~24
-                    </p>
                 </div>
 
                 <div className="bg-gray-50 dark:bg-slate-800 rounded-lg p-4 mb-6">
@@ -141,12 +140,6 @@ const PaymentPendingPage = () => {
                     >
                         <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                     </motion.div>
-                )}
-
-                {reference && (
-                    <div className="text-xs text-gray-400 dark:text-slate-500 mb-4">
-                        Ref: {reference}
-                    </div>
                 )}
 
                 <button
