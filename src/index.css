@@ -498,24 +498,30 @@ tbody tr:last-child td {
   #root, 
   aside, 
   header, 
-  .mobile-header,
-  [role="dialog"]:not(:has(.print-receipt-section)) {
+  .mobile-header {
     display: none !important;
+    visibility: hidden !important;
   }
 
-  /* Ensure the portal content (rendered in body) is visible */
+  /* Force the portal content to be visible and ignore animation states */
   body > .print-receipt-section,
   .print-receipt-section,
   .print-receipt-section * {
     visibility: visible !important;
     display: block !important;
+    opacity: 1 !important;
+    transform: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Reset body specifically for the portal print */
   body {
     background: white !important;
     height: auto !important;
+    min-height: 0 !important;
     overflow: visible !important;
+    display: block !important;
   }
 
   /* Specifically find the modal wrapper and its content */
