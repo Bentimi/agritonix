@@ -183,7 +183,7 @@ const ReceiptModal = ({ order, onClose }) => {
         </AnimatePresence>
     );
 
-    return createPortal(modalContent, document.body);
+    return createPortal(modalContent, document.getElementById('print-root') || document.body);
 };
 
 export default ReceiptModal;

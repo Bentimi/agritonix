@@ -494,7 +494,7 @@ tbody tr:last-child td {
     overflow: visible !important;
   }
 
-  /* Aggressive hide for print: Hide everything except the receipt */
+  /* Aggressive hide for print: Hide everything except the dedicated print root */
   body {
     visibility: hidden !important;
     height: auto !important;
@@ -502,21 +502,31 @@ tbody tr:last-child td {
     background: white !important;
   }
 
-  /* Completely hide the application root to save space and prevent stretching */
+  /* Completely hide the application root during print */
   #root {
     display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
   }
 
-  /* The portal content (ReceiptModal) */
-  .print-receipt-section {
-    visibility: visible !important;
+  /* The dedicated print container (ReceiptModal) */
+  #print-root {
     display: block !important;
-    position: relative !important; /* Force natural document flow */
+    visibility: visible !important;
+    position: relative !important;
     width: 100% !important;
     height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
+  }
+
+  .print-receipt-section {
+    visibility: visible !important;
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
     opacity: 1 !important;
     transform: none !important;
   }
