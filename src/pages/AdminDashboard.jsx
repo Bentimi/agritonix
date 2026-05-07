@@ -272,7 +272,7 @@ const AdminDashboard = () => {
                 </motion.div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
                     {statCards.map((s, i) => (
                         <motion.div key={s.label}
                             variants={itemVariants}
@@ -333,7 +333,7 @@ const AdminDashboard = () => {
                 </motion.div>
 
                 {/* Table Wrapper */}
-                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-b-2xl border border-gray-100 dark:border-slate-800/70 shadow-lg overflow-hidden flex flex-col mb-10 w-[25rem] md:w-[55rem] lg:w-full mt-7">
+                <motion.div variants={itemVariants} className="bg-white dark:bg-slate-900 rounded-b-2xl border border-gray-100 dark:border-slate-800/70 shadow-lg overflow-hidden flex flex-col mb-10 w-[36.5rem] md:w-[59rem] lg:w-full mt-7">
                     <div className="overflow-x-auto overflow-y-auto max-h-[600px] custom-scrollbar">
                         <table className="w-full text-left border-separate border-spacing-0" style={{ minWidth: '700px' }}>
             <thead>
@@ -476,6 +476,7 @@ const AdminDashboard = () => {
         </div>
     )}
             </motion.div>
+        </motion.div>
 
             {/* Edit Modal */}
             <AnimatePresence>
@@ -558,7 +559,7 @@ const AdminDashboard = () => {
             </AnimatePresence>
 
             {/* Account Info Footer */}
-            <motion.div variants={itemVariants} className="mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-6">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }} className="mt-6 mx-4 sm:mx-6 lg:mx-10 mb-6 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800/70 p-6 max-w-7xl">
                 <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -571,12 +572,8 @@ const AdminDashboard = () => {
                             Administrator Management Interface · Farm Management System v1.0.0
                         </p>
                     </div>
-                    {/* <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/15 px-2.5 py-1 rounded-lg uppercase tracking-wider">
-                        Active Oversight
-                    </span> */}
                 </div>
             </motion.div>
-        </motion.div>
     </DashboardLayout>
 );
 };

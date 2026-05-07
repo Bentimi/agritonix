@@ -766,7 +766,7 @@ const ProductsPage = () => {
                             className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden border border-white/20 dark:border-slate-800/50"
                         >
                             {/* Minimalist Professional Header */}
-                            <div className="relative p-6 sm:p-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                            <div className="relative p-4 sm:p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
                                 <div className="relative flex items-center justify-between">
                                     <div className="flex items-center gap-5">
                                         <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
@@ -962,7 +962,7 @@ const ProductsPage = () => {
                             className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-800/50 flex flex-col max-h-[90vh]"
                         >
                             {/* Minimalist Professional Header */}
-                            <div className="relative p-6 sm:p-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                            <div className="relative p-4 sm:p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
                                 <div className="relative flex items-center justify-between">
                                     <div className="flex items-center gap-5">
                                         <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center border border-emerald-100 dark:border-emerald-800/50">
@@ -1432,7 +1432,7 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                         <div className="space-y-2">
                                             <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Standard Price</label>
                                             <div className="relative">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-400 font-black">NGN </span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-400 font-black text-xs pointer-events-none select-none">NGN</span>
                                                 <input
                                                     type="number"
                                                     name="price"
@@ -1442,14 +1442,14 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                                     min="0"
                                                     step="0.01"
                                                     disabled={submitting}
-                                                    className="w-full pl-10 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold disabled:opacity-50"
+                                                    className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold disabled:opacity-50"
                                                 />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight ml-1">Promotional Rate</label>
                                             <div className="relative">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-orange-500 font-black">NGN </span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500 font-black text-xs pointer-events-none select-none">NGN</span>
                                                 <input
                                                     type="number"
                                                     name="newPrice"
@@ -1459,7 +1459,7 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                                     step="0.01"
                                                     placeholder="Optional"
                                                     disabled={submitting}
-                                                    className="w-full pl-10 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold disabled:opacity-50"
+                                                    className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-semibold disabled:opacity-50"
                                                 />
                                             </div>
                                         </div>
@@ -1526,30 +1526,30 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                                         </div>
                                     )}
                                 </div>
-                        {/* Sticky Action Bar */}
-                        <div className="p-5 sm:p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                disabled={submitting}
-                                className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={submitting}
-                                className="w-full sm:w-auto px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 active:scale-95"
-                            >
-                                {submitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
-                                {mode === 'add' ? 'Publish Portfolio' : 'Synchronize Product'}
-                            </button>
-                        </div>
+                            </div>
+                            {/* Sticky Action Bar - outside scrollable area */}
+                            <div className="p-5 sm:p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4 shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    disabled={submitting}
+                                    className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="w-full sm:w-auto px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 active:scale-95"
+                                >
+                                    {submitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
+                                    {mode === 'add' ? 'Publish Portfolio' : 'Synchronize Product'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </motion.div>
             </div>
-        </motion.div>
-    </div>
         </AnimatePresence>
     );
 };

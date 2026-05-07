@@ -25,7 +25,7 @@ const CartPage = () => {
         const fetchCart = async () => {
             try {
                 const response = await api.get('/product/cart');
-                console.log('Cart API response:', response.data);
+                // console.log('Cart API response:', response.data);
                 if (response.data.status === 'success') {
                     const cartData = response.data.data;
                     // Backend returns { cart: cartItems, totalPrice, totalItems }
@@ -38,7 +38,7 @@ const CartPage = () => {
                     setCart([]);
                 }
             } catch (error) {
-                console.error('Error loading cart:', error);
+                // console.error('Error loading cart:', error);
                 if (error.response?.status !== 404) {
                     setCart([]);
                 }
@@ -97,7 +97,7 @@ const CartPage = () => {
                 setCart(cartData?.cart || []);
             }
         } catch (error) {
-            console.error('Error updating cart quantity:', error);
+            // console.error('Error updating cart quantity:', error);
             const errorMessage = error.response?.data?.message || 'Failed to update quantity';
             toast.error(errorMessage);
         } finally {
@@ -129,7 +129,7 @@ const CartPage = () => {
                 toast.error(response.data.message || 'Failed to remove item');
             }
         } catch (error) {
-            console.error('Error removing from cart:', error);
+            // console.error('Error removing from cart:', error);
             toast.error('Failed to remove item');
         }
     };
@@ -159,7 +159,7 @@ const CartPage = () => {
             setCart([]);
             toast.success('Cart cleared');
         } catch (error) {
-            console.error('Error clearing cart:', error);
+            // console.error('Error clearing cart:', error);
             toast.error('Failed to clear cart');
         } finally {
             setIsProcessing(false);

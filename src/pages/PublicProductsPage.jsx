@@ -200,7 +200,7 @@ const PublicProductsPage = () => {
         }
 
         try {
-            console.log('Adding to cart:', { productId: product.id, quantity });
+            // console.log('Adding to cart:', { productId: product.id, quantity });
             
             // Use the correct backend endpoint with /product prefix
             const response = await api.post(`/product/add-to-cart/${product.id}`, {
@@ -218,13 +218,14 @@ const PublicProductsPage = () => {
                         setCart([]);
                     }
                 }
-                toast.success(`${quantity} ${product.name} added to cart!`);
+                // toast.success(`${quantity} ${product.name} added to cart!`);
+                toast.success(`Product added to cart!`);
             } else {
                 toast.error(response.data.message || 'Failed to add to cart');
             }
         } catch (error) {
-            console.error('Error adding to cart:', error.response?.status, error.response?.data);
-            console.error('Full error:', error);
+            // console.error('Error adding to cart:', error.response?.status, error.response?.data);
+            // console.error('Full error:', error);
             // Show the specific error message from the backend if available
             const errorMessage = error.response?.data?.message || 'Failed to add to cart';
             toast.error(errorMessage);
@@ -252,7 +253,7 @@ const PublicProductsPage = () => {
                 toast.error(response.data.message || 'Failed to remove item');
             }
         } catch (error) {
-            console.error('Error removing from cart:', error);
+            // console.error('Error removing from cart:', error);
             toast.error('Failed to remove item');
         }
     };
@@ -293,7 +294,7 @@ const PublicProductsPage = () => {
                 setCart(cartData?.cart || []);
             }
         } catch (error) {
-            console.error('Error updating cart quantity:', error);
+            // console.error('Error updating cart quantity:', error);
             const errorMessage = error.response?.data?.message || 'Failed to update quantity';
             toast.error(errorMessage);
         } finally {
@@ -812,7 +813,7 @@ const PublicProductsPage = () => {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 40 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="relative bg-white dark:bg-slate-900 rounded-2xl w-full max-w-6xl max-h-[90vh] md:overflow-hidden overflow-y-auto hide-scrollbar flex flex-col md:flex-row border border-white/20 dark:border-slate-800/50"
+                            className="relative bg-white dark:bg-slate-900 rounded-2xl w-full max-w-6xl max-h-[90vh] md:overflow-hidden overflow-y-auto modal-scrollbar flex flex-col md:flex-row border border-white/20 dark:border-slate-800/50"
                         >
                             {/* Close Button */}
                             <button
@@ -826,7 +827,7 @@ const PublicProductsPage = () => {
                             </button>
 
                             {/* Left Side: Product Showcase & Purchase Card */}
-                            <div className="w-full md:w-[40%] bg-slate-50 dark:bg-slate-950/40 md:border-r border-b md:border-b-0 border-slate-100 dark:border-slate-800 p-8 md:p-12 md:overflow-y-auto md:hide-scrollbar flex flex-col">
+                            <div className="w-full md:w-[40%] bg-slate-50 dark:bg-slate-950/40 md:border-r border-b md:border-b-0 border-slate-100 dark:border-slate-800 p-8 md:p-12 md:overflow-y-auto md:modal-scrollbar flex flex-col">
                                 <div className="space-y-8">
                                     {/* Brand/Category Tag */}
                                     <div className="flex items-center gap-2">
@@ -896,7 +897,7 @@ const PublicProductsPage = () => {
                             </div>
 
                             {/* Right Side: Immersive Story (Narratives) */}
-                            <div className="flex-1 bg-white dark:bg-slate-900 md:overflow-y-auto md:hide-scrollbar">
+                            <div className="flex-1 bg-white dark:bg-slate-900 md:overflow-y-auto md:modal-scrollbar">
                                 <div className="p-8 md:p-16 space-y-20">
                                     {/* Section Header */}
                                     <div className="space-y-4">

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import api from '../services/api';
 import { toast } from 'react-toastify';
@@ -63,27 +63,36 @@ const CheckoutPage = () => {
 
         setCreatingPayment(true);
         try {
-            const amount = getOrderTotal();
-            
             // Call the payment link creation endpoint
             const response = await api.post('/payment/create-payment-link', {
-                // amount: amount,
-                // currency: 'NGN',
-                // description: `Order for ${cart.length} item(s)`,
                 url: `${window.location.origin}/payment/pending`,
             });
-            console.log(response.data)
-            if (response.data.status === 'success' && response.data.data?.link) {
+            
+            console.log('Payment link raw response:', JSON.stringify(response.data, null, 2));
+            
+            const data = response.data.data;
+            const paymentLink = (typeof data === 'string' ? data : data?.link);
+
+            console.log('Diagnostic:', {
+                status: response.data.status,
+                dataType: typeof data,
+                linkType: typeof paymentLink,
+                link: paymentLink
+            });
+
+            if (response.data.status === 'success' && paymentLink && typeof paymentLink === 'string') {
                 toast.success('Redirecting to secure payment...');
-                // Redirect to payment gateway
-                window.location.href = response.data.data;
+                window.location.replace(paymentLink);
+                return; 
             } else {
-                toast.error(response.data.message || 'Failed to create payment link');
+                // console.error('Unexpected payment response structure. Full body:', response.data);
+                toast.error(response.data.message || 'Failed to generate payment link');
+                setCreatingPayment(false);
             }
         } catch (error) {
             console.error('Error creating payment link:', error);
-            toast.error(error.response?.data?.message || 'Failed to initiate payment. Please try again.');
-        } finally {
+            const errorMsg = error.response?.data?.message || 'Failed to initiate payment. Please try again.';
+            toast.error(errorMsg);
             setCreatingPayment(false);
         }
     };
@@ -132,13 +141,18 @@ const CheckoutPage = () => {
                     className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6"
                 >
                     {/* Payment Security Badge */}
-                    <div className="flex items-center justify-center gap-2 mb-6 text-gray-900 dark:text-white">
-                        <MdLock className="text-emerald-600" size={20} />
-                        <span className="text-sm font-medium">Secure SSL Encrypted Payment</span>
+                    <div className="flex flex-col items-center justify-center gap-3 mb-10">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/10 rounded-full border border-emerald-100 dark:border-emerald-900/20">
+                            <MdLock className="text-emerald-600" size={14} />
+                            <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Secure Checkout</span>
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.15em]">
+                            Payments secured by Flutterwave
+                        </p>
                     </div>
 
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Order Summary</h2>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Order Summary</h2>
                         {totalPages > 1 && (
                             <div className="flex items-center gap-1">
                                 <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
@@ -188,22 +202,22 @@ const CheckoutPage = () => {
                         ))}
                     </div>
 
-                    <div className="border-t border-gray-200 dark:border-slate-700 pt-4 space-y-3">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-slate-400 font-medium">Subtotal</span>
-                            <span className="font-bold text-gray-900 dark:text-white text-lg">
+                    <div className="border-t border-gray-100 dark:border-slate-800 pt-6 space-y-4">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-500 dark:text-slate-400 font-medium">Subtotal</span>
+                            <span className="font-bold text-gray-900 dark:text-white">
                                 NGN {getCartTotal().toLocaleString()}
                             </span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-slate-400 font-medium">Tax (7.5%)</span>
-                            <span className="font-bold text-gray-900 dark:text-white text-lg">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-500 dark:text-slate-400 font-medium">Tax (7.5%)</span>
+                            <span className="font-bold text-gray-900 dark:text-white">
                                 NGN {getTax().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                         </div>
-                        <div className="border-t border-gray-200 dark:border-slate-700 pt-3">
-                            <div className="flex justify-between">
-                                <span className="font-bold text-gray-900 dark:text-white text-lg">Total</span>
+                        <div className="border-t border-gray-100 dark:border-slate-800 pt-4">
+                            <div className="flex justify-between items-center">
+                                <span className="font-black text-gray-400 dark:text-slate-600 uppercase tracking-widest text-[10px]">Total Amount</span>
                                 <span className="font-black text-2xl text-emerald-600">
                                     NGN {getOrderTotal().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
@@ -214,27 +228,36 @@ const CheckoutPage = () => {
                     <button
                         onClick={handlePayNow}
                         disabled={creatingPayment || cart.length === 0}
-                        className="w-full mt-6 py-4 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg"
+                        className="w-full mt-8 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-sm"
                     >
                         {creatingPayment ? (
                             <>
-                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                Processing...
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Redirecting...
                             </>
                         ) : (
                             <>
-                                <MdPayment size={22} />
-                                Pay Now NGN {getOrderTotal().toLocaleString()}
+                                <MdPayment size={20} />
+                                Pay NGN {getOrderTotal().toLocaleString()}
                             </>
                         )}
                     </button>
 
                     <button
                         onClick={() => navigate('/cart')}
-                        className="w-full mt-4 py-3 text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white font-bold text-sm transition-colors uppercase tracking-widest"
+                        disabled={creatingPayment}
+                        className="w-full mt-4 py-3 text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white font-bold text-sm transition-colors uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         Back to Cart
                     </button>
+
+                    {/* Persistent Security Footer */}
+                    <div className="mt-8 pt-6 border-t border-gray-100 dark:border-slate-800 flex flex-col items-center gap-2">
+                        <div className="flex items-center gap-2">
+                            <MdLock className="text-gray-300 dark:text-slate-600" size={14} />
+                            <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">SSL Secure Payment Gateway</span>
+                        </div>
+                    </div>
                 </motion.div>
             </div>
         </div>

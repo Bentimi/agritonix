@@ -480,28 +480,117 @@ tbody tr:last-child td {
 /* ─── Print Receipt ─── */
 @media print {
   @page {
-    margin: 0;
+    size: A4;
+    margin: 10mm;
   }
+
+  /* Reset layout for print */
   html, body {
-    height: 100vh;
-    overflow: hidden;
-    margin: 0;padding: 0;
-    background-color: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
-  body * {
-    visibility: hidden;
+
+  /* Aggressive hide: Hide the entire app root and background content */
+  #root, 
+  aside, 
+  header, 
+  .mobile-header,
+  [role="dialog"]:not(:has(.print-receipt-section)) {
+    display: none !important;
   }
-  .print-receipt-section, .print-receipt-section * {
-    visibility: visible;
+
+  /* Ensure the portal content (rendered in body) is visible */
+  body > .print-receipt-section,
+  .print-receipt-section,
+  .print-receipt-section * {
+    visibility: visible !important;
+    display: block !important;
   }
+
+  /* Reset body specifically for the portal print */
+  body {
+    background: white !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Specifically find the modal wrapper and its content */
   .print-receipt-section {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    z-index: 9999 !important;
+  }
+
+  .print-receipt-card {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
     height: auto !important;
     max-height: none !important;
-    overflow: visible !important;
-    padding: 20px;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: white !important;
+    transform: none !important;
   }
+
+  /* Show all content inside the receipt */
+  .print-receipt-section *,
+  .print-receipt-card * {
+    visibility: visible !important;
+    color: black !important;
+    background-color: transparent !important;
+    border-color: #eee !important;
+  }
+
+  /* Force the scroll container to be fully visible and expanded */
+  .receipt-scroll-container {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    flex: none !important;
+    padding: 0 !important;
+  }
+
+  /* Ensure items don't break across pages awkwardly */
+  .print-receipt-section .flex,
+  .print-receipt-section .grid {
+    display: flex !important;
+    break-inside: avoid !important;
+  }
+
+  .print-receipt-section h2,
+  .print-receipt-section h3,
+  .print-receipt-section .border-y,
+  .print-receipt-section .border-t-2 {
+    break-inside: avoid !important;
+  }
+
+  /* Hide the action bar (Print/Close buttons) */
+  .print-receipt-section > div:last-child,
+  .print-receipt-section button,
+  .print:hidden {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Ensure text colors are high contrast for printing */
+  .text-emerald-600 { color: #059669 !important; }
+  .text-emerald-500 { color: #10b981 !important; }
+  .text-gray-900 { color: #000000 !important; }
+  .text-gray-600, .text-gray-500 { color: #333333 !important; }
 }

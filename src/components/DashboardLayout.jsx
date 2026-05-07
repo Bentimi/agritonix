@@ -188,7 +188,7 @@ const DashboardLayout = ({ children, activeNav }) => {
                     </button>
                 </header>
 
-                <main className="flex-1 w-full min-w-0 overflow-y-auto">
+                <main className="flex-1 w-full min-w-0 overflow-x-hidden overflow-y-auto">
                     {children}
                 </main>
             </div>
