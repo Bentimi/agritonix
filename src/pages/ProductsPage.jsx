@@ -1288,7 +1288,7 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 40 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                    className="relative bg-white dark:bg-slate-900 rounded-2xl w-full max-w-5xl overflow-y-auto lg:overflow-hidden border border-slate-200 dark:border-slate-800/50 flex flex-col lg:flex-row lg:min-h-[600px] max-h-[95vh] sm:max-h-[90vh] custom-scrollbar"
+                    className="relative bg-white dark:bg-slate-900 rounded-2xl w-full max-w-5xl overflow-y-auto border border-slate-200 dark:border-slate-800/50 flex flex-col lg:flex-row lg:min-h-[600px] max-h-[95vh] sm:max-h-[90vh] custom-scrollbar"
                 >
                     {/* Professional Header - Absolute on Top */}
                     <div className="absolute top-6 right-6 z-20">
@@ -1301,7 +1301,7 @@ const AddEditProductModal = ({ isOpen, onClose, onSubmit, submitting, mode, prod
                     </div>
 
                     {/* Left Panel: Visual Experience & Context (col-span-5) */}
-                    <div className="lg:w-5/12 relative bg-slate-50 dark:bg-slate-800/30 overflow-hidden flex flex-col border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800 shrink-0 lg:shrink">
+                    <div className="lg:w-5/12 relative bg-slate-50 dark:bg-slate-800/30 overflow-y-auto flex flex-col border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800 shrink-0 lg:shrink">
                         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-blue-500/5" />
                         
                         <div className="p-5 sm:p-8 relative z-10 flex-1 flex flex-col">
