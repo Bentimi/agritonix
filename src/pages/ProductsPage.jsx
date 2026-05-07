@@ -336,7 +336,7 @@ const ProductsPage = () => {
 
     return (
         <DashboardLayout activeNav="products">
-            <div className="p-6 lg:p-10 page-enter max-w-full overflow-x-hidden">
+            <div className="p-4 sm:p-6 lg:p-10 page-enter max-w-7xl mx-auto">
 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
