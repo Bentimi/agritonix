@@ -99,6 +99,7 @@ const ReceiptModal = ({ order, onClose }) => {
                                                 <img
                                                     src={cartItem.product.photo}
                                                     alt={cartItem.product.name}
+                                                    crossOrigin="anonymous"
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (

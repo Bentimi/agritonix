@@ -192,9 +192,9 @@ const PaymentPendingPage = () => {
                     disabled={!refreshEnabled}
                     whileHover={refreshEnabled ? { scale: 1.02 } : {}}
                     whileTap={refreshEnabled ? { scale: 0.97 } : {}}
-                    className={`w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${
+                    className={`w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-none ${
                         refreshEnabled
-                            ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-200 dark:shadow-amber-900/40 cursor-pointer'
+                            ? 'bg-amber-500 hover:bg-amber-600 text-white cursor-pointer'
                             : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-600 cursor-not-allowed'
                     }`}
                 >

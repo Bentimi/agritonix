@@ -228,7 +228,7 @@ const CheckoutPage = () => {
                     <button
                         onClick={handlePayNow}
                         disabled={creatingPayment || cart.length === 0}
-                        className="w-full mt-8 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-sm"
+                        className="w-full mt-8 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-sm shadow-none"
                     >
                         {creatingPayment ? (
                             <>

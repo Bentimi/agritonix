@@ -494,14 +494,14 @@ tbody tr:last-child td {
     overflow: visible !important;
   }
 
-  /* Aggressive hide: Hide the entire app root safely off-screen */
-  #root, aside, header, .mobile-header {
-    position: absolute !important;
-    left: -9999px !important;
-    top: -9999px !important;
+  /* Aggressive hide: Hide all body children by default via visibility */
+  body > * {
     visibility: hidden !important;
-    height: 0 !important;
-    overflow: hidden !important;
+  }
+
+  /* Aggressive hide: Hide all body children by default via visibility */
+  body > * {
+    visibility: hidden !important;
   }
 
   /* Reset body specifically for the portal print */
@@ -517,7 +517,9 @@ tbody tr:last-child td {
   .print-receipt-section {
     visibility: visible !important;
     display: block !important;
-    position: static !important; /* Crucial for mobile print compatibility */
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
     height: auto !important;
     margin: 0 !important;

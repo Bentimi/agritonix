@@ -94,7 +94,7 @@ const PaymentSuccessPage = () => {
                             <button
                                 onClick={() => setShowReceipt(true)}
                                 disabled={loadingOrder || !order}
-                                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-sm transition-colors"
+                                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-sm transition-colors shadow-none"
                             >
                                 <MdReceipt size={18} />
                                 {loadingOrder ? 'Loading receipt…' : !order ? 'Receipt unavailable' : 'View Receipt'}
