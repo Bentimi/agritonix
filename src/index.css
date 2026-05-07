@@ -494,25 +494,14 @@ tbody tr:last-child td {
     overflow: visible !important;
   }
 
-  /* Aggressive hide: Hide the entire app root and background content */
-  #root, 
-  aside, 
-  header, 
-  .mobile-header {
-    display: none !important;
+  /* Aggressive hide: Hide the entire app root safely off-screen */
+  #root, aside, header, .mobile-header {
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
     visibility: hidden !important;
-  }
-
-  /* Force the portal content to be visible and ignore animation states */
-  body > .print-receipt-section,
-  .print-receipt-section,
-  .print-receipt-section * {
-    visibility: visible !important;
-    display: block !important;
-    opacity: 1 !important;
-    transform: none !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    height: 0 !important;
+    overflow: hidden !important;
   }
 
   /* Reset body specifically for the portal print */
@@ -526,16 +515,19 @@ tbody tr:last-child td {
 
   /* Specifically find the modal wrapper and its content */
   .print-receipt-section {
+    visibility: visible !important;
     display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+    position: static !important; /* Crucial for mobile print compatibility */
     width: 100% !important;
     height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
+    opacity: 1 !important;
+    transform: none !important;
     background: white !important;
-    z-index: 9999 !important;
+    z-index: 99999 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .print-receipt-card {
@@ -551,6 +543,7 @@ tbody tr:last-child td {
     border-radius: 0 !important;
     background: white !important;
     transform: none !important;
+    visibility: visible !important;
   }
 
   /* Show all content inside the receipt */
